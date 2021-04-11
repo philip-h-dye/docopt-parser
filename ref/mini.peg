@@ -1,0 +1,28 @@
+program = expr*
+
+expr = _ (func / ifelse / call / infix / assignment / number / name) _
+
+func = "(" parameters ")" _ "->" expr
+
+parameters = lvalue*
+
+ifelse = "if" expr "then" expr "else" expr
+
+call = name "(" arguments ")"
+
+arguments = expr*
+
+infix = "(" expr operator expr ")"
+
+operator = "+" / "-" / "*" / "//"
+
+assignment = lvalue "=" expr
+
+lvalue = ~"[a-z]+" _
+
+name = ~"[a-z]+" _
+
+number = ~"[0-9]+"
+
+_ = ~r"\s*"
+

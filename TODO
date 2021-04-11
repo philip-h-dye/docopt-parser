@@ -1,0 +1,15 @@
+Unix Utility Usage Grammar
+--------------------------
+
+Or, a formal grammar for the docopy language.
+
+First identify which elements must be parsed and which (if any) may be discarded (or perhaps remain free form text).
+
+Characterize the delineations of each section sufficiently to write regular expression matchers for their start and end, or span.
+
+Write a grammar to parse to just the sections out as blocks of free form text.  This forms the framework within which the section parsers will operate.
+
+For each section independently write a grammar to parse the it.
+
+One by one, incorporate the section parsers into the framework.
+

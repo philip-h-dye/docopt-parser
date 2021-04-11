@@ -1,0 +1,23 @@
+SAGE-SECTION ::= USAGE-STMT
+USAGE-SECTION ::= USAGE-STMT USAGE-SECTION
+   USAGE-STMT ::= EXPR/SEQ/(PNAME ...)
+         EXPR ::= SEQ
+         EXPR ::= SEQ `|` EXPR
+          SEQ ::= ATOM
+          SEQ ::= ATOM SEQ
+          SEQ ::= ATOM `...`
+          SEQ ::= ATOM `...` SEQ
+         ATOM ::= `[` EXPR `]`
+         ATOM ::= `(` EXPR `)`
+         ATOM ::= LONG
+         ATOM ::= SHORT
+         ATOM ::= ARGUMENT
+         ATOM ::= COMMAND
+         LONG ::= `--` [a-zA-Z][a-ZA-Z0-9_-]*
+         LONG ::= `--` [a-zA-Z][a-ZA-Z0-9_-]* `[= ]` ARGUMENT
+        SHORT ::= `-` [a-zA-Z, but not ARGED-SHORT chars][ARGED-SHORT char]?
+        SHORT ::= `-` [a-zA-Z, but not ARGED-SHORT chars] `[ ]` ARGUMENT
+        SHORT ::= `-` [a-zA-Z, but not ARGED-SHORT chars][ARGED-SHORT char] `[ ]?` ARGUMENT
+     ARGUMENT ::= [A-Z]
+     ARGUMENT ::= `<` `[^>]+` `>`
+      COMMAND ::= not `...`, not whitespace, etc.

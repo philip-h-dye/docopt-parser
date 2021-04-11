@@ -1,0 +1,13 @@
+#
+
+n=single
+# alias x=' script -c "python3 ${n}.py" err '
+alias x=' clear && logts -b log/single python3 ${n}.py '
+
+# Otherwise, it picks opts from ../setup.cfg and dies looking for ./tests.
+alias t=' clear && logts -b log/test pytest -c /dev/null '
+
+# cease the warnings about a package that I do not maintain.
+export PYTHONWARNINGS="ignore::DeprecationWarning:simplejson"
+
+#

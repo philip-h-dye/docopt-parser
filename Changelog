@@ -1,0 +1,24 @@
+------------------------------------------------------------------------------
+
+2021/04/11 :
+	- Started migration to Parsimonious.
+	- Moved from src/python/optstruct/grammar to
+	    src/python/parsers/paraimonious/docopt-parser
+
+------------------------------------------------------------------------------
+
+2021/04/10 :
+
+	! Mysteriously lost an input value !
+
+	Since I had enabled parseinfo, I decided to look into removing some of the manual tagging had been necesary without rule or node names.
+    Was :
+	usage_statment = program:program usage_expression:expression <newline> ;
+    New version :
+	usage_statment = program:program expression <newline> ;
+
+	As it turns out, this very bad idea data-wise.  The grammar was unchanged except for the manual tagging.  Ran single.py with usage "Usage: hello <file>".  The results were certainly less cluttered, they no longer contained the operand, "<file>".  No errors, just silently dropped.
+
+	I'm taking it as a sign that I should switch to Parsimonious immediately.
+
+------------------------------------------------------------------------------
