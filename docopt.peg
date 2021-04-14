@@ -1,8 +1,13 @@
 // __version__ = '0.5.0'
 
-docopt = usage other* newline* EOF
+docopt = intro? usage other* newline* EOF
 
 other = description / operand_section / options_section
+
+// Intro -- typically a single line 
+// -----
+
+intro = newline* !r'(?i)Usage\s*:' line+ newline
 
 // Usage Patterns
 // --------------
@@ -15,9 +20,10 @@ program = string_no_whitespace
 
 expression = ( optional / required / argument )+
 
-optional = '[' choice ']'
-required = '(' choice ')'
-argument = option / operand / command
+optional = '[' choice ']' repeated?
+required = '(' choice ')' repeated?
+argument = ( option / operand / command ) repeated?
+repeated = '...'
 
 choice = expression ( '|' choice )?
 
@@ -27,7 +33,7 @@ option = short / long
 short = short_no_arg / short_stacked
 short_no_arg = r'-[\w]'
 short_stacked = r'-[\w]+'
-long = long_no_arg / long_with_eq_arg
+long = long_with_eq_arg / long_no_arg
 long_no_arg = r'--[\w]+'
 long_with_eq_arg = long_with_eq_caps / long_with_eq_angle
 long_with_eq_caps = r"--[\w]+=[A-Z][_A-Z]*"
