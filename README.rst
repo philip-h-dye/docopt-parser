@@ -5,9 +5,13 @@ docopt-parser : Parser for the docopt language
 
 STATUS:
 
+4/14 Now parsing usage patterns, program description and options section.
+
 4/13 Made significant headway with usage pattern parsing.
 
-4/12 Switched to arpeggio for its better debug info.
+4/12 Switched to arpeggio for its better debug info, see parser.py and
+     docopt.peg.  Other python code is from prior PEG parser generator
+     work that did not succeed.
 
 - - - - -
 
