@@ -8,7 +8,7 @@ Usage: exportlib [options] <dll>...
   is the best one can do under the circumstances.
 
 Positional arguments :
-  <dll>          The DLL file for which an import will be generated.
+  <dll>            The DLL file for which an import will be generated.
 
 Optional arguments :
   -q, --quiet      Quiet unnessary informational output.
@@ -17,7 +17,6 @@ Optional arguments :
   -i, --ignore     Ignore errors, simply continue on to the next <dll>.
   -n, --no-errors  Silence only the error messages.
   -d, --debug      Show internal handling such as parsed arguments.
-                   to an unwritable <dll> directory.
   -h, --help       Show this help message and exit.
   --version        Show program version and exit.
 
