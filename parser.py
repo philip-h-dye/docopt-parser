@@ -48,16 +48,20 @@ def main(debug=False):
     input_expr = "[ FILE | BOOK ]"
     input_expr = "[ FILE | BOOK | FILM ] [ WORD ]"
     
-    input_expr = " [ FILE ] ( move | fire | turn ) [ --speed 11 --angle 35 ] <when>\n"
-    # '[' before speed parse as 'command' ?
-
     input_expr = " [ --what ] "		# OK
     input_expr = " [ --what 11 ] "	# '[' parsed as 'command' ?
+    input_expr = " [ --what name ] "	# '[' parsed as 'command' ?
+    input_expr = " ( move | fire | turn ) " # OK
+    input_expr = " ( move | fire ) " # OK
+    input_expr = " ( move fire ) " # OK, now
+
+    input_expr = " [ FILE ] ( move | fire | turn ) [ --speed 11 --angle 35 ] <when>\n"
+    # Resolved: '[' before speed parse as 'command' ?
+
+    input_expr = " [ --what [ now ] ] "	# embedding retained ? yes
 
     print(f"usage pattern = '{input_expr}'")
 
-    # Then parse tree is created out of the input_expr expression.
-    # parser.debug = True  => Error: dot: can't open docopt_peg_parser_model.dot
     parse_tree = parser.parse(input_expr)
 
     result = visit_parse_tree(parse_tree, DocOptListVisitor())
@@ -153,7 +157,8 @@ def flatten_dict(sx, indent=0):
 
 def flatten_chooser(chain_name, sx, indent=0):
     i = ' ' * indent
-    if sx[1][0] == f"terminal:{chain_name}":
+    # i = '' ; print(f"{i}flatten_chooser : {sx}")
+    if isinstance(sx[1], list) and sx[1][0] == f"terminal:{chain_name}":
         return [ sx[0], sx[1][1] ]
     return sx
 
@@ -223,7 +228,7 @@ def flatten_chain(chain_name, sx, indent=0):
     terminal = f"terminal:{chain_name}"
     listing  = f"listing:{chain_name}"
 
-    print(f"{i}: flatten_chain : enter : '{chain_name}' : sx = {repr(sx)}")
+    # print(f"{i}: flatten_chain : enter : '{chain_name}' : sx = {repr(sx)}")
 
     if not is_chain(chain_name, sx):
         # print(f"{i}: flatten_chain : leave : '{chain_name}' : not a chain")
