@@ -5,6 +5,12 @@ docopt-parser : Parser for the docopt language
 
 STATUS:
 
+The grammar is complete but in considerable testing remains.  And a
+grammar is not the full story.  A semantic analysis pass is required
+to sort out details that a grammar cannot.
+
+4/14 Operand section (a.k.a. positional arguments) completed.
+
 4/14 Now parsing usage patterns, program description and options section.
 
 4/13 Made significant headway with usage pattern parsing.
@@ -13,7 +19,7 @@ STATUS:
      docopt.peg.  Other python code is from prior PEG parser generator
      work that did not succeed.
 
-- - - - -
+-------------------------------
 
 docopt language parser using a formal grammar.
 

@@ -252,6 +252,20 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
 
     #--------------------------------------------------------------------------
 
+    def visit_operand_section(self, node, children):
+        return [ 'operand-section', children ]
+
+    def visit_operand_intro(self, node, children):
+        return [ 'operand-intro', children ]
+
+    def visit_operand_detail(self, node, children):
+        return [ 'operand-detail', children ]
+
+    def visit_operand_help(self, node, children):
+        return [ 'operand-help', ' '.join(children) ]
+
+    #--------------------------------------------------------------------------
+
     def visit_options_section(self, node, children):
         # return [ 'options-section', children ]
         return children
@@ -282,7 +296,6 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
         return [ 'long-with-gap-arg', children ]
 
     def visit_option_help(self, node, children):
-        # should gather into a single string
         return [ 'option-help', ' '.join(children) ]
 
     #--------------------------------------------------------------------------
@@ -325,10 +338,14 @@ if __name__ == "__main__":
 
     input_expr = """
 Usage :
-  copy -l
+  copy [options] <src> <dst>
 
 Test program 
 Line 2
+
+Positional Arguments :
+  <src>         File to be copied
+  <dst>         File to written
 
 Options :
   -w<word>      Word ...

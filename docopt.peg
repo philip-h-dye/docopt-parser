@@ -1,19 +1,8 @@
+// __version__ = '0.5.0'
+
 docopt = usage other* newline* EOF
 
-other = description / options_section
-// / positional_section
-
-// Program Description
-// -------------------
-
-description = &newline newline line+ newline
-line = !r'[-]' word+ newline
-word = r'[\S]+'
-
-// Positional Arguments
-// --------------------
-
-// positional_section =
+other = description / operand_section / options_section
 
 // Usage Patterns
 // --------------
@@ -45,10 +34,25 @@ long_with_eq_caps = r"--[\w]+=[A-Z][_A-Z]*"
 long_with_eq_angle = r"--[\w]+=<[-:\w]+>"
 
 operand = operand_all_caps / operand_angled
-operand_all_caps = r'\b[A-Z][_A-Z]*\b'
+operand_all_caps = r'\b[A-Z][_A-Z]+\b'
 operand_angled = r'<[-:\w]+>'
 
 command = string_no_whitespace
+
+// Program Description
+// -------------------
+
+description = &newline newline line+ newline
+line = !r'[-<]' !r'[A-Z][A-Z]' word+ newline
+word = r'[\S]+'
+
+// Operand / Positional Arguments with help text
+// ---------------------------------------------
+
+operand_section = newline* operand_intro? operand_detail+ newline*
+operand_intro = line
+operand_detail = operand operand_help? newline
+operand_help = word+
 
 // Options details with help text
 // ------------------------------
