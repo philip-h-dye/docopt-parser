@@ -4,7 +4,8 @@ docopt = expression+ EOF
 
 // usage_pattern
 
-expression = optional / required / argument
+expression = ( optional / required / argument )+
+
 optional = '[' choice ']'
 required = '(' choice ')'
 argument = option / operand / command
@@ -15,10 +16,9 @@ option = short / long
 // short option allowing for stacking or an immediate option-argument
 //   semantic analysis necessary to determine such
 short = r'-[\w]+'
-// long option allowing for stacking or an immediate option-argument
-long = long_opt ('=' long_arg )?
-long_opt = r'--[\w]+'
-long_arg = r'[\w]+'
+long = long_no_arg / long_with_arg
+long_no_arg = r'--[\w]+'
+long_with_arg = r'--[\w]+=[\w]+'
 
 operand = operand_all_caps / operand_angled
 operand_all_caps = r'\b[A-Z][_A-Z]*\b'
@@ -26,5 +26,6 @@ operand_angled = r'<[-:\w]+>'
 
 command = string_no_whitespace
 
-string_no_whitespace = r'\S+'
-
+// WEIRD: with \S, "( move fire )" parse to command '[', ... 
+// string_no_whitespace = r'\S+'
+string_no_whitespace = r'\w+'
