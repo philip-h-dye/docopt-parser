@@ -1,15 +1,23 @@
-Unix Utility Usage Grammar
---------------------------
+Docopt Language Grammar
+-----------------------
 
-Or, a formal grammar for the docopy language.
+- ✓ First identify which elements must be parsed and which (if any) may be discarded (or perhaps remain free form text).
 
-First identify which elements must be parsed and which (if any) may be discarded (or perhaps remain free form text).
+  * usage patterns
+  * program description
+  * positional argument descriptions
+  * options section : short, long with any arguments (if any) and help text
 
-Characterize the delineations of each section sufficiently to write regular expression matchers for their start and end, or span.
+- ✓ Characterize the delineations of each section sufficiently to write regular expression matchers for their start and end, or span.
 
-Write a grammar to parse to just the sections out as blocks of free form text.  This forms the framework within which the section parsers will operate.
+- Write a grammar to parse to just the sections out as blocks of free form text.  This forms the framework within which the section parsers will operate.
+  * ✓ usage patterns
+  * ✓ program description
+  * positional argument descriptions
+  * ✓ options section : short, long with any arguments (if any) and help text
 
-For each section independently write a grammar to parse the it.
-
-One by one, incorporate the section parsers into the framework.
-
+- One by one, incorporate the section parsers into the framework.
+  * ✓ usage patterns
+  * ✓ program description
+  * positional argument descriptions
+  * ✓ options section : short, long with any arguments (if any) and help text

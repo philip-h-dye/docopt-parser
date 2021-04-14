@@ -28,10 +28,21 @@ class DocOptParserPEG(object):
                 self.grammar_file = os.path.join(os.path.dirname(__file__),
                                                  GRAMMAR_FILE_NAME)
             self.grammar_text = slurp(self.grammar_file)
-        self.parser = arpeggio.cleanpeg.ParserPEG(self.grammar_text, "docopt", debug=self.debug)
+            
+            if '#' in self.grammar_text :
+                print("*** Wrong comment prefix, found '#' in grammar !")
+                sys.exit(1)
+            
+        self.parser = arpeggio.cleanpeg.ParserPEG \
+            (self.grammar_text, "docopt", reduce_tree=False, debug=self.debug)
 
-    def parse(self, input_expr):
+        self.parser.ws = '\r\t '
+
+    def parse(self, input_expr, print_raw=False):
         self.raw_parse_tree = self.parser.parse(input_expr)
+        if print_raw:
+            print(f"raw parse tree : {str(type(self.raw_parse_tree))}\n"
+                  f"{self.raw_parse_tree.tree_str()}\n")
         self.annotated_parse_tree = arpeggio.visit_parse_tree \
             (self.raw_parse_tree, DocOptAnnotationVisitor())
         self.parse_tree = self.clean_semantic_results()
@@ -52,9 +63,9 @@ class DocOptParserPEG(object):
         listing = 'listing:'
         listing_len = len(listing)
         terminal = 'terminal:'
-        terminal_len = len(listing)
+        terminal_len = len(terminal)
         def pass2_clean(sx):
-            if not isinstance(sx, list):
+            if not isinstance(sx, list) or len(sx) <= 0:
                 return sx
             if isinstance(sx[0], str):
                 name = sx[0]
@@ -117,6 +128,8 @@ def flatten_list(sx):
             return flatten_chooser('choice', out)
         if out[0] == 'choice':
             return flatten_chain('choice', out)
+        if out[0] == 'option-list':
+            return flatten_chain('option-list', out)
 
     return out
 
@@ -184,8 +197,19 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
     def visit_docopt(self, node, children):
         return children
 
+    #--------------------------------------------------------------------------
+
+    def visit_usage(self, node, children):
+        return children[1:]
+
+    def visit_usage_pattern(self, node, children):
+        return children
+
     def visit_expression(self, node, children):
         return children
+
+    def visit_program(self, node, children):
+        return [ 'program' , node.value ]
 
     def visit_optional(self, node, children):
         return [ 'optional' , children ]
@@ -208,17 +232,115 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
     def visit_command(self, node, children):
         return { 'command' : node.value }
 
+    #--------------------------------------------------------------------------
+
+    def visit_other(self, node, children):
+        if len(children) <= 0:
+            return None
+        return children
+
+    #--------------------------------------------------------------------------
+
+    def visit_description(self, node, children):
+        return [ 'description', '\n'.join(children) ]
+
+    def visit_line(self, node, children):
+        return ' '.join(children)
+
+    def visit_word(self, node, children):
+        return node.value
+
+    #--------------------------------------------------------------------------
+
+    def visit_options_section(self, node, children):
+        # return [ 'options-section', children ]
+        return children
+
+    def visit_option_detail(self, node, children):
+        return [ 'option-detail', children ]
+
+    def visit_option_list(self, node, children):
+        return [ 'option-list', children ]
+
+    def visit_option_single(self, node, children):
+        # return [ 'option-single', children ]
+        return children
+
+    def visit_short_no_arg(self, node, children):
+        return [ 'short-no-arg', node.value ]
+
+    def visit_short_with_arg(self, node, children):
+        return [ 'short-with-arg', children ]
+
+    def visit_long_no_arg(self, node, children):
+        return [ 'long-no-arg', node.value ]
+
+    def visit_long_with_arg(self, node, children):
+        return [ 'long-with-arg', children ]
+
+    def visit_long_with_gap_arg(self, node, children):
+        return [ 'long-with-gap-arg', children ]
+
+    def visit_option_help(self, node, children):
+        # should gather into a single string
+        return [ 'option-help', ' '.join(children) ]
+
+    #--------------------------------------------------------------------------
+
+    def visit_fragment (self, node, children):
+        return [ 'fragment', node.value ]
+    
+    #--------------------------------------------------------------------------
+
+    def visit_string_no_whitespace(self, node, children):
+        return node.value
+
+    def visit_newline(self, node, children):
+        return None
+
+    def visit_comma(self, node, children):
+        return None
+
 #------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     
     input_expr = "[ --what [ now ] ] ( move | fire | turn ) [ --speed 11 --angle 35 ] <when>"
 
-    print(f"usage pattern = '{input_expr}'")
+    input_expr = "copy SRC DST "
+    input_expr = "copy SRC DST \n"
+    input_expr = "copy SRC DST \n move FROM TO \n"
+
+    input_expr = "Usage : copy SRC DST \n move FROM TO \n\n  Test program"
+
+    input_expr = "Usage : copy SRC \n\n" # 
+
+    # input_expr = "Usage : copy1 \ncopy2 \n\n"
+
+    # input_expr = "Usage : test [mode] TARGET\n\n  Xy a program to "
+
+    # input_expr = "Usage : test [mode] TARGET\n\n  Xy a program to "
+
+    input_expr = "Usage : copy -l\n\n Test program \n"
+
+    input_expr = """
+Usage :
+  copy -l
+
+Test program 
+Line 2
+
+Options :
+  -w<word>      Word ...
+  --what=<q>    What ...
+  -l, --list    List ...
+"""
+
+    print(f"input = '{input_expr}'")
 
     parser = DocOptParserPEG()
     
-    parse_tree = parser.parse(input_expr)
+    parse_tree = parser.parse(input_expr, print_raw=True)
 
     pp(parse_tree)
 

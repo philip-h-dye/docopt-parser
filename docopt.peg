@@ -1,8 +1,28 @@
-// docopt language parser
+docopt = usage other* newline* EOF
 
-docopt = expression+ EOF
+other = description / options_section
+// / positional_section
 
-// usage_pattern
+// Program Description
+// -------------------
+
+description = &newline newline line+ newline
+line = !r'[-]' word+ newline
+word = r'[\S]+'
+
+// Positional Arguments
+// --------------------
+
+// positional_section =
+
+// Usage Patterns
+// --------------
+
+usage = newline* r'(?i)Usage\s*:' newline* usage_pattern+
+
+usage_pattern = program expression? newline
+
+program = string_no_whitespace
 
 expression = ( optional / required / argument )+
 
@@ -15,10 +35,14 @@ choice = expression ( '|' choice )?
 option = short / long
 // short option allowing for stacking or an immediate option-argument
 //   semantic analysis necessary to determine such
-short = r'-[\w]+'
-long = long_no_arg / long_with_arg
+short = short_no_arg / short_stacked
+short_no_arg = r'-[\w]'
+short_stacked = r'-[\w]+'
+long = long_no_arg / long_with_eq_arg
 long_no_arg = r'--[\w]+'
-long_with_arg = r'--[\w]+=[\w]+'
+long_with_eq_arg = long_with_eq_caps / long_with_eq_angle
+long_with_eq_caps = r"--[\w]+=[A-Z][_A-Z]*"
+long_with_eq_angle = r"--[\w]+=<[-:\w]+>"
 
 operand = operand_all_caps / operand_angled
 operand_all_caps = r'\b[A-Z][_A-Z]*\b'
@@ -26,6 +50,31 @@ operand_angled = r'<[-:\w]+>'
 
 command = string_no_whitespace
 
-// WEIRD: with \S, "( move fire )" parse to command '[', ... 
+// Options details with help text
+// ------------------------------
+
+options_section = newline* options_intro? option_detail+ newline*
+
+options_intro = line
+
+option_detail = option_list option_help? newline
+
+option_list = option_single (comma? option_list )?
+option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
+option_help = word+
+
+short_with_arg = short_no_arg operand
+long_with_arg = long_with_eq_arg / long_with_gap_arg
+long_with_gap_arg = long_no_arg operand
+
+// General Utility
+// ---------------
+
+newline = r'[\n]'
+
+comma = ','
+
 // string_no_whitespace = r'\S+'
 string_no_whitespace = r'\w+'
+
+// WEIRD: with \S, "[ move fire ]" '(' parsed to a command '[', ... 
