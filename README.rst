@@ -3,6 +3,13 @@ docopt-parser : Parser for the docopt language
 
 *This is not usable in any form at the moment.*
 
+STATUS:
+
+4/13 Made significant headway with usage pattern parsing.
+
+4/12 Switched to arpeggio for its better debug info.
+
+- - - - -
 
 docopt language parser using a formal grammar.
 

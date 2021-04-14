@@ -8,7 +8,7 @@ from tatsu.util import asjson
 
 slurp = lambda filename : [(f.read(), f.close()) for f in [open(filename,'r')]][0][0]
 
-GRAMMAR = slurp("unix-utility-usage.peg")
+GRAMMAR = slurp("docopt.peg")
 
 _indent = 4
 

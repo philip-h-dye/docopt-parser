@@ -1,134 +1,30 @@
-#
-# __version__ = 'Unix Utility Usage Grammar 0.1.3'
-#
-# Exploratory PEG Grammar for docopt style usaged text.
-#
-# References:
-#
-#   (docopt) Command-line interface description language
-#     http://docopt.org/
-#
-#   The Open Group Base Specifications Issue 7, 2018 edition
-#   IEEE Std 1003.1-2017 (Revision of IEEE Std 1003.1-2008)
-#   Copyright © 2001-2018 IEEE and The Open Group
-#     12. Utility Conventions
-#       12.1 Utility Argument Syntax
-#         https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html#tag_12_01
-#
-# Example:
-#
-#   Usage:
-#     my_program command --option <argument>
-#     my_program [<optional-argument>]
-#     my_program --another-option=<with-argument>
-#     my_program (--either-that-option | <or-this-argument>)
-#     my_program <repeating-argument> <repeating-argument>...
-#
-#------------------------------------------------------------------------------
-#
-# As I recall since the mid-1980's, there are several conventions extant for
-# comand line argument syntax.
-#
-# With respect to nomenclature, (options, option-arguments, and operands), per
-# Utility Argument Syntax, suffice for clarity.
-#
-# The Open Group Base Specifications Issue 7, 2018 edition, 12.1 Utility Argument Syntax :
-# 
-#   utility_name[-a][-b][-c option_argument] [-d|-e][-f[option_argument]][operand...]
-#
-#   The notation used for the SYNOPSIS sections imposes requirements on the implementors
-#   of the standard utilities and provides a simple reference for the application
-#   developer or system user.
-#
-#   The utility in the example is named utility_name. It is followed by options,
-#   option-arguments, and operands.  The arguments that consist of <hyphen-minus> characters
-#   and single letters or digits, such as 'a', are known as "options" (or, historically,
-#   "flags"). Certain options are followed by an "option-argument", as shown with
-#   [ -c option_argument]. The arguments following the last options and
-#   option-arguments are named "operands".
-#
-#------------------------------------------------------------------------------
-#
-# Options first ?  Last ? Mixed all together ?
-#
-# What I have seen most often is first such as with tar or cp.
-#
-# Options mixed, or interleaved with operands seems to have fallen out of favor.
-# A powerful technique when used judiciously, one can certainly shoot one's own
-# foot off if expected say options last behavior.
-#
-# If I recall correctly, docopt favored options last but supports options first
-# if so specified in the usage or indicated in an argument.
-#
-# I've prefer to detect the style from the usage examples.  There are probably
-# cases where that isn't feasible.
-#
-# With respect to mixed mode being, I favor not permitting it unless the
-# user requested such explicitly.
-#
-#------------------------------------------------------------------------------
+// docopt language parser
 
-@@grammar::UnixUtilityUsage
+docopt = expression+ EOF
 
-@@parseinfo :: True
+// usage_pattern
 
-start = /(?i)Usage:/ { usage_statment }+ $ ;
+expression = optional / required / argument
+optional = '[' choice ']'
+required = '(' choice ')'
+argument = option / operand / command
 
-# usage_statment = program:program usage_expression:expression <newline> ;
+choice = expression ( '|' choice )?
 
-usage_statment = program:program expression [ /\n/ ] ;
-#
-# *** Simply lost values !  Since I've enabled parseinfo, I tried it
-#     without 'usage_expression:'.  Not good at all.  For single.py with
-#     "Usage: hello <file>", "<file>" was silently dropped.
-#
-#     Switching from Tatsu to Parsimonious immediately.
-#
+option = short / long
+// short option allowing for stacking or an immediate option-argument
+//   semantic analysis necessary to determine such
+short = r'-[\w]+'
+// long option allowing for stacking or an immediate option-argument
+long = long_opt ('=' long_arg )?
+long_opt = r'--[\w]+'
+long_arg = r'[\w]+'
 
-program = /\w[-_\w]*/ ;
+operand = operand_all_caps / operand_angled
+operand_all_caps = r'\b[A-Z][_A-Z]*\b'
+operand_angled = r'<[-:\w]+>'
 
-expression
-    =
-    | expression factor
-    | factor
-    ;
+command = string_no_whitespace
 
-factor
-    =
-    | '(' factor '|' ~ expression ')'
-    | '(' expression ')'
-    | '[' expression ']'
-    | atom
-    ;
+string_no_whitespace = r'\S+'
 
-atom
-    = 
-    | atom_option_long:option_long
-    | atom_option_short:option_short
-    | atom_argument:argument
-    | atom_command:command
-    ;
-
-option_long
-    =
-    | opt_long_w_arg:/--[a-zA-Z][-\w]*/ ('='|/\s/) opt_long_arg:argument
-    | opt_long:/--[a-zA-Z][-\w]*/
-    ;
-
-option_short
-    = opt_short_stacked:/-[a-zA-Z]{2,}/
-    | opt_short_w_arg:/-[a-zA-Z]/ [/\s/] opt_short_arg:argument
-    | opt_short:/-[a-zA-Z]/
-    ;
-
-argument
-    =
-    | /[A-Z]+/ '...'
-    | /<[-\w]+>/ '...'
-    | /[A-Z]+/
-    | /<[-\w]+>/
-    ;
-
-command = command:/\w+/ ;
-
-#------------------------------------------------------------------------------

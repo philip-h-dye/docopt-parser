@@ -1,10 +1,11 @@
 #
 
 test_cases = [
-    'Usage: hello FILE',
-    'Usage: hello -abc --why <file>',
-    'Usage: hello FILE PLAN NAME <name> <file> <task>',
+    'Usage:  hello FILE',
+    'Usage:  hello FILE PLAN NAME <name> <file> <task>',
     "Usage:  my_program command --option <argument>",
+    'Usage:  hello -abc --why <file>',
+    #
     "Usage:  my_program [<optional-argument>]",
     "Usage:  my_program --another-option=<with-argument>",
     "Usage:  my_program (--either-that-option | <or-this-argument>)",
