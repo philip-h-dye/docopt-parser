@@ -4,12 +4,12 @@ docopt = intro? usage other_sections newline* EOF
 
 other_sections = other*
 
-other = description / operand_section / options_section
+other = blankline ( operand_section / options_section / description )
 
 // Intro -- typically a single line 
 // -----
 
-intro = newline* !usage_entry line+ newline
+intro = newline* !usage_entry line+ newline+
 
 // Usage Patterns
 // --------------
@@ -52,14 +52,14 @@ command = string_no_whitespace
 // Program Description
 // -------------------
 
-description = &newline newline line+ newline
-line = !r'[-<]' !r'[A-Z][A-Z]' word+ newline
+description = line+
+line = !operand_or_option word+ newline
 word = r'[\S]+'
 
 // Operand / Positional Arguments with help text
 // ---------------------------------------------
 
-operand_section = newline* operand_intro? operand_detail+ newline*
+operand_section = operand_intro? operand_detail+
 operand_intro = line
 operand_detail = operand operand_help? newline
 operand_help = word+
@@ -84,7 +84,11 @@ long_with_gap_arg = long_no_arg operand
 // General Utility
 // ---------------
 
+operand_or_option = r'([-<]|[A-Z][A-Z])'
+
 newline = r'[\n]'
+
+blankline = &newline newline+
 
 comma = ','
 
