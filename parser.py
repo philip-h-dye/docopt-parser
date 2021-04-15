@@ -365,26 +365,6 @@ Usage :
   copy [options] <src> <dst>
 
 Test program
-Line 2
-
-Positional Arguments :
-  <src>         File to be copied
-  <dst>         File to written
-
-Intervening description.
-
-Options :
-  -w<word>      Word ...
-  --what=<q>    What ...
-  -l, --list    List ...
-
-Trailing description."""
-
-    usage = """
-Usage :
-  copy [options] <src> <dst>
-
-Test program
 Line 2"""
 
     usage = """
@@ -414,9 +394,28 @@ Intervening description.
 Options :
   -w<word>      Word ...
   --what=<q>    What ...
+  -l, --list    List ..."""
+
+    usage = """
+Usage :
+  copy [options] <src> <dst>
+
+Test program
+Line 2
+
+Positional Arguments :
+  <src>         File to be copied
+  <dst>         File to written
+
+Intervening description.
+
+Options :
+  -w<word>      Word ...
+  --what=<q>    What ...
   -l, --list    List ...
 
-"""
+Trailing description."""
+
     return usage
 
 #------------------------------------------------------------------------------
@@ -451,6 +450,8 @@ Another description.
 
 """
     return usage
+
+#------------------------------------------------------------------------------
 
 def choice_wo_grouping():
     usage = """
@@ -521,9 +522,11 @@ Options :
 Trailing text.
 And trailing line 2.
 """
+    usage = fragments()
+
     print(f"input = '{usage}'")
 
-    parser = DocOptParserPEG(debug=True)
+    parser = DocOptParserPEG() # debug=True)
 
     parse_tree = parser.parse(usage) # , print_raw=True)
 

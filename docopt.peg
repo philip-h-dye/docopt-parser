@@ -53,25 +53,27 @@ command = string_no_whitespace
 // -------------------
 
 description = line+
-line = !operand_or_option word+ newline
+line = !operand_or_option ( word+ newline / word+ EOF )
 word = string_no_whitespace
 
 // Operand / Positional Arguments with help text
 // ---------------------------------------------
 
-operand_section = operand_intro? operand_detail+
+operand_section = operand_intro? operand_line+
 operand_intro = line
-operand_detail = operand operand_help? newline
+operand_line = operand_detail newline / operand_detail EOF
+operand_detail = operand operand_help?
 operand_help = word+ ( newline !operand_or_option operand_help )*
 
 // Options details with help text
 // ------------------------------
 
-options_section = newline* options_intro? option_detail+ newline*
+options_section = newline* options_intro? option_line+ newline*
 
 options_intro = line
 
-option_detail = option_list option_help? newline
+option_line = option_detail newline / option_detail EOF
+option_detail = option_list option_help?
 
 option_list = option_single (comma? option_list )?
 option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
@@ -85,7 +87,7 @@ long_with_gap_arg = long_no_arg operand
 // -------------
 
 trailing = trailing_line+
-trailing_line = word+ newline
+trailing_line = word+ newline / word+ EOF
 
 // General Utility
 // ---------------
