@@ -1,4 +1,4 @@
-// __version__ = '0.5.5'
+// __version__ = '0.5.6'
 
 docopt = intro? usage other_sections newline* EOF
 
@@ -54,7 +54,7 @@ command = string_no_whitespace
 
 description = line+
 line = !operand_or_option word+ newline
-word = r'[\S]+'
+word = string_no_whitespace
 
 // Operand / Positional Arguments with help text
 // ---------------------------------------------
@@ -92,7 +92,4 @@ blankline = &newline newline+
 
 comma = ','
 
-// string_no_whitespace = r'\S+'
-string_no_whitespace = r'\w+'
-
-// WEIRD: with \S, "[ move fire ]" '(' parsed to a command '[', ... 
+string_no_whitespace = r'[^\s\n]+'
