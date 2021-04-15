@@ -278,7 +278,10 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
         return node.value
 
     def visit_trailing (self, node, children):
-        return [ 'description', '\n'.join(children) ]
+        return [ 'trailing', '\n'.join(children) ]
+
+    def visit_trailing_line (self, node, children):
+        return ' '.join(children)
 
     def visit_fragment(self, node, children):
         return ' '.join(children)
@@ -449,6 +452,23 @@ Another description.
 """
     return usage
 
+def choice_wo_grouping():
+    usage = """
+Usage :
+  copy <src> <dst>
+  copy -h | --help
+
+Traditional description.
+Second traditional description line.
+
+Positional Arguments :
+  <dll>    DLL to munge
+
+Options :
+  -w       What
+"""
+    return usage
+
 #------------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -479,15 +499,13 @@ if __name__ == "__main__":
     usage = slurp("ref/usage/my-program-2/doc.txt")
     usage = slurp("ref/usage/my-program-3/doc.txt")
 
-    usage = slurp("ref/usage/rsync/doc.txt")
-
     usage = slurp("ref/usage/exportlib/doc.txt")
 
-    usage = "Usage : copy SRC DST \n move FROM TO \n\n"
+    usage = slurp("ref/usage/rsync/doc.txt")
 
-    # usage = slurp("ref/usage/exportlib/doc.txt")
+    _usage = "Usage : copy SRC DST \n move FROM TO \n\n"
 
-    usage = """
+    _usage = """
 Usage :
   copy <src> <dst>
 
@@ -499,6 +517,9 @@ Positional Arguments :
 
 Options :
   -w       What
+
+Trailing text.
+And trailing line 2.
 """
     print(f"input = '{usage}'")
 

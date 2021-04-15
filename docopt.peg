@@ -1,6 +1,6 @@
 // __version__ = '0.5.6'
 
-docopt = intro? usage other_sections newline* EOF
+docopt = intro* usage other_sections trailing* newline* EOF
 
 other_sections = other*
 
@@ -62,7 +62,7 @@ word = string_no_whitespace
 operand_section = operand_intro? operand_detail+
 operand_intro = line
 operand_detail = operand operand_help? newline
-operand_help = word+
+operand_help = word+ ( newline !operand_or_option operand_help )*
 
 // Options details with help text
 // ------------------------------
@@ -75,11 +75,17 @@ option_detail = option_list option_help? newline
 
 option_list = option_single (comma? option_list )?
 option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
-option_help = word+
+option_help = word+ ( newline !operand_or_option option_help )*
 
 short_with_arg = short_no_arg operand
 long_with_arg = long_with_eq_arg / long_with_gap_arg
 long_with_gap_arg = long_no_arg operand
+
+// Trailing Text -- catchall
+// -------------
+
+trailing = trailing_line+
+trailing_line = word+ newline
 
 // General Utility
 // ---------------
