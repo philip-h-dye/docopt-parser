@@ -1,4 +1,4 @@
-// __version__ = '0.5.3'
+// __version__ = '0.5.5'
 
 docopt = intro? usage other_sections newline* EOF
 
@@ -31,21 +31,21 @@ repeated = '...'
 
 choice = expression ( '|' choice )?
 
-option = short / long
+option = long / short
 // short option allowing for stacking or an immediate option-argument
 //   semantic analysis necessary to determine such
-short = short_no_arg / short_stacked
+short = short_stacked / short_no_arg
 short_no_arg = r'-[\w]'
 short_stacked = r'-[\w]+'
 long = long_with_eq_arg / long_no_arg
-long_no_arg = r'--[\w]+'
+long_no_arg = r'--[\w][-_\w]*'
 long_with_eq_arg = long_with_eq_caps / long_with_eq_angle
-long_with_eq_caps = r"--[\w]+=[A-Z][_A-Z]*"
-long_with_eq_angle = r"--[\w]+=<[-:\w]+>"
+long_with_eq_caps = r"--[\w][-_\w]*=[A-Z][_A-Z]*"
+long_with_eq_angle = r"--[\w][-_\w]*=<[-_:\w]+>"
 
 operand = operand_all_caps / operand_angled
 operand_all_caps = r'\b[A-Z][_A-Z]+\b'
-operand_angled = r'<[-:\w]+>'
+operand_angled = r'<[-_:\w]+>'
 
 command = string_no_whitespace
 
