@@ -1,18 +1,22 @@
-// __version__ = '0.5.0'
+// __version__ = '0.5.3'
 
-docopt = intro? usage other* newline* EOF
+docopt = intro? usage other_sections newline* EOF
+
+other_sections = other*
 
 other = description / operand_section / options_section
 
 // Intro -- typically a single line 
 // -----
 
-intro = newline* !r'(?i)Usage\s*:' line+ newline
+intro = newline* !usage_entry line+ newline
 
 // Usage Patterns
 // --------------
 
-usage = newline* r'(?i)Usage\s*:' newline* usage_pattern+
+usage = newline* usage_entry newline* usage_pattern+
+
+usage_entry = r'(?i)Usage\s*:'
 
 usage_pattern = program expression? newline
 
