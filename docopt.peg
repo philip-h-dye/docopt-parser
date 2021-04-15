@@ -18,7 +18,7 @@ usage = newline* usage_entry newline* usage_pattern+
 
 usage_entry = r'(?i)Usage\s*:'
 
-usage_pattern = program expression? newline
+usage_pattern = program choice? newline
 
 program = string_no_whitespace
 
