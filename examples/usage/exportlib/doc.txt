@@ -1,0 +1,21 @@
+Usage: exportlib [options] <dll>...
+
+  Generate an import library from a DLL with symbols.  The import library
+  will be droped alongside <dll> where it must be in order to to be useful.
+
+  If <dll>'s directory is not writable, the import library will be placed
+  in the current working directory.  Of absolutely no use there, but it
+  is the best one can do under the circumstances.
+
+Positional arguments :
+  <dll>            The DLL file for which an import will be generated.
+
+Optional arguments :
+  -q, --quiet      Quiet unnessary informational output.
+  -s, --silent     Silence even warnings like output to '.' due
+                   to an unwritable <dll> directory.
+  -i, --ignore     Ignore errors, simply continue on to the next <dll>.
+  -n, --no-errors  Silence only the error messages.
+  -d, --debug      Show internal handling such as parsed arguments.
+  -h, --help       Show this help message and exit.
+  --version        Show program version and exit.

@@ -1,0 +1,2020 @@
+[0m[37m[[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33mintro[0m[33m'[0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mrsync version 3.2.4dev protocol version 31[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mCopyright (C) 1996-2020 by Andrew Tridgell, Wayne Davison, and [0m[33m'[0m
+                [0m[33m'[0m[33mothers.[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mWeb site: https://rsync.samba.org/[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mCapabilities:[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33m64-bit files, 64-bit inums, 64-bit timestamps, 64-bit long ints,[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33msocketpairs, hardlinks, no hardlink-specials, symlinks, IPv6, [0m[33m'[0m
+                [0m[33m'[0m[33matimes,[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mbatchfiles, inplace, append, ACLs, xattrs, optional [0m[33m'[0m
+                [0m[33m'[0m[33mprotect-args, iconv,[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33msymtimes, prealloc, stop-at, no crtimes[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mOptimizations:[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mno SIMD, asm, openssl-crypto[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mChecksum list:[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mxxh128 xxh3 xxh64 (xxhash) md5 md4 none[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mCompress list:[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mzstd lz4 zlibx zlib none[0m[33m'[0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33mintro[0m[33m'[0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mrsync comes with ABSOLUTELY NO WARRANTY. This is free software, [0m[33m'[0m
+                [0m[33m'[0m[33mand you[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mare welcome to redistribute it under certain conditions. See the [0m[33m'[0m
+                [0m[33m'[0m[33mGNU[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mGeneral Public Licence for details.[0m[33m'[0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33mintro[0m[33m'[0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mrsync is a file transfer program capable of efficient remote [0m[33m'[0m
+                [0m[33m'[0m[33mupdate[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mvia a fast differencing algorithm.[0m[33m'[0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mDEST[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:DEST[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m::DEST[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync://[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:PORT[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m/DEST[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:SRC[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mDEST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m::SRC[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mDEST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mOPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync://[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mUSER[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m@[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mHOST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:PORT[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m/SRC[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mDEST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mThe[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33m':'[0m[33m"[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33musages[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mconnect[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mvia[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mremote[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mshell,[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mwhile[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33m'::'[0m[33m"[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m&[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33m'rsync://'[0m[33m"[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33musages[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mconnect[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mto[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33man[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrsync[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mdaemon,[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mand[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrequire[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSRC[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mor[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mDEST[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mto[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mstart[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mwith[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33ma[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mmodule[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mname.[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33moptions-section[0m[33m'[0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[37m[[0m[0m[33m'[0m[33moptions-intro[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mOptions[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--verbose[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-v[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mincrease verbosity[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--info=FLAGS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mfine-grained informational verbosity[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--debug=FLAGS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mfine-grained debug verbosity[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--stderr[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m=e|a|c change stderr output mode (default: errors)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--quiet[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-q[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33msuppress non-error messages[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--no-motd[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33msuppress daemon-mode MOTD[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--checksum[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-c[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mskip based on checksum, not mod-time & size[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--archive[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-a[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33marchive mode; equals -rlptgoD (no -H,-A,-X)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--no-OPTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mturn off an implied OPTION (e.g. --no-D)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--recursive[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-r[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrecurse into directories[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--relative[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-R[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33muse relative path names[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--no-implied-dirs[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mdon't send implied dirs with --relative[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--backup[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-b[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mmake backups (see --suffix & --backup-dir)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--backup-dir=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mmake backups into hierarchy based in DIR[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--suffix=SUFFIX[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mbackup suffix (default ~ w/o --backup-dir)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--update[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-u[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mskip files that are newer on the receiver[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--inplace[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mupdate destination files in-place[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--append[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mappend data onto shorter files[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--append-verify[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--append[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mw/old data in file checksum[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--dirs[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-d[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mtransfer directories without recursing[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--mkpath[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mcreate the destination's path component[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--links[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-l[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcopy symlinks as symlinks[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--copy-links[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-L[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mtransform symlink into referent file/dir[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--copy-unsafe-links[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33monly "unsafe" symlinks are transformed[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--safe-links[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mignore symlinks that point outside the tree[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--munge-links[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mmunge symlinks to make them safe & unusable[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--copy-dirlinks[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-k[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mtransform symlink to dir into referent dir[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--keep-dirlinks[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-K[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mtreat symlinked dir on receiver as dir[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--hard-links[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-H[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve hard links[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--perms[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-p[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve permissions[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--executability[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-E[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve executability[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--chmod=CHMOD[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33maffect file and/or directory permissions[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--acls[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-A[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve ACLs (implies --perms)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--xattrs[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-X[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve extended attributes[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--owner[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-o[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve owner (super-user only)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--group[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-g[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve group[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--devices[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve device files (super-user only)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--specials[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve special files[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-D[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33msame as --devices --specials[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--times[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-t[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve modification times[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--atimes[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-U[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve access (use) times[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--open-noatime[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mavoid changing the atime on opened files[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--crtimes[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-N[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mpreserve create times (newness)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--omit-dir-times[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-O[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33momit directories from --times[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--omit-link-times[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-J[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33momit symlinks from --times[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--super[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mreceiver attempts super-user activities[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--fake-super[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mstore/recover privileged attrs using xattrs[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--sparse[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-S[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mturn sequences of nulls into sparse blocks[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--preallocate[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mallocate dest files before writing them[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--write-devices[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mwrite to devices as files (implies --inplace)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--dry-run[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-n[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mperform a trial run with no changes made[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--whole-file[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-W[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mcopy files whole (w/o delta-xfer algorithm)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--checksum-choice=STR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mchoose the checksum algorithm (aka --cc)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--one-file-system[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-x[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mdon't cross filesystem boundaries[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--block-size=SIZE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-B[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mforce a fixed checksum block-size[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--rsh=COMMAND[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-e[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mspecify the remote shell to use[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--rsync-path=PROGRAM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mspecify the rsync to run on remote machine[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--existing[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mskip creating new files on receiver[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ignore-existing[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mskip updating files that exist on receiver[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--remove-source-files[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33msender removes synchronized files (non-dir)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--del[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33man alias for --delete-during[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mdelete extraneous files from dest dirs[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-before[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mreceiver deletes before xfer, not during[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-during[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mreceiver deletes during the transfer[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-delay[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mfind deletions during, delete after[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-after[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mreceiver deletes after transfer, not during[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-excluded[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33malso delete excluded files from dest dirs[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ignore-missing-args[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mignore missing source args without error[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delete-missing-args[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mdelete missing source args from destination[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ignore-errors[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mdelete even if there are I/O errors[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--force[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mforce deletion of dirs even if not empty[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--max-delete=NUM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mdon't delete more than NUM files[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--max-size=SIZE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mdon't transfer any file larger than SIZE[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--min-size=SIZE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m"[0m[33mdon't transfer any file smaller than SIZE[0m[33m"[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--max-alloc=SIZE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mchange a limit relating to memory alloc[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--partial[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mkeep partially transferred files[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--partial-dir=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mput a partially transferred file into DIR[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--delay-updates[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mput all updated files into place at end[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--prune-empty-dirs[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-m[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mprune empty directory chains from file-list[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--numeric-ids[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m"[0m[33mdon't map uid/gid values by user/group name[0m[33m"[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--usermap=STRING[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcustom username mapping[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--groupmap=STRING[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcustom groupname mapping[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--chown=USER[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:GROUP simple username/groupname mapping[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--timeout=SECONDS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mset I/O timeout in seconds[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--contimeout=SECONDS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mset daemon connection timeout in seconds[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ignore-times[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-I[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m"[0m[33mdon't skip files that match size and time[0m[33m"[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--size-only[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mskip files that match in size[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--modify-window=NUM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m, -@ set the accuracy for mod-time comparisons[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--temp-dir=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-T[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcreate temporary files in directory DIR[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--fuzzy[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-y[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mfind similar file for basis if no dest file[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--compare-dest=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33malso compare destination files relative to DIR[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--copy-dest=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m... and include copies of unchanged files[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--link-dest=DIR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mhardlink to files in DIR when unchanged[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--compress[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-z[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcompress file data during the transfer[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--compress-choice=STR[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mchoose the compression algorithm (aka --zc)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--compress-level=NUM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mexplicitly set compression level (aka --zl)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--skip-compress=LIST[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mskip compressing files with suffix in LIST[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--cvs-exclude[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-C[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mauto-ignore files in the same way CVS does[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--filter=RULE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-f[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33madd a file-filtering RULE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-F[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m"[0m[33msame as --filter='dir-merge /.rsync-filter' [0m[33m"[0m
+                            [0m[33m"[0m[33moption-help repeated: --filter='- .rsync-filter'[0m[33m"[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--exclude=PATTERN[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mexclude files matching PATTERN[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--exclude-from=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mread exclude patterns from FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--include=PATTERN[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33mdon't exclude files matching PATTERN[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--include-from=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mread include patterns from FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--files-from=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mread list of source-file names from FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--from0[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-0[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mall *-from/filter files are delimited by 0s[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--protect-args[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-s[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mno space-splitting; wildcard chars only[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--copy-as=USER[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m[:GROUP] specify user & optional group for the copy[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--address=ADDRESS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mbind address for outgoing socket to daemon[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--port=PORT[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mspecify double-colon alternate port number[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--sockopts=OPTIONS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mspecify custom TCP options[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--blocking-io[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33muse blocking I/O for the remote shell[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--outbuf=N[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m|L|B set out buffering to None, Line, or Block[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--stats[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mgive some file-transfer stats[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--8-bit-output[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-8[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mleave high-bit chars unescaped in output[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--human-readable[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-h[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33moutput numbers in a human-readable format[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--progress[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mshow progress during transfer[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-P[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33msame as --partial --progress[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--itemize-changes[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-i[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33moutput a change-summary for all updates[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--remote-option=OPT[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-M[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33msend OPTION to the remote side only[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--out-format=FORMAT[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33moutput updates using the specified FORMAT[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--log-file=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m"[0m[33mlog what we're doing to the specified FILE[0m[33m"[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--log-file-format=FMT[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mlog updates using the specified FMT[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--password-file=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mread daemon-access password from FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--early-input=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m"[0m[33muse FILE for daemon's early exec input[0m[33m"[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--list-only[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mlist the files instead of copying them[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--bwlimit=RATE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mlimit socket I/O bandwidth[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--stop-after=MINS[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mStop rsync after MINS minutes have elapsed[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--stop-at[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m=y-m-dTh:m Stop rsync at the specified point in time[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--write-batch=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mwrite a batched update to FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--only-write-batch=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mlike --write-batch but w/o updating dest[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--read-batch=FILE[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mread a batched update from FILE[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--protocol=NUM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33mforce an older protocol version to be used[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--iconv=CONVERT_SPEC[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mrequest charset conversion of filenames[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--checksum-seed=NUM[0m[33m'[0m[0m[37m][0m
+                        [0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mset block/file checksum seed (advanced)[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ipv4[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-4[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mprefer IPv4[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ipv6[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-6[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mprefer IPv6[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--version[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-V[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mprint the version + other info and exit[0m[33m'[0m[0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--help[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-h[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                        [0m[33m'[0m[33m(*) show this help (* -h is help only on its own)[0m[33m'[0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33mtrailing[0m[33m'[0m[0m[37m,[0m
+        [0m[33m'[0m[33mUse "rsync --daemon --help" to see the daemon-mode command-line [0m[33m'[0m
+            [0m[33m'[0m[33moptions.[0m[33m[0m[37m\n[0m[33m[0m[33mPlease see the rsync(1) and rsyncd.conf(5) man pages for [0m[33m'[0m
+            [0m[33m'[0m[33mfull documentation.[0m[33m[0m[37m\n[0m[33m[0m[33mSee https://rsync.samba.org/ for updates, bug [0m[33m'[0m
+            [0m[33m'[0m[33mreports, and answers[0m[33m'[0m
+    [0m[37m][0m
+[0m[37m][0m

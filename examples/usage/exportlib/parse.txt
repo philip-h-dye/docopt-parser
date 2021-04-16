@@ -1,0 +1,137 @@
+[0m[37m[[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mexportlib[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33moptions[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+            [0m[37m[[0m[0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-angled[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m<dll>[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mdescription[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mGenerate an import library from a DLL with symbols. The import [0m[33m'[0m
+                [0m[33m'[0m[33mlibrary[0m[33m[0m[37m\n[0m[33m[0m[33mwill be droped alongside <dll> where it must be in [0m[33m'[0m
+                [0m[33m'[0m[33morder to to be useful.[0m[33m'[0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mdescription[0m[33m'[0m[0m[37m,[0m
+            [0m[33m"[0m[33mIf <dll>'s directory is not writable, the import library will be [0m[33m"[0m
+                [0m[33m"[0m[33mplaced[0m[33m[0m[37m\n[0m[33m[0m[33min the current working directory. Of absolutely no use [0m[33m"[0m
+                [0m[33m"[0m[33mthere, but it[0m[33m[0m[37m\n[0m[33m[0m[33mis the best one can do under the circumstances.[0m[33m"[0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33moperand-section[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand-intro[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mPositional[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33marguments[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moperand-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-angled[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m<dll>[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moperand-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m'[0m[33mThe DLL file for which an import will be [0m[33m'[0m
+                                [0m[33m'[0m[33mgenerated.[0m[33m'[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33moptions-section[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptions-intro[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mOptional[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33marguments[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m:[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-q[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--quiet[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m'[0m[33mQuiet unnessary informational output.[0m[33m'[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-s[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--silent[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m"[0m[33mSilence even warnings like output to '.' due [0m[33m"[0m
+                                [0m[33m"[0m[33moption-help to an unwritable <dll> directory.[0m[33m"[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-i[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--ignore[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m'[0m[33mIgnore errors, simply continue on to the next [0m[33m'[0m
+                                [0m[33m'[0m[33m<dll>.[0m[33m'[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-n[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--no-errors[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mSilence only the error messages.[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-d[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--debug[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m'[0m[33mShow internal handling such as parsed arguments.[0m[33m'[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-h[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--help[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mShow this help message and exit.[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--version[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mShow program version and exit.[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m
+[0m[37m][0m

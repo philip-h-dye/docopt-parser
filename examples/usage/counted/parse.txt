@@ -1,0 +1,51 @@
+[0m[37m[[0m
+    [0m[37m[[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m[0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcounted_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--help[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcounted_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mshort-stacked[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-v[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcounted_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mgo[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mcommand[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mgo[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcounted_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33mrequired[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mlong-with-eq-angle[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--path=<path>[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mcounted_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-angled[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m<file>[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-angled[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m<file>[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[33m'[0m[33mdescription[0m[33m'[0m[0m[37m,[0m
+        [0m[33m'[0m[33mTry: counted_example.py -vvvvvvvvvv[0m[33m[0m[37m\n[0m[33m[0m[33mcounted_example.py go go[0m[33m[0m[37m\n[0m[33m'[0m
+            [0m[33m'[0m[33mcounted_example.py --path ./here --path ./there[0m[33m[0m[37m\n[0m[33m[0m[33mcounted_example.py [0m[33m'[0m
+            [0m[33m'[0m[33mthis.txt that.txt[0m[33m'[0m
+    [0m[37m][0m
+[0m[37m][0m

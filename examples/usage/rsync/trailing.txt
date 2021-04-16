@@ -1,0 +1,4 @@
+
+Use "rsync --daemon --help" to see the daemon-mode command-line options.
+Please see the rsync(1) and rsyncd.conf(5) man pages for full documentation.
+See https://rsync.samba.org/ for updates, bug reports, and answers

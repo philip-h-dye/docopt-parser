@@ -1,0 +1,128 @@
+[0m[37m[[0m
+    [0m[37m[[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33marguments_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-stacked[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-vqrh[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moptional[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mFILE[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33mrepeated[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m...[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33musage-pattern[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33mprogram[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33marguments_example.py[0m[33m'[0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33mrequired[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33mchoice[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--left[0m[33m'[0m[0m[37m][0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--right[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mCORRECTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mFILE[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m[0m[37m,[0m
+    [0m[37m[[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33mdescription[0m[33m'[0m[0m[37m,[0m
+            [0m[33m'[0m[33mProcess FILE and optionally apply correction to either left-hand [0m[33m'[0m
+                [0m[33m'[0m[33mside or[0m[33m[0m[37m\n[0m[33m[0m[33mright-hand side.[0m[33m'[0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33moperand-section[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33moperand-intro[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mArguments:[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moperand-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mFILE[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33moptional input file[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moperand-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moperand[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33moperand-all-caps[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mCORRECTION[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moperand-help[0m[33m'[0m[0m[37m,[0m
+                            [0m[33m'[0m[33mcorrection angle, needs FILE, --left or --right [0m[33m'[0m
+                                [0m[33m'[0m[33mto be present[0m[33m'[0m
+                        [0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m[0m[37m,[0m
+        [0m[37m[[0m
+            [0m[33m'[0m[33moptions-section[0m[33m'[0m[0m[37m,[0m
+            [0m[37m[[0m
+                [0m[37m[[0m[0m[33m'[0m[33moptions-intro[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mOptions:[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-h[0m[33m'[0m[0m[37m][0m[0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--help[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-v[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mverbose mode[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-q[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mquiet mode[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mshort-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m-r[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33mmake report[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--left[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33muse left-hand side[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m[0m[37m,[0m
+                [0m[37m[[0m
+                    [0m[33m'[0m[33moption-detail[0m[33m'[0m[0m[37m,[0m
+                    [0m[37m[[0m
+                        [0m[37m[[0m
+                            [0m[33m'[0m[33moption-list[0m[33m'[0m[0m[37m,[0m
+                            [0m[37m[[0m[0m[33m'[0m[33moption-single[0m[33m'[0m[0m[37m,[0m [0m[37m[[0m[0m[33m'[0m[33mlong-no-arg[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33m--right[0m[33m'[0m[0m[37m][0m[0m[37m][0m
+                        [0m[37m][0m[0m[37m,[0m
+                        [0m[37m[[0m[0m[33m'[0m[33moption-help[0m[33m'[0m[0m[37m,[0m [0m[33m'[0m[33muse right-hand side[0m[33m'[0m[0m[37m][0m
+                    [0m[37m][0m
+                [0m[37m][0m
+            [0m[37m][0m
+        [0m[37m][0m
+    [0m[37m][0m
+[0m[37m][0m

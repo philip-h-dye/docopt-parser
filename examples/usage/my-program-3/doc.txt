@@ -1,0 +1,5 @@
+Usage: my_program [-alh] <path>
+
+-a, --all             List everything.
+-l, --long            Long output.
+-h, --human-readable  Display in human-readable format.

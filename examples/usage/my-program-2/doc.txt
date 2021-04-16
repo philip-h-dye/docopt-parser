@@ -1,0 +1,5 @@
+Usage: my_program [options] <path>
+
+--all             List everything.
+--long            Long output.
+--human-readable  Display in human-readable format.
