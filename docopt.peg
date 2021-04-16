@@ -1,4 +1,4 @@
-// __version__ = '0.5.7'
+// __version__ = '0.5.8'
 
 docopt = intro* usage other_sections trailing* newline* EOF
 
@@ -19,7 +19,7 @@ usage = newline* usage_entry newline* usage_line+
 usage_entry = r'(?i)Usage\s*:'
 
 usage_line = usage_pattern newline / usage_pattern EOF
-usage_pattern = program choice?
+usage_pattern = OR? program choice?
 
 program = string_no_whitespace
 
@@ -50,7 +50,8 @@ operand = operand_all_caps / operand_angled
 operand_all_caps = r'\b[A-Z][_A-Z]+\b'
 operand_angled = r'<[-_:\w]+>'
 
-command = string_no_whitespace
+command = r'[^\s\n\[\]\(\)\|]+'
+// Without \[\]\(\)\|, optional/required/choice become sequences of commands
 
 // Program Description
 // -------------------
@@ -101,6 +102,8 @@ blankline = &newline newline+
 
 newline = r'[\n]'
 
+OR = 'or'
+
 LBRACKET = '['
 RBRACKET = ']'
 LPAREN = '('
@@ -108,5 +111,4 @@ RPAREN = ')'
 BAR = '|'
 COMMA = ','
 
-string_no_whitespace = r'[^\s\n\[\]\(\)\|]+'
-// Without \[\]\(\)\|, optional/required/choice become sequences of commands
+string_no_whitespace = r'[^\s\n]+'

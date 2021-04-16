@@ -53,17 +53,27 @@ class DocOptParserPEG(object):
 
         self.parse_tree = DocOptSimplifyVisitor().visit(self.raw_parse_tree)
 
-        apply_to_tree(self.parse_tree, operand_flatten_chain)
+        apply_to_tree(self.parse_tree, operand_flatten_repeating_chain)
 
         # order is critical: flatten chain, strip fake, remove bars
         apply_to_tree(self.parse_tree, choice_flatten_chain)
         apply_to_tree(self.parse_tree, choice_strip_fake)
         apply_to_tree(self.parse_tree, choice_remove_bars)
 
-        implict_argument_grouping_strip(self.parse_tree)
-        
-        # Go last or messes up choices: 'Usage: copy -h | --help | --foo'
-        # apply_to_tree(self.parse_tree, flatten_unnecessary_lists)
+        apply_to_tree(self.parse_tree, optlist_flatten_chain)
+
+        apply_to_tree(self.parse_tree, implict_argument_grouping_strip)
+
+        apply_to_tree(self.parse_tree, flatten_unnecessary_lists) # last
+
+        nodes = search_tree(self.parse_tree, filter=lambda x : ('BAR' in x))
+        for node in nodes:
+            print(f": {node}")
+            if isinstance(node, list):
+                print(f": {node}")
+                node.remove('BAR')
+                print(f": {node}")
+        print('')
 
         return self.parse_tree
 
@@ -78,12 +88,14 @@ class DocOptSimplifyVisitor(object):
     # correct choice chain flattening
     _strip = ( ' docopt usage usage_line usage_entry '
                ' other_sections other '
-               ' option short long long_with_eq_arg '
-             ' argument ' 
-             # ' expression ' 
+               ' option short long long_with_arg long_with_eq_arg '
+               ' expression '
+               ' argument '
+               ' operand_line '
+               ' option_line  '
              )
     # Do not strip BAR, it's prescense is necessary for choice
-    _empty = 'blankline newline EOF LPAREN RPAREN LBRACKET RBRACKET'
+    _empty = 'blankline newline EOF COMMA LPAREN RPAREN LBRACKET RBRACKET OR'
 
     def __init__(self):
         self._strip = set(self._strip.split())
@@ -105,8 +117,8 @@ class DocOptSimplifyVisitor(object):
         if hasattr(self, method):
             return eval(f"self.{method}(node, responses)")
         if isinstance(node, Terminal):
-            return [ node.rule_name, node.value ]
-        return [ node.rule_name, responses ]
+            return [ node.rule_name.replace('_','-'), node.value ]
+        return [ node.rule_name.replace('_','-'), responses ]
 
     #--------------------------------------------------------------------------
 
@@ -124,15 +136,6 @@ class DocOptSimplifyVisitor(object):
     # make is searchable within the choice list
     def visit_BAR(self, node, children):
         return 'BAR'
-
-    def visit_expression(self, node, children):
-        if len(children) == 1:
-            children = children[0]
-        if len(children) == 1:
-            children = children[0]
-        if len(children) == 1:
-            children = children[0]
-        return children
 
     #--------------------------------------------------------------------------
 
@@ -200,7 +203,7 @@ class DocOptSimplifyVisitor(object):
 
     #--------------------------------------------------------------------------
 
-    def _visit_description(self, node, children):
+    def visit_description(self, node, children):
         return [ 'description', '\n'.join(children) ]
 
     def visit_line(self, node, children):
@@ -209,19 +212,19 @@ class DocOptSimplifyVisitor(object):
     def visit_word(self, node, children):
         return node.value
 
-    def _visit_trailing (self, node, children):
+    def visit_trailing (self, node, children):
         return [ 'trailing', '\n'.join(children) ]
 
-    def _visit_trailing_line (self, node, children):
+    def visit_trailing_line (self, node, children):
         return ' '.join(children)
 
-    def _visit_fragment(self, node, children):
+    def visit_fragment(self, node, children):
         return ' '.join(children)
 
     #--------------------------------------------------------------------------
 
     def _visit_operand_section(self, node, children):
-        return [ 'operand-section', children ]
+        return [ 'operand_section', children ]
 
     def _visit_operand_intro(self, node, children):
         return [ 'operand-intro', children ]
@@ -229,7 +232,7 @@ class DocOptSimplifyVisitor(object):
     def _visit_operand_detail(self, node, children):
         return [ 'operand-detail', children ]
 
-    def _visit_operand_help(self, node, children):
+    def visit_operand_help(self, node, children):
         while isinstance(children[-1], list):
             tmp = children[-1]
             children = children[:-1]
@@ -267,7 +270,7 @@ class DocOptSimplifyVisitor(object):
     def _visit_long_with_gap_arg(self, node, children):
         return [ 'long-with-gap-arg', children ]
 
-    def _visit_option_help(self, node, children):
+    def visit_option_help(self, node, children):
         while isinstance(children[-1], list):
             tmp = children[-1]
             children = children[:-1]
@@ -362,50 +365,55 @@ def choice_flatten_chain(node):
 
 #------------------------------------------------------------------------------
 
+#remove
 def choice_remove_bars(node):
-    if ( isinstance(node, list) and
-         len(node) > 0 and
-         node[0] == 'choice' and
-         isinstance(node[1], list) and
-         'BAR' in node[1]
-    ) :
-        node[1].remove('BAR')
+    if isinstance(node, list):
+        while 'BAR' in node:
+            node.remove('BAR')
 
 #------------------------------------------------------------------------------
+
+# general 21 : 'Usage:  my_program <repeating-argument> <repeating-argument>...'
 #
-# [ ['long_no_arg', '--flag'],
-#   ['operand', [['operand_angled', '<repeating>']]],
-#   [ ['operand', [['operand_angled', '<repeating>']]],
+# [ ['long-no-arg', '--flag'],
+#   ['operand', [['operand-angled', '<repeating>']]],
+#   [ ['operand', [['operand-angled', '<repeating>']]],
 #     ['repeated', '...'] ]
 #   ['long_no_arg', '--what'],
 # ]
 #
 # becomes
 #
-# [ ['long_no_arg', '--flag'],
-#   ['operand', [['operand_angled', '<repeating>']]],
-#   ['operand', [['operand_angled', '<repeating>']]],
+# [ ['long-no-arg', '--flag'],
+#   ['operand', [['operand-angled', '<repeating>']]],
+#   ['operand', [['operand-angled', '<repeating>']]],
 #   ['repeated', '...']
-#   ['long_no_arg', '--what'],
+#   ['long-no-arg', '--what'],
 # ]
 #
 
-def operand_flatten_chain(node):
+#operand
+def operand_flatten_repeating_chain(node):
+    # return;
     if not isinstance(node, list):
         return
     idx = 0
+    found0 = False
     while idx < len(node):
         child = node[idx]
-        found = False
+        found1 = False
         try :
-            found = ( child[0][0] == 'operand' )
+            found0 = found0 or ( child[0] == 'operand' )
+            found1 = ( child[0][0] == 'operand' )
         except :
             pass
-        if found :
+        if found0 and found1 :
             del node[idx]
             for elt in child[::-1]:
                 node.insert(idx, elt)
             idx += len(child) - 1
+            found0 = found1 = False
+            break
         idx += 1
 
 #------------------------------------------------------------------------------
@@ -425,6 +433,7 @@ def operand_flatten_chain(node):
 #     ['command', 'c']
 #   ]
 
+#fake
 def choice_strip_fake(node):
 
     try :
@@ -443,53 +452,98 @@ def choice_strip_fake(node):
 
 #------------------------------------------------------------------------------
 
-# : node = [ 'usage_pattern',
+# : node = [ 'usage-pattern',
 #            [ ['program', 'my_program'],
-#              [ ['long_no_arg', '--flag'],
-#                ['operand', [['operand_angled', '<unexpected>']]],
-#                ['operand', [['operand_angled', '<grouping>']]]
+#              [ ['long-no-arg', '--flag'],
+#                ['operand', [['operand-angled', '<unexpected>']]],
+#                ['operand', [['operand-angled', '<grouping>']]]
 #              ] ] ]
 #
-#    [0]           : 'usage_pattern',
+#    [0]           : 'usage-pattern',
 #    [1][0][0]     : 'program'
 #    [1][1]        : potentially spurious list
 #    [1][1][0]     : rule-name in a non-spurious entry
 #
 # becomes
 #
-#   [ 'usage_pattern',
+#   [ 'usage-pattern',
 #     [ ['program', 'my_program'],
-#       ['long_no_arg', '--flag'],
-#       ['operand', [['operand_angled', '<unexpected>']]],
-#       ['operand', [['operand_angled', '<grouping>']]]
+#       ['long-no-arg', '--flag'],
+#       ['operand', [['operand-angled', '<unexpected>']]],
+#       ['operand', [['operand-angled', '<grouping>']]]
 #     ] ] ]
 
-def implict_argument_grouping_strip(root):
+#implicit
+def implict_argument_grouping_strip(root, debug=False):
 
     # implicit group starting with third argument
-    if root[0] != 'usage_pattern':
+    if debug:
+        print(f"root[0]    = {root[0]}")
+    if root[0] != 'usage-pattern':
+        if debug:
+            print(f"- scanning for 'usage-pattern'")
         found = False
         for section in root:
-            if section[0] == 'usage_pattern':
+            if section[0] == 'usage-pattern':
+                if debug:
+                    print(f"- found")
                 found = True
                 root = section
                 break
         if not found :
+            if debug:
+                print(f"- not found !")
             return
 
     try :
-        if root[0] != 'usage_pattern' :
+        if debug:
+            print(f"root[0]    = {root[0]}")
+        if root[0] != 'usage-pattern' :
             return
+        if debug:
+            print(f"program ?  = {root[1][0][0]}")
         if root[1][0][0] != 'program' :
             return
         if isinstance(root[1][1][0], str) :
             return
+        if debug:
+            print(f"- adjust ...")
+        # [1][1]  : potentially spurious list
+        children = root[1][1]
+        del root[1][1]
+        root[1].extend(children)
     except :
         pass
 
-    # [1][1]  : potentially spurious list
-    children = root[1][1]
-    del root[1][1]
-    root[1].extend(children)
+#------------------------------------------------------------------------------
+
+#    [   'option-list',
+#        [   ['option-single', ['short-no-arg', '-q']],
+#            [   'option-list',
+#                [   'option-single',
+#                    ['long-no-arg', '--quiet']
+#                ] ] ] ]
+
+#optlist
+def optlist_flatten_chain(node):
+
+    _idx = 0
+    try :
+        if node[0] != 'option-list' :
+            return
+        found = False
+        for idx in range(len(node[1])):
+            if node[1][idx][0] == 'option-list':
+                found = True
+                _idx = idx
+                break
+        if not found :
+            return
+    except :
+        return
+
+    children = node[1][_idx][1:]
+    del node[1][_idx]
+    node.extend(children)
 
 #------------------------------------------------------------------------------
