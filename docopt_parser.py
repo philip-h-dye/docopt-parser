@@ -1,9 +1,11 @@
 import sys
 import os
+import re
 
 import arpeggio
 import arpeggio.cleanpeg
-# from arpeggio import visit_parse_tree, PTNodeVisitor, SemanticActionResults
+# from arpeggio import visit_parse_tree, PTNodeVisitor, SemanticActionResult
+from arpeggio import Terminal, NonTerminal
 
 from prettyprinter import cpprint as pp
 
@@ -48,160 +50,93 @@ class DocOptParserPEG(object):
         if print_raw:
             print(f"raw parse tree : {str(type(self.raw_parse_tree))}\n"
                   f"{self.raw_parse_tree.tree_str()}\n")
-        self.annotated_parse_tree = arpeggio.visit_parse_tree \
-            (self.raw_parse_tree, DocOptAnnotationVisitor())
-        self.parse_tree = self.clean_semantic_results()
+
+        self.parse_tree = DocOptSimplifyVisitor().visit(self.raw_parse_tree)
+
+        apply_to_tree(self.parse_tree, operand_flatten_chain)
+
+        # order is critical: flatten chain, strip fake, remove bars
+        apply_to_tree(self.parse_tree, choice_flatten_chain)
+        apply_to_tree(self.parse_tree, choice_strip_fake)
+        apply_to_tree(self.parse_tree, choice_remove_bars)
+
+        implict_argument_grouping_strip(self.parse_tree)
+        
+        # Go last or messes up choices: 'Usage: copy -h | --help | --foo'
+        # apply_to_tree(self.parse_tree, flatten_unnecessary_lists)
+
         return self.parse_tree
 
-    def clean_semantic_results(self):
-
-        def pass1_flatten(sx):
-            if not isinstance(sx, arpeggio.SemanticActionResults):
-                return flatten(sx)
-            if sx.results is None  or  len(sx.results) <= 0:
-                return
-            out = [ ]
-            for name, value in sx.results.items() :
-                out.append(pass1_flatten(value))
-            return flatten(out)
-
-        listing = 'listing:'
-        listing_len = len(listing)
-        terminal = 'terminal:'
-        terminal_len = len(terminal)
-        def pass2_clean(sx):
-            if not isinstance(sx, list) or len(sx) <= 0:
-                return sx
-            if isinstance(sx[0], str):
-                name = sx[0]
-                if name.startswith(listing):
-                    sx[0] = name[listing_len:]
-                if name.startswith(terminal):
-                    sx[0] = name[terminal_len:]
-            out = [ ]
-            for value in sx :
-                out.append( pass2_clean(value) )
-            return out
-
-        return pass2_clean ( pass1_flatten(self.annotated_parse_tree) )
-
 #------------------------------------------------------------------------------
 
-# SemanticActionResults . results = { [ name : value ], ... }
+# NonTerminal inherits from list such that the list of
+# of it's children nodes is itself.
 
-def flatten(sx):
-    # i = ' ' * indent
-    if isinstance(sx, str):
-        return sx
-    if isinstance(sx,list):
-        return flatten_list(sx)
-    if isinstance(sx, dict):
-        return flatten_dict(sx)
-    return sx
+class DocOptSimplifyVisitor(object):
 
-#------------------------------------------------------------------------------
+    # Do not strip expression, it's prescense is necessary for
+    # correct choice chain flattening
+    _strip = ( ' docopt usage usage_line usage_entry '
+               ' other_sections other '
+               ' option short long long_with_eq_arg '
+             ' argument ' 
+             # ' expression ' 
+             )
+    # Do not strip BAR, it's prescense is necessary for choice
+    _empty = 'blankline newline EOF LPAREN RPAREN LBRACKET RBRACKET'
 
-def flatten_dict(sx):
+    def __init__(self):
+        self._strip = set(self._strip.split())
+        self._empty = set(self._empty.split())
 
-    if len(sx) == 1 :
-        key, value = list(sx.items())[0]
-        if isinstance(value, list) and len(value) == 1:
-            if key == value[0]:
-                return flatten(value)
+    def visit(self, node):
+        responses = []
+        if isinstance(node, NonTerminal):
+            responses = []
+            for child in node : # NonTerminal IS the list
+                response = self.visit(child)
+                if response:
+                    responses.append(response)
+        if node.rule_name in self._empty :
+            return None
+        if node.rule_name in self._strip :
+            return self.strip(node, responses)
+        method = f"visit_{node.rule_name}"
+        if hasattr(self, method):
+            return eval(f"self.{method}(node, responses)")
+        if isinstance(node, Terminal):
+            return [ node.rule_name, node.value ]
+        return [ node.rule_name, responses ]
 
-    out = {}
-    for key, value in sx.items():
-        out[key] = flatten(value)
-    return out
+    #--------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
+    def strip(self, node, children):
+        if len(children) == 1:
+            children = children[0]
+        if len(children) == 1:
+            children = children[0]
+        if len(children) == 1:
+            children = children[0]
+        return children
 
-def flatten_list(sx):
+    #--------------------------------------------------------------------------
 
-    if len(sx) <= 0:
-        return []
+    # make is searchable within the choice list
+    def visit_BAR(self, node, children):
+        return 'BAR'
 
-    if len(sx) == 1 :
-        return flatten(sx[0])
+    def visit_expression(self, node, children):
+        if len(children) == 1:
+            children = children[0]
+        if len(children) == 1:
+            children = children[0]
+        if len(children) == 1:
+            children = children[0]
+        return children
 
-    out = []
-    for value in sx:
-        out.append(flatten(value))
+    #--------------------------------------------------------------------------
 
-    if len(out) > 0 :
-        if out[0] in ['optional', 'required']:
-            return flatten_chooser('choice', out)
-        if out[0] == 'choice':
-            return flatten_chain('choice', out)
-        if out[0] == 'option-list':
-            return flatten_chain('option-list', out)
-        if out[0] == 'option-list':
-            return flatten_chain('option-help', out)
-
-    return out
-
-#------------------------------------------------------------------------------
-
-#  ['optional', ['terminal:choice', ['operand', 'WORD']]]
-
-def flatten_chooser(chain_name, sx):
-    if isinstance(sx[1], list) and sx[1][0] == f"terminal:{chain_name}":
-        return [ sx[0], sx[1][1] ]
-    return sx
-
-#------------------------------------------------------------------------------
-
-# Chained:
-#   sx = [ 'choice', [{'command': 'move'}, ['choice', {'command': 'fire'}]]]
-#   sx = [ sx[0] = 'choice'
-#        , sx[1] = [ sx[1][0] = {'command': 'move'}
-#                  , sx[1][1] = [ sx[1][1][0] = 'choice'
-#                               , sx[1][1][1] = {'command': 'fire'}]]]
-
-# Terminal :
-#   sx = ['choice', {'command': 'fire'}]
-#   sx = [ sx[0] = 'choice'
-#        , sx[1] = {'command': 'fire'} ]
-
-def is_chain(chain_name, sx):
-    return ( isinstance(sx, list) and
-             sx[0] in [ chain_name,
-                        f"terminal:{chain_name}",
-                        f"listing:{chain_name}" ] )
-
-def flatten_chain(chain_name, sx):
-
-    terminal = f"terminal:{chain_name}"
-    listing  = f"listing:{chain_name}"
-
-    if not is_chain(chain_name, sx):
-        return sx
-
-    # Terminal if [1] is not a list
-    if not isinstance(sx[1], list):
-        return [ terminal, sx[1] ]
-
-    # Terminal if [1][1] is not of this chain
-    if not is_chain(chain_name, sx[1][1]):
-        name = terminal if sx[0] == chain_name else sx[0]
-        return [ name, sx[1] ]
-
-    child = flatten_chain(chain_name, sx[1][1])
-
-    out = [ listing, [ sx[1][0] ] ]
-
-    if child[0].startswith('terminal:') :
-        out[1].append(child[1])
-    else :
-        out[1].extend(child[1])
-
-    return out
-
-#------------------------------------------------------------------------------
-
-class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
-
-    def visit_docopt(self, node, children):
+    def X_visit_docopt(self, node, children):
         out = []
         for child in children:
             if isinstance(child, list) and child[0] == 'other-sections':
@@ -213,62 +148,59 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
 
     #--------------------------------------------------------------------------
 
-    def visit_intro(self, node, children):
+    def _visit_intro(self, node, children):
         return [ 'intro', ' '.join(children) ]
 
     #--------------------------------------------------------------------------
 
-    def visit_usage(self, node, children):
+    def _visit_usage(self, node, children):
         return [ "usage", children[1:] ]
 
-    def visit_usage_pattern(self, node, children):
+    def _visit_usage_pattern(self, node, children):
         return children
 
-    def visit_expression(self, node, children):
-        return children
-
-    def visit_program(self, node, children):
+    def _visit_program(self, node, children):
         return [ 'program' , node.value ]
 
-    def visit_optional(self, node, children):
+    def _visit_optional(self, node, children):
         return [ 'optional' , children ]
 
-    def visit_required(self, node, children):
+    def _visit_required(self, node, children):
         return [ 'required' , children ]
 
-    def visit_choice(self, node, children):
+    def _visit_choice(self, node, children):
         return [ 'choice' , children ]
 
-    def visit_argument(self, node, children):
+    def _visit_argument(self, node, children):
         return children
 
-    def visit_option(self, node, children):
+    def _visit_option(self, node, children):
         return [ 'option' , children ]
 
-    def visit_operand(self, node, children):
+    def _visit_operand(self, node, children):
         return [ 'operand' , children ]
 
-    def visit_command(self, node, children):
+    def _visit_command(self, node, children):
         return { 'command' : node.value }
 
-    def visit_repeated(self, node, children):
+    def _visit_repeated(self, node, children):
         return [ 'repeated' , node.value ]
 
     #--------------------------------------------------------------------------
 
-    def visit_other_sections(self, node, children):
+    def _visit_other_sections(self, node, children):
         if len(children) <= 0:
             return None
         return [ 'other-sections', children ]
 
-    def visit_other(self, node, children):
+    def _visit_other(self, node, children):
         if len(children) <= 0:
             return None
         return children
 
     #--------------------------------------------------------------------------
 
-    def visit_description(self, node, children):
+    def _visit_description(self, node, children):
         return [ 'description', '\n'.join(children) ]
 
     def visit_line(self, node, children):
@@ -277,27 +209,27 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
     def visit_word(self, node, children):
         return node.value
 
-    def visit_trailing (self, node, children):
+    def _visit_trailing (self, node, children):
         return [ 'trailing', '\n'.join(children) ]
 
-    def visit_trailing_line (self, node, children):
+    def _visit_trailing_line (self, node, children):
         return ' '.join(children)
 
-    def visit_fragment(self, node, children):
+    def _visit_fragment(self, node, children):
         return ' '.join(children)
 
     #--------------------------------------------------------------------------
 
-    def visit_operand_section(self, node, children):
+    def _visit_operand_section(self, node, children):
         return [ 'operand-section', children ]
 
-    def visit_operand_intro(self, node, children):
+    def _visit_operand_intro(self, node, children):
         return [ 'operand-intro', children ]
 
-    def visit_operand_detail(self, node, children):
+    def _visit_operand_detail(self, node, children):
         return [ 'operand-detail', children ]
 
-    def visit_operand_help(self, node, children):
+    def _visit_operand_help(self, node, children):
         while isinstance(children[-1], list):
             tmp = children[-1]
             children = children[:-1]
@@ -306,36 +238,36 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
 
     #--------------------------------------------------------------------------
 
-    def visit_options_section(self, node, children):
+    def _visit_options_section(self, node, children):
         # return [ 'options-section', children ]
         return children
 
-    def visit_option_detail(self, node, children):
+    def _visit_option_detail(self, node, children):
         return [ 'option-detail', children ]
 
-    def visit_option_list(self, node, children):
+    def _visit_option_list(self, node, children):
         return [ 'option-list', children ]
 
-    def visit_option_single(self, node, children):
+    def _visit_option_single(self, node, children):
         # return [ 'option-single', children ]
         return children
 
-    def visit_short_no_arg(self, node, children):
+    def _visit_short_no_arg(self, node, children):
         return [ 'short-no-arg', node.value ]
 
-    def visit_short_with_arg(self, node, children):
+    def _visit_short_with_arg(self, node, children):
         return [ 'short-with-arg', children ]
 
-    def visit_long_no_arg(self, node, children):
+    def _visit_long_no_arg(self, node, children):
         return [ 'long-no-arg', node.value ]
 
-    def visit_long_with_arg(self, node, children):
+    def _visit_long_with_arg(self, node, children):
         return [ 'long-with-arg', children ]
 
-    def visit_long_with_gap_arg(self, node, children):
+    def _visit_long_with_gap_arg(self, node, children):
         return [ 'long-with-gap-arg', children ]
 
-    def visit_option_help(self, node, children):
+    def _visit_option_help(self, node, children):
         while isinstance(children[-1], list):
             tmp = children[-1]
             children = children[:-1]
@@ -345,13 +277,219 @@ class DocOptAnnotationVisitor(arpeggio.PTNodeVisitor):
 
     #--------------------------------------------------------------------------
 
-    def visit_string_no_whitespace(self, node, children):
+    def _visit_string_no_whitespace(self, node, children):
         return node.value
 
-    def visit_newline(self, node, children):
+    def _visit_newline(self, node, children):
         return None
 
-    def visit_comma(self, node, children):
+    def _visit_comma(self, node, children):
         return None
+
+#------------------------------------------------------------------------------
+
+def search_tree(t, filter):
+    if filter(t):
+        yield t
+    if isinstance(t, list):
+        for elt in t :
+            for result in search_tree(elt, filter):
+                yield result
+    if isinstance(t, dict):
+        for key, value in t.items():
+            for result in search_tree(key, filter):
+                yield result
+            for result in search_tree(value, filter):
+                yield result
+
+#------------------------------------------------------------------------------
+
+def apply_to_tree(tree, action):
+
+    def _apply_to_tree(t):
+        if isinstance(t, list):
+            for elt in t :
+                _apply_to_tree(elt)
+                action(elt)
+        if isinstance(t, dict):
+            for key, value in t.items():
+                # _apply_to_tree(key)
+                _apply_to_tree(value)
+                action(key)
+                action(value)
+        action(t)
+
+    _apply_to_tree(tree)
+
+    tree
+
+#------------------------------------------------------------------------------
+
+def fix_choice_reqopt(node):
+    if ( isinstance(node,list) and
+         node[0] == 'choice' and
+         isinstance(node[1],list) and
+         node[1][0] in ['optional','required']
+    ) :
+        node[0], node[1][0] = node[1][0], node[0]
+
+#------------------------------------------------------------------------------
+
+def flatten_unnecessary_lists(node):
+    if ( isinstance(node, list) and
+         len(node) == 1 and
+         isinstance(node[0], list)
+    ) :
+        children = node[0]
+        del node[0]
+        node.extend(children)
+
+#------------------------------------------------------------------------------
+
+# Do not remove bars yet
+def choice_flatten_chain(node):
+    try :
+        if ( node[0] == 'choice' and
+             'BAR' in node[1] and
+             len(node[1]) == 3 and
+             node[1][2][0] == 'choice'
+        ) :
+            addition = node[1][2][1]
+            node[1] = node[1][:-1]
+            node[1].extend(addition)
+    except :
+        pass
+
+#------------------------------------------------------------------------------
+
+def choice_remove_bars(node):
+    if ( isinstance(node, list) and
+         len(node) > 0 and
+         node[0] == 'choice' and
+         isinstance(node[1], list) and
+         'BAR' in node[1]
+    ) :
+        node[1].remove('BAR')
+
+#------------------------------------------------------------------------------
+#
+# [ ['long_no_arg', '--flag'],
+#   ['operand', [['operand_angled', '<repeating>']]],
+#   [ ['operand', [['operand_angled', '<repeating>']]],
+#     ['repeated', '...'] ]
+#   ['long_no_arg', '--what'],
+# ]
+#
+# becomes
+#
+# [ ['long_no_arg', '--flag'],
+#   ['operand', [['operand_angled', '<repeating>']]],
+#   ['operand', [['operand_angled', '<repeating>']]],
+#   ['repeated', '...']
+#   ['long_no_arg', '--what'],
+# ]
+#
+
+def operand_flatten_chain(node):
+    if not isinstance(node, list):
+        return
+    idx = 0
+    while idx < len(node):
+        child = node[idx]
+        found = False
+        try :
+            found = ( child[0][0] == 'operand' )
+        except :
+            pass
+        if found :
+            del node[idx]
+            for elt in child[::-1]:
+                node.insert(idx, elt)
+            idx += len(child) - 1
+        idx += 1
+
+#------------------------------------------------------------------------------
+
+# A fake choice does not contain BAR, '|'
+#
+#   [ 'choice',
+#     [ [ ['command', 'a'],
+#         ['command', 'b'],
+#         ['command', 'c']
+#       ] ] ]
+#
+# becomes:
+#
+#   [ ['command', 'a'],
+#     ['command', 'b'],
+#     ['command', 'c']
+#   ]
+
+def choice_strip_fake(node):
+
+    try :
+        if node[0] != 'choice' :
+            return
+    except :
+        pass
+
+    children = node[1]
+    if len(children) == 1:
+        children = children[0]
+    if 'BAR' in children :
+        return
+    node.clear()
+    node.extend(children)
+
+#------------------------------------------------------------------------------
+
+# : node = [ 'usage_pattern',
+#            [ ['program', 'my_program'],
+#              [ ['long_no_arg', '--flag'],
+#                ['operand', [['operand_angled', '<unexpected>']]],
+#                ['operand', [['operand_angled', '<grouping>']]]
+#              ] ] ]
+#
+#    [0]           : 'usage_pattern',
+#    [1][0][0]     : 'program'
+#    [1][1]        : potentially spurious list
+#    [1][1][0]     : rule-name in a non-spurious entry
+#
+# becomes
+#
+#   [ 'usage_pattern',
+#     [ ['program', 'my_program'],
+#       ['long_no_arg', '--flag'],
+#       ['operand', [['operand_angled', '<unexpected>']]],
+#       ['operand', [['operand_angled', '<grouping>']]]
+#     ] ] ]
+
+def implict_argument_grouping_strip(root):
+
+    # implicit group starting with third argument
+    if root[0] != 'usage_pattern':
+        found = False
+        for section in root:
+            if section[0] == 'usage_pattern':
+                found = True
+                root = section
+                break
+        if not found :
+            return
+
+    try :
+        if root[0] != 'usage_pattern' :
+            return
+        if root[1][0][0] != 'program' :
+            return
+        if isinstance(root[1][1][0], str) :
+            return
+    except :
+        pass
+
+    # [1][1]  : potentially spurious list
+    children = root[1][1]
+    del root[1][1]
+    root[1].extend(children)
 
 #------------------------------------------------------------------------------

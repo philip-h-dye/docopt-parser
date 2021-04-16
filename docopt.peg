@@ -1,4 +1,4 @@
-// __version__ = '0.5.6'
+// __version__ = '0.5.7'
 
 docopt = intro* usage other_sections trailing* newline* EOF
 
@@ -14,26 +14,29 @@ intro = newline* !usage_entry line+ newline+
 // Usage Patterns
 // --------------
 
-usage = newline* usage_entry newline* usage_pattern+
+usage = newline* usage_entry newline* usage_line+
 
 usage_entry = r'(?i)Usage\s*:'
 
-usage_pattern = program choice? newline
+usage_line = usage_pattern newline / usage_pattern EOF
+usage_pattern = program choice?
 
 program = string_no_whitespace
 
 expression = ( optional / required / argument )+
 
-optional = '[' choice ']' repeated?
-required = '(' choice ')' repeated?
+optional = LBRACKET choice RBRACKET repeated?
+required = LPAREN choice RPAREN repeated?
 argument = ( option / operand / command ) repeated?
 repeated = '...'
 
-choice = expression ( '|' choice )?
+choice = expression ( BAR choice )?
 
 option = long / short
 // short option allowing for stacking or an immediate option-argument
 //   semantic analysis necessary to determine such
+//   and frankly, necessary for short_no_arg also.  If short_no_arg is
+//   first, '-fuz' becomes [ short_no_arg '-f', command 'uz' ]
 short = short_stacked / short_no_arg
 short_no_arg = r'-[\w]'
 short_stacked = r'-[\w]+'
@@ -75,7 +78,7 @@ options_intro = line
 option_line = option_detail newline / option_detail EOF
 option_detail = option_list option_help?
 
-option_list = option_single (comma? option_list )?
+option_list = option_single (COMMA? option_list )?
 option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
 option_help = word+ ( newline !operand_or_option option_help )*
 
@@ -94,10 +97,16 @@ trailing_line = word+ newline / word+ EOF
 
 operand_or_option = r'([-<]|[A-Z][A-Z])'
 
-newline = r'[\n]'
-
 blankline = &newline newline+
 
-comma = ','
+newline = r'[\n]'
 
-string_no_whitespace = r'[^\s\n]+'
+LBRACKET = '['
+RBRACKET = ']'
+LPAREN = '('
+RPAREN = ')'
+BAR = '|'
+COMMA = ','
+
+string_no_whitespace = r'[^\s\n\[\]\(\)\|]+'
+// Without \[\]\(\)\|, optional/required/choice become sequences of commands

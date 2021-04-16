@@ -1,8 +1,10 @@
 Docopt Language Parser
 ----------------------
 
-- ✓ grammar to parser the language into semantic units
+- ✓ grammar to parser the language into semantic units (in alpha)
+
 - semantic analsysis pass
+
 
 Docopt Language Grammar - in alpha
 -----------------------
