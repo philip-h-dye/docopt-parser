@@ -21,8 +21,8 @@ export PYTHONWARNINGS="ignore::DeprecationWarning:simplejson"
 
 alias c=' rm -rf __pycache__ && rm -f *.dot *.pdf '
 
-alias tst=' clear && logts --quiet --base log    ./runtest.py '
-alias err=' clear && logts --quiet --base error  ./runtest.py '
+alias tst=' clear && logts --quiet --base log    t/runtest.py '
+alias err=' clear && logts --quiet --base error  t/runtest.py '
 
 alias g=' tst --general '
 alias f=' tst --files '
