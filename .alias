@@ -1,6 +1,6 @@
 #
 
-module=$( echo $PWD | sed -e 's/^.*\///' )
+# module=$( echo $PWD | sed -e 's/^.*\///' )
 
 alias c='( clear && invoke clean )'
 
@@ -8,7 +8,7 @@ alias b='( clear && logts -b log/build invoke build )'
 
 alias t='( clear && logts -b log/test invoke test )'
 
-alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
+# alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
 
 alias re='( c && b && t )'
 
@@ -19,6 +19,11 @@ alias re='( c && b && t )'
 alias x=' PYTHONPATH=".:t:${PYTHONPATH}" log err python3 -m single '
 
 alias rx=' c && x '
+
+function pyhere() {
+    export PYTHONPATH=".:t:tests:${PYTHONPATH}"
+    python3 "$@"
+}
 
 #------------------------------------------------------------------------------
 

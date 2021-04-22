@@ -1,11 +1,16 @@
-------------------------------------------------------------------------------
+2021/04/22 :
+	- restructured as a python package under <top>/docopt_parser
+	- tests in <top>/tests
+	- the above is in preparation for massive overhaul of the grammar and code
+
+2021/04/13 :
+	- Migrating / restarting with Arpeggio Clean Peg
+	- Parsimonious didn't workout.  Couldn't workaround some odd quirks or possibly bugs
 
 2021/04/11 :
 	- Started migration to Parsimonious.
 	- Moved from src/python/optstruct/grammar to
 	    src/python/parsers/paraimonious/docopt-parser
-
-------------------------------------------------------------------------------
 
 2021/04/10 :
 
