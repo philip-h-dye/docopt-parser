@@ -38,13 +38,15 @@ import yaml
 
 from prettyprinter import cpprint as pp
 
-from docopt_parser import DocOptParserPEG
-
 from docopt import docopt
 
 #------------------------------------------------------------------------------
 
 sys.path.insert(0,'.')
+sys.path.insert(0,'t')
+sys.path.insert(0,'..')
+
+from docopt_parser import DocOptParserPEG
 
 import scenarios as sx
 

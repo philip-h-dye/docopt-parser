@@ -19,10 +19,10 @@ export PYTHONWARNINGS="ignore::DeprecationWarning:simplejson"
 
 # alias t=' clear && logts -b log/. python parser.py '
 
-alias c=' rm -rf __pycache__ && rm -f *.dot *.pdf '
+alias c=' rm -f *.dot *.pdf && find . -name __pycache__ | xargs rm -rf '
 
-alias tst=' clear && logts --quiet --base log    t/runtest.py '
-alias err=' clear && logts --quiet --base error  t/runtest.py '
+alias tst=' clear && logts --quiet --base log    t/run-test.py '
+alias err=' clear && logts --quiet --base error  t/run-test.py '
 
 alias g=' tst --general '
 alias f=' tst --files '
