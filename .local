@@ -2,13 +2,13 @@
 
 n=single
 # alias x=' script -c "python3 ${n}.py" err '
-# alias x=' clear && logts -b log/single python3 ${n}.py '
+alias x=' clear && logts -b log/single python3 ${n}.py '
 
 # Otherwise, it picks opts from ../setup.cfg and dies looking for ./tests.
 
 # alias t=' clear && logts -b log/test pytest -c /dev/null '
 
-# alias t=' clear && logts -b log/test ./py simple.py'
+alias t=' clear && logts -b log/test ./py simple.py'
 
 export PYTHONPATH=/home/phdyex/.local/lib/python3.8
 
@@ -16,8 +16,9 @@ export PYTHONPATH=/home/phdyex/.local/lib/python3.8
 export PYTHONWARNINGS="ignore::DeprecationWarning:simplejson"
 
 #
+#
 
-# alias t=' clear && logts -b log/. python parser.py '
+alias t=' clear && logts -b log/. python parser.py '
 
 alias c=' rm -f *.dot *.pdf && find . -name __pycache__ | xargs rm -rf '
 
@@ -25,14 +26,16 @@ alias tst=' clear && logts --quiet --base log    t/run-test.py '
 alias err=' clear && logts --quiet --base error  t/run-test.py '
 
 alias g=' tst --general '
-alias f=' tst --files '
-alias frag=' tst --fragments '
+alias p=' tst --program '
+alias frag=' tst --fragment '
 alias trail=' tst --trailing '
 
 g=2
 alias x=' g ${g} '
 
 alias ex=' /usr/bin/emacs ./log/latest.txt '
+
+alias trio="echo '# a b c / d e f / g h i / j k l / m n o'"
 
 alias eterm=' emacs --load ~/.xemacs/my-ansi-term.el '
 

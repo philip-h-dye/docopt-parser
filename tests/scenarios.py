@@ -6,53 +6,118 @@ slurp = lambda fname : [(f.read(), f.close()) for f in [open(fname,'r')]][0][0]
 
 #------------------------------------------------------------------------------
 
-fname_pattern = 'f"examples/usage/{fname}/doc.txt"'
+pname_pattern = 'f"examples/usage/{pname}/doc.txt"'
 
-def files():
+def programs(pname='*'):
 
-    fname = '*'
+    return glob(eval(pname_pattern))
 
-    return glob(eval(fname_pattern))
+def program_usages():
 
-def file_usages():
+    pname = '*'
 
-    fname = '*'
+    _programs = glob(eval(pname_pattern))
 
-    files = glob(eval(fname_pattern))
+    for i in range(len(_programs)):
+        _programs[i] = slurp(_programs[i])
 
-    for i in range(len(files)):
-        files[i] = slurp(files[i])
-
-    return files
+    return _programs
 
 #------------------------------------------------------------------------------
 
 def general():
     return [ # 0
-             "Usage: copy",
-             "Usage: copy SRC DST \n",
-             "Usage: copy SRC DST \n move FROM TO \n",
-             "Usage: copy -h | --help | --also",
-             "Usage: copy ( move | fire | turn ) ",
-             "Usage: copy ( move | fire ) ( turn rise )",
-             "Usage: copy ( move | fire ) ( turn rise ) -h | --help",
-             "Usage: copy ( move | fire | turn )",
-             "Usage: copy [ move fire ]",
-             "Usage: copy [ --what [ now ] ]" \
-             # 10
-             "Usage: copy1 \ncopy2 \n\n",
-             "Usage: copy1 \n  copy2 \n  or copy3",
-             "Usage: test [mode]",
-             "Usage: test [mode] TARGET\n\n  Xy a program to ",
-             "Usage: copy -l\n\n Test program \n",
-             "Usage:  copy [ --speed <speed> --angle ANGLE ] <when>",
-             "Usage:  copy -abc --why <file>",
-             "Usage:  my_program command --option <argument>",
-             "Usage:  my_program [<optional-argument>]",
-             "Usage:  my_program --another-option=<with-argument>",
-             # 20
-             "Usage:  my_program (--either-that-option | <or-this-argument>)",
-             "Usage:  my_program <repeating-argument> <repeating-argument>...",
+         #
+         # usage pattern section -- the only required section
+         #
+           # basic usage patterns, simple arguments, all caps
+             u"Usage: copy",
+             u"Usage: copy FILE",
+             u"Usage: copy SRC DST",
+             u"Usage: copy SRC1 SRC2 DST",
+             u"Usage: copy SRC1 SRC2 SRC3 DST",
+           # basic usage patterns, options, implicit choice groupings
+             u"Usage: copy -h",
+             u"Usage: copy -h | --help",
+             u"Usage: copy -h | --help | --also",
+             # implicit choice must partition the line, one point where expression is crucial
+             u"Usage: copy side-a -h | --help side-b",
+             u"Usage: copy move fire -h | --help",
+           # required
+             # choice, first is fake since it is alone, others actual
+             u"Usage: copy move ",		# implicit and explicit required
+             u"Usage: copy ( move ) ",		# must parse identically
+             u"Usage: copy move\n  copy ( move ) ",
+             u"Usage: copy ( move | fire )",
+             u"Usage: copy ( move | fire | turn )",
+             u"Usage: copy ( move | fire | turn | fire )",
+             # actual choice followed by both implied and explicit required
+             u"Usage: copy ( move | fire ) turn rise",
+             u"Usage: copy ( move | fire ) ( turn rise )",
+             # two pairs of actual choice
+             u"Usage: copy ( move | fire ) ( turn | rise )",
+             # embedded choices
+             u"Usage: copy ( ( move | fire ) | ( turn | rise ) )",
+             u"Usage: copy ( ( move | fire ) | turn )",
+             u"Usage: copy ( move | ( fire | turn ) )",
+             u"Usage: copy ( move | ( fire | ( turn | rise ) ) )",
+           # optional
+             # choice, first is fake since it is alone, others actual
+             u"Usage: copy [ move ] ",
+             u"Usage: copy [ move | fire ]",
+             u"Usage: copy [ move | fire | turn ]",
+             u"Usage: copy [ move | fire | turn | fire ]",
+             # actual choice followed by both implied and explicit required
+             u"Usage: copy [ move | fire ] turn rise",
+             u"Usage: copy [ move | fire ] [ turn rise ]",
+             # two pairs of actual choice
+             u"Usage: copy [ move | fire ] [ turn | rise ]",
+             # embedded choices
+             u"Usage: copy [ [ move | fire ] | [ turn | rise ] ]",
+             u"Usage: copy [ [ move | fire ] | turn ]",
+             u"Usage: copy [ move | [ fire | turn ] ]",
+             u"Usage: copy [ move | [ fire | [ turn | rise ] ] ]",
+             # 
+           # multiple usage patterns
+             u"Usage: copy1 \n copy2 \n\n",
+             u"Usage: copy1 \n copy2 \n copy3 ",
+             u"Usage: copy1 FILE \n copy2 FILE \n\n",
+             u"Usage: copy1 FILE \n copy2 FILE \n copy3 FILE ",
+             # OR between usage lines
+             u"Usage: copy1 FILE \n or copy2 FILE \n",
+             u"Usage: copy1 FILE \n or copy2 FILE \n or copy3 FILE \n",
+           # options
+             u"Usage: move -a",
+             u"Usage: move -a -b",
+             u"Usage: move -a -b -c",
+             u"Usage: move -a -b -c -d",
+             u"Usage: move -ab",
+             u"Usage: move -abc",
+             u"Usage: move -abcd",
+             u"Usage: move --one",
+             u"Usage: move --one --two",
+             u"Usage: move --one --two --three",
+             u"Usage: move --one --two --three --four",
+           # repeating
+             # 49
+             u"Usage: copy <move>... ",
+             u"Usage: copy <move> <move>... ",
+             u"Usage: copy ( move [ fire ]... )...",
+           # double-dash '--'
+             u"Usage: my_program [options] [--] <file>...",
+           # single dash '[-]', file input from stdin
+             u"Usage: copy [options] ( <file>... | - )",
+           # combinations
+             u"Usage: test [mode] TARGET\n\n  Xy a program to ",
+             u"Usage: copy -l\n\n Test program \n",
+             u"Usage: copy [ --speed <speed> --angle ANGLE ] <when>",
+             u"Usage: copy -abc --why <file>",
+             u"Usage:  my_program command --option <argument>",
+             u"Usage:  my_program [<optional-argument>]",
+             u"Usage:  my_program --another-option=<with-argument>",
+             u"Usage:  my_program (--either-that-option | <or-this-argument>)",
+             u"Usage:  my_program <repeating-argument> <repeating-argument>...",
+           # 63
              """Usage:
 	         my_program command --option <argument>
 	         my_program [<optional-argument>]
@@ -60,43 +125,58 @@ def general():
 	         my_program (--either-that-option | <or-this-argument>)
 	         my_program <repeating-argument> <repeating-argument>...
 	     """,
-             "Usage:  my_program commandx -a -b -c <argument> \n",
-             "Usage:  my_program commandx -abc <argument> \n",
-             "Usage:  my_program commandx --long <argument> \n",
-             "Usage:  my_program commandx --long= <argument> \n",
-             "Usage:  my_program commandx --long=<argument> \n",
-             "Usage:  my_program commandx --option <argument>",
-             "Usage:  my_program NORM <positional-argument> \n",
-             # 30
-             "Usage:  my_program NORM <positional-argument> [<optional-argument>] \n",
-             "Usage:  my_program --another-option=<with-argument>",
-             "Usage:  my_program (--either-that-option | <or-this-argument>)",
-             "Usage:  my_program <repeating-argument> <repeating-argument>...",
-	     "Usage:  typo-example <repeating-typo-w-comma>..,",
+             u"Usage:  my_program commandx -a -b -c <argument> \n",
+             u"Usage:  my_program commandx -abc <argument> \n",
+             u"Usage:  my_program commandx --long <argument> \n",
+             u"Usage:  my_program commandx --long= <argument> \n",
+             u"Usage:  my_program commandx --long=<argument> \n",
+             u"Usage:  my_program commandx --option <argument>",
+             u"Usage:  my_program NORM <positional-argument> \n",
+             u"Usage:  my_program NORM <positional-argument> [<optional-argument>] \n",
+             u"Usage:  my_program --another-option=<with-argument>",
+             u"Usage:  my_program (--either-that-option | <or-this-argument>)",
+             u"Usage:  my_program <other> ( <a> | <b> ) ...",
+	     u"Usage:  typo-example <repeating-typo-w-comma>..,",
              # '..,' => command due to typo, classic user error that should be
              #          provide a gentle reminder
-             # 35
-             "Usage:  my_program <repeating> <repeating>...",
-             # 36
-             "Usage:  my_program --flag <repeating> <repeating>... --what",
+             u"Usage:  my_program <repeating> <repeating>...",
+             u"Usage:  my_program --flag <repeating> <repeating>... --what",
              # choice chain with implicit grouping
-             "Usage:  my_program --flag | --what | --now",
-             "Usage:  my_program ( --flag | --what | --now )",
-             "Usage:  my_program ( a b c )",
+             u"Usage:  my_program --flag | --what | --now",
+             u"Usage:  my_program ( --flag | --what | --now )",
+             u"Usage:  my_program ( a b c )",
              # 1. fake choice in req grouping, 2. real choice in req grouping
-             "Usage:  my_program ( a b c ) ( --flag | --what | --now )",
-             # 41
-             "Usage:  my_program --flag <no-unexpected-grouping>", 
-             "Usage:  my_program --flag <unexpected> <grouping>", 
-             "Usage:  my_program --flag <unexpected> <grouping> <same-grouping>", 
-             "Intro\n\nSecond intro\n\nUsage:  my_program --flag <unexpected> <grouping> <same-grouping>",
-             #
-             "Usage:  calculator_example.py <value> ( ( + | - | * | / ) <value> )...",
+             u"Usage:  my_program ( a b c ) ( --flag | --what | --now )",
+             u"Usage:  my_program --flag <no-unexpected-grouping>",
+             u"Usage:  my_program --flag <unexpected> <grouping>",
+             # this calcultar pattern tripped a bug in a later version of the grammar
+             u"Usage:  calculator_example.py <value> ( ( + | - | * | / ) <value> )...",
+         #
+         # description section
+         #
+             u"Usage: copy FILE \n\n Description single line",
+             u"Usage: copy FILE \n\n Description line 1\nDescription line 2",
+             """Usage: copy FILE
+
+First description line 1\n First description line 2
+
+Second description line 1\n Second description line 2
+""",
+         #
+         # intro section
+         #
+             "Intro section\n\n Usage: copy FILE",
+             ( "Intro - line 1\nFirst intro - line 2\n\n"
+               "Usage: copy FILE" ),
+             ( "Intro - line 1\nFirst intro - line 2\n\n"
+               "Second intro - line 1\nSecond intro - line 2\n\n"
+               "Usage: copy FILE" ),
+             # 45
            ]
 
 #------------------------------------------------------------------------------
 
-def fragments():
+def fragment():
 
     return [
         "Usage : copy SRC DST",

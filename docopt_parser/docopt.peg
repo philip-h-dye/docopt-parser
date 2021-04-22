@@ -1,6 +1,10 @@
-// __version__ = '0.5.8'
+// __version__ = 'analysis-not-for-release-0.6.7'
 
 docopt = intro* usage other_sections trailing* newline* EOF
+// docopt = usage newline* EOF
+// docopt = program argument*
+// docopt = usage_pattern trailing*
+// docopt = choice trailing*
 
 other_sections = other*
 
@@ -9,7 +13,7 @@ other = blankline ( operand_section / options_section / description )
 // Intro -- typically a single line 
 // -----
 
-intro = newline* !usage_entry line+ newline+
+intro = newline* !usage_entry line+ newline
 
 // Usage Patterns
 // --------------
@@ -23,14 +27,21 @@ usage_pattern = OR? program choice?
 
 program = string_no_whitespace
 
-expression = ( optional / required / argument )+
+// Left recursive ?
+// choice = expression BAR choice / expression
+// choice = expression ( BAR choice )?
+// easier to process as it does not cascading
+choice = expression ( BAR expression )*
 
-optional = LBRACKET choice RBRACKET repeated?
-required = LPAREN choice RPAREN repeated?
-argument = ( option / operand / command ) repeated?
-repeated = '...'
+// expression = ( ( optional / required / argument ) repeated? )+
+expression = repeatable+
+repeatable = term repeating?
+term = ( optional / required / argument )
+repeating = '...'
 
-choice = expression ( BAR choice )?
+optional = LBRACKET choice RBRACKET
+required = LPAREN choice RPAREN
+argument = ( option / operand / command )
 
 option = long / short
 // short option allowing for stacking or an immediate option-argument
@@ -39,7 +50,7 @@ option = long / short
 //   first, '-fuz' becomes [ short_no_arg '-f', command 'uz' ]
 short = short_stacked / short_no_arg
 short_no_arg = r'-[\w]'
-short_stacked = r'-[\w]+'
+short_stacked = r'-[\w][\w]+'
 long = long_with_eq_arg / long_no_arg
 long_no_arg = r'--[\w][-_\w]*'
 long_with_eq_arg = long_with_eq_caps / long_with_eq_angle
@@ -47,7 +58,7 @@ long_with_eq_caps = r"--[\w][-_\w]*=[A-Z][_A-Z]*"
 long_with_eq_angle = r"--[\w][-_\w]*=<[-_:\w]+>"
 
 operand = operand_all_caps / operand_angled
-operand_all_caps = r'\b[A-Z][_A-Z]+\b'
+operand_all_caps = r'\b[A-Z][_A-Z0-9]+\b'
 operand_angled = r'<[-_:\w]+>'
 
 command = r'[^\s\n\[\]\(\)\|]+'
@@ -57,46 +68,49 @@ command = r'[^\s\n\[\]\(\)\|]+'
 // -------------------
 
 description = line+
-line = !operand_or_option ( word+ newline / word+ EOF )
+line = !operand !option ( words newline / words EOF )
+words = word+
 word = string_no_whitespace
 
-// Operand / Positional Arguments with help text
-// ---------------------------------------------
-
-operand_section = operand_intro? operand_line+
-operand_intro = line
-operand_line = operand_detail newline / operand_detail EOF
-operand_detail = operand operand_help?
-operand_help = word+ ( newline !operand_or_option operand_help )*
-
-// Options details with help text
+// Operand / Positional Arguments
 // ------------------------------
 
-options_section = newline* options_intro? option_line+ newline*
+// TRAILING when after an options section with multiline help
+operand_section = newline* operand_intro? operand_line+
+operand_intro = line+
+operand_line = operand_detail newline / operand_detail EOF
+operand_detail = operand operand_help?
+operand_help = words ( newline !operand operand_help )*
 
-options_intro = line
+// Options
+// -------
+
+options_section = newline* options_intro? option_line+
+
+options_intro = line+
 
 option_line = option_detail newline / option_detail EOF
 option_detail = option_list option_help?
 
 option_list = option_single (COMMA? option_list )?
 option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
-option_help = word+ ( newline !operand_or_option option_help )*
+option_help = words ( newline !option_single option_help )*
 
 short_with_arg = short_no_arg operand
 long_with_arg = long_with_eq_arg / long_with_gap_arg
 long_with_gap_arg = long_no_arg operand
 
-// Trailing Text -- catchall
+// Trailing Text -- a catchall
 // -------------
 
 trailing = trailing_line+
-trailing_line = word+ newline / word+ EOF
+trailing_line = trailing_strings newline / trailing_strings EOF
+trailing_strings = string_no_whitespace+
 
 // General Utility
 // ---------------
 
-operand_or_option = r'([-<]|[A-Z][A-Z])'
+string_no_whitespace = r'[^\s\n]+'
 
 blankline = &newline newline+
 
@@ -110,5 +124,3 @@ LPAREN = '('
 RPAREN = ')'
 BAR = '|'
 COMMA = ','
-
-string_no_whitespace = r'[^\s\n]+'
