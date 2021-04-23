@@ -19,7 +19,7 @@ class PreInstallCommand(InstallCommand):
 
 slurp = lambda fname : [(f.read(), f.close()) for f in [open(fname,'r')]][0][0]
 
-contents = slurp('docopt.peg')
+contents = slurp('src/docopt.peg')
 vpattern = ".*#\s*__version__\s*=\s*[\"'](.*)[\"']"
 _version = re.search ( vpattern, contents, re.M ).group(1)
 
