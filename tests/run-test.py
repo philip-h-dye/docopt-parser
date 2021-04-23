@@ -85,13 +85,13 @@ if False:
     sys.stdout.flush()
 #------------------------------------------------------------------------------
 
-from dparser import DocOptParserPEG
+from docopt_parser import DocOptParserPEG
 # DocOptSimplifyVisitor
-from dparser import DocOptSimplifyVisitor_Pass1
-from dparser import DocOptSimplifyVisitor_Pass2
-from dparser import DocOptSimplifyVisitor_Pass3
-from dparser import DocOptListViewVisitor
-# from dparser import enable_debug, apply_to_tree
+from docopt_parser import DocOptSimplifyVisitor_Pass1
+from docopt_parser import DocOptSimplifyVisitor_Pass2
+from docopt_parser import DocOptSimplifyVisitor_Pass3
+from docopt_parser import DocOptListViewVisitor
+# from docopt_parser import enable_debug, apply_to_tree
 
 # pretty printing for arpeggio ParseTreeNodes with terse names
 import p
