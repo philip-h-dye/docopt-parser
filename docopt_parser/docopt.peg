@@ -1,6 +1,9 @@
-// __version__ = 'analysis-not-for-release-0.6.7'
+// __version__ = '0.6.7-alpha'
 
 docopt = intro* usage other_sections trailing* newline* EOF
+
+// Simpler forms used when troubleshoooting
+//
 // docopt = usage newline* EOF
 // docopt = program argument*
 // docopt = usage_pattern trailing*
