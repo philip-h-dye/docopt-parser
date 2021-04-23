@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from __future__ import print_function
 
 import sys
@@ -10,36 +12,27 @@ from glob import glob
 from invoke import task
 from invoke.util import log
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
+slurp = lambda fname : [(f.read(), f.close()) for f in [open(fname,'r')]][0][0]
 
-def slurp(filename):
-    return [(f.read(), f.close())
-            for f in [open(filename)]][0][0]
-
-
-def newline():
-    print()
-
+def newline(): print()
 
 body_color = u"\u001b[38;5;189m"  # blue
 line_color = u"\u001b[38;5;186m"  # yellow
 # ansi_reset	= u"\u001b[0m"
 ansi_reset = ''
 
-
 def start():
     newline()
     sys.stdout.write(body_color)
-
 
 def separator():
     newline()
     print(line_color + ('- - - - - ' * 6) + ansi_reset)
     newline()
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 def verbose_run(c, cmd):
     print('+ ' + cmd)
@@ -51,28 +44,23 @@ def verbose_run(c, cmd):
         exit(result.exited)
     return result
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 def package_name():
-
     # If 'src' is a symlink, use base name of the symlink target
     if os.path.islink('src') and os.path.isdir('src/.'):
         return os.path.basename(os.readlink('src'))
-
     # Use script name as basis
     import inspect
     script_file = inspect.getfile(inspect.currentframe())
     return os.path.basename(os.path.dirname(os.path.abspath(script_file)))
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 # Search for cython extension build artifacts when cleaning
 EXTENSION_SOURCE_TOP_DEFAULTS = [package_name(), 'src']
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 @task
 def info(c):
@@ -83,20 +71,16 @@ def info(c):
     verbose_run(c, "python setup.py info")
     separator()
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # essentialy a forward declaration
-
-
 @task
 def clean_(c):
     clean(c)
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # @task(clean_)
-
-
 @task(optional=['docs'])
 def format(c, top='src'):
     """
@@ -120,8 +104,7 @@ def format(c, top='src'):
         verbose_run(c, f"autopep8 --in-place -aaaaaaaa {python_file}")
     separator()
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 @task(format)
 def flake8(c, top='src'):
@@ -142,7 +125,7 @@ def flake8(c, top='src'):
                     top='src/.'))))
     separator()
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # @task(clean_,flake8)
 # @task(flake8, optional=['docs'])
@@ -157,11 +140,9 @@ def build(c, docs=False):
         verbose_run(c, "sphinx-build docs docs/_build")
     separator()
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 # @task(build,optional=['main'])
-
-
 @task(optional=['main'])
 def test(c, main=False):
     """
@@ -187,12 +168,24 @@ def test(c, main=False):
 
     separator()
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+# @task(clean_,flake8)
+# @task(flake8, optional=['docs'])
+# @task(optional=['docs'])
+@task()
+def wheel(c):
+    """
+    Build the wheel
+    """
+    start()
+    verbose_run(c, "python setup.py bdist_wheel ")
+    separator()
+
+#------------------------------------------------------------------------------
 
 # @task(build,optional=['system'])
-
-
-@task(optional=['system'])
+@task(wheel, optional=['system'])
 def install(c, system=False):
     """
     Install the package.                Usage:  install [--system]
@@ -206,15 +199,22 @@ def install(c, system=False):
     """
     start()
 
-    verbose_run(c, "python -m pip install %s ." % ('' if system else '--user'))
+    # Weirdly dies complaining about broken symlinks and such in temporary
+    # directory, some related to tests
+    # verbose_run(c, "python3 -m pip install %s ." % ('' if system else '--user'))
+
+    # Building the wheel and installing from it works better
+    package = package_name()
+    verbose_run(c, f"python3 -m pip install --no-index "
+                f" --find-links=dist {package} --force-reinstall %s "
+                % ('' if system else '--user') )
 
     separator()
 
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 @task(optional=('docs', 'no-bytecode', 'extra'))
-def clean(c, docs=False, no_bytecode=True, extra=None):
+def clean(c, docs=False, no_bytecode=False, extra=None):
     """
     Cleanup build & test artifacts.     Usage:  clean [options]
 
@@ -229,15 +229,19 @@ def clean(c, docs=False, no_bytecode=True, extra=None):
     removed = 0
 
     # At the top level
-    patterns = ['build', 'dist', '.eggs', '*.egg', '*.egg-info']
+    patterns = ['build', 'dist', '.eggs', '*.egg', '*.egg-info' ]
     if not no_bytecode:
         patterns += ['*.pyc', '*.pyo']
     if extra:
         patterns.append(extra)
+    # print(f": clean : top : patterns = {patterns}")
     for pattern in patterns:
         for relative_path in glob(pattern):
             print("removing '{}'".format(relative_path))
-            shutil.rmtree(relative_path)
+            if os.path.isdir(relative_path):
+                shutil.rmtree(relative_path)
+            else :
+                os.remove(relative_path)
             removed += 1
     if docs:
         relative_path = 'docs/_build'
@@ -249,15 +253,18 @@ def clean(c, docs=False, no_bytecode=True, extra=None):
     matcher_for_directories = re.compile(r'^(__pycache__|[.]pytest_cache)')
     file_patterns = r'.*~'
     if not no_bytecode:
-        file_patterns += r'|.*[.]pyc|.*[.]pyo|.*[.]so'
+        file_patterns += r'|.*[.](pyc|pyo|so|o|obj)'
     matcher_for_files = re.compile(r'^(' + file_patterns + r')$')
+
     for parent, subdirs, files in os.walk('.'):
+
         for subdir in subdirs:
             if matcher_for_directories.match(subdir):
                 relative_path = os.path.join(parent, subdir)
                 print("removing '{}'".format(relative_path))
                 shutil.rmtree(relative_path)
                 removed += 1
+
         for file_ in files:
             if matcher_for_files.match(file_):
                 relative_path = os.path.join(parent, file_)
@@ -272,9 +279,7 @@ def clean(c, docs=False, no_bytecode=True, extra=None):
 
     separator()
 
-
-# ------------------------------------------------------------------------------
-
+#------------------------------------------------------------------------------
 
 def python_source_files(*, top='.', extension='py', exclude=[]):
 
@@ -301,4 +306,4 @@ def python_source_files(*, top='.', extension='py', exclude=[]):
                         continue
                     yield file_path
 
-# ------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
