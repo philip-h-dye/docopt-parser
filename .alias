@@ -37,7 +37,7 @@ done
 #------------------------------------------------------------------------------
 alias gfetch=' git fetch origin '
 alias gmod=' gfetch && git status --untracked-files=no '
-alias gstat=' gfetch origin && git status '
+alias gstat=' gfetch && git status '
 alias gadd=' git fetch origin && git add '
 alias gpull=' gfetch && git pull origin master '
 alias gpush=' gpull && git push origin master '
