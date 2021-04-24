@@ -1,0 +1,17 @@
+// Program Description
+// -------------------
+
+line = _ ( words newline / words ) _ EOF
+
+words = word+
+
+word = _ string_no_whitespace
+
+// General Utility
+// ---------------
+
+string_no_whitespace = _ r'[^\s\n]+'
+
+newline = _ r'[\n]'
+
+_ = r'[ \t\r]*'

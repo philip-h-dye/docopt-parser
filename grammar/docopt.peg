@@ -1,0 +1,131 @@
+// __version__ = '0.6.8-alpha'
+
+docopt = intro* usage other_sections trailing* newline* EOF
+
+// Simpler forms used when troubleshoooting
+//
+// docopt = usage newline* EOF
+// docopt = program argument*
+// docopt = usage_pattern trailing*
+// docopt = choice trailing*
+
+other_sections = other*
+
+other = _ blankline ( operand_section / options_section / description )
+
+// Intro -- typically a single line 
+// -----
+
+intro = newline* !usage_entry line+ newline
+
+// Usage Patterns
+// --------------
+
+usage = newline* usage_entry newline* usage_line+
+
+usage_entry = _ r'(?i)Usage\s*:'
+
+usage_line = _ usage_pattern newline / _ usage_pattern EOF
+usage_pattern = OR? program choice?
+
+program = _ string_no_whitespace
+
+// Left recursive ?
+// choice = expression BAR choice / expression
+// choice = expression ( BAR choice )?
+// easier to process as it does not cascading
+choice = expression ( BAR expression )*
+
+// expression = ( ( optional / required / argument ) repeated? )+
+expression = repeatable+
+repeatable = term repeating?
+term = _ ( optional / required / argument )
+repeating = _ '...'
+
+optional = LBRACKET choice RBRACKET
+required = LPAREN choice RPAREN
+argument = _ ( option / operand / command )
+
+option = long / short
+// short option allowing for stacking or an immediate option-argument
+//   semantic analysis necessary to determine such
+//   and frankly, necessary for short_no_arg also.  If short_no_arg is
+//   first, '-fuz' becomes [ short_no_arg '-f', command 'uz' ]
+short = short_stacked / short_no_arg
+short_no_arg = r'-[\w]'
+short_stacked = r'-[\w][\w]+'
+long = long_with_eq_arg / long_no_arg
+long_no_arg = r'--[\w][-_\w]*'
+long_with_eq_arg = long_with_eq_caps / long_with_eq_angle
+long_with_eq_caps = r"--[\w][-_\w]*=[A-Z][_A-Z]*"
+long_with_eq_angle = r"--[\w][-_\w]*=<[-_:\w]+>"
+
+operand = _ operand_all_caps / _ operand_angled
+operand_all_caps = r'\b[A-Z][_A-Z0-9]+\b'
+operand_angled = r'<[-_:\w]+>'
+
+command = _ r'[^\s\n\[\]\(\)\|]+'
+// Without \[\]\(\)\|, optional/required/choice become sequences of commands
+
+// Program Description
+// -------------------
+
+description = line+
+line = _ !operand !option ( words newline / words EOF )
+words = word+
+word = _ string_no_whitespace
+
+// Operand / Positional Arguments
+// ------------------------------
+
+// TRAILING when after an options section with multiline help
+operand_section = newline* operand_intro? operand_line+
+operand_intro = line+
+operand_line = operand_detail newline / operand_detail EOF
+operand_detail = operand operand_help?
+operand_help = _ words ( newline !operand operand_help )*
+
+// Options
+// -------
+
+options_section = newline* options_intro? option_line+
+
+options_intro = line+
+
+option_line = option_detail newline / option_detail EOF
+option_detail = option_list option_help?
+
+option_list = option_single (COMMA? option_list )?
+option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
+option_help = _ words ( newline !option_single option_help )*
+
+short_with_arg = short_no_arg operand
+long_with_arg = long_with_eq_arg / long_with_gap_arg
+long_with_gap_arg = long_no_arg operand
+
+// Trailing Text -- a catchall
+// -------------
+
+trailing = _ trailing_line+
+trailing_line = _ trailing_strings newline / trailing_strings EOF
+trailing_strings = string_no_whitespace+
+
+// General Utility
+// ---------------
+
+string_no_whitespace = _ r'[^\s\n]+'
+
+blankline = _ &newline _ newline+
+
+newline = _ r'[\n]'
+
+OR = _ 'or' _
+
+LBRACKET = _ '['
+RBRACKET = _ ']'
+LPAREN = _ '('
+RPAREN = _ ')'
+BAR = _ '|' _
+COMMA = _ ',' _
+
+_ = r'[ \t\r]*'

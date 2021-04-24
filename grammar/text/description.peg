@@ -1,0 +1,15 @@
+description = _ line+ _ EOF
+
+line = _ ( words newline / words EOF )
+
+words = word+
+
+word = _ string_no_whitespace
+
+string_no_whitespace = _ r'[^\s\n]+'
+
+blankline = _ &newline _ newline+
+
+newline = _ r'[\n]'
+
+_ = r'[ \t\r]*'

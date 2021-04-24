@@ -1,0 +1,7 @@
+words = word+ _ EOF
+
+word = _ string_no_whitespace
+
+string_no_whitespace = _ r'[^\s\n]+'
+
+_ = r'[ \t\r]*'
