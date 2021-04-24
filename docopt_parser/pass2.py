@@ -30,6 +30,8 @@ class Unwrap(object):
 
 class DocOptSimplifyVisitor_Pass2(object):
 
+    classes = 'unwrap_single unwrap_list empty text'.split()
+
     _unwrap = ( ' other_sections other '
                 ' required '		# explicit no differnet than explicit
                 # ' expression '  	# NO, determinant for sides of implicit choice
@@ -83,8 +85,7 @@ class DocOptSimplifyVisitor_Pass2(object):
         super().__init__(*args, **kwargs)
         
         # 'unwrap' -- does too much, break into clearly defined cases
-        classes = 'unwrap_single unwrap_list empty text'
-        for _class in classes.split() :
+        for _class in classes :
             for rule_name in getattr(self, f"_{_class}").split() :
                 setattr(self, f"visit_{rule_name}", getattr(self, _class))
 

@@ -24,7 +24,8 @@ GRAMMAR_FILE_NAME = 'docopt.peg'
 
 class DocOptParserPEG(object):
 
-    def __init__(self, grammar_text=None, grammar_file=None, debug=False):
+    def __init__(self, start='docopt', grammar_text=None, grammar_file=None,
+                 debug=False):
 
         self.debug = debug
 
@@ -42,12 +43,15 @@ class DocOptParserPEG(object):
                 print("*** Wrong comment prefix, found '#' in grammar !")
                 sys.exit(1)
 
+        self.start_rule = start
         self.parser = arpeggio.cleanpeg.ParserPEG \
-            (self.grammar_text, "docopt", reduce_tree=False)
+            (self.grammar_text, self.start_rule, skipws=False)
+
+        # reduce_tree=False)
+        # self.parser.ws = '\r\t '
 
         self.parser.debug = self.debug
 
-        self.parser.ws = '\r\t '
 
     def parse(self, input_expr, print_raw=False):
         # self.parser.debug = True
@@ -58,8 +62,15 @@ class DocOptParserPEG(object):
 
         return self.raw_parse_tree
 
-        # self.parse_tree = DocOptSimplifyVisitor().visit(self.raw_parse_tree)
-        # return self.parse_tree
+        # FIXME:  Apply each of the 4? the N passes
+        #         ... and return  self ? <simplified-tree> ?
+
+        # self.p1 = DocOptSimplifyVisitor_Pass1().visit(self.raw_parse_tree)
+        # self.p2 = DocOptSimplifyVisitor_Pass2().visit(self.p1)
+        # self.p3 = DocOptSimplifyVisitor_Pass3().visit(self.p2)
+        # self.p4 = DocOptSimplifyVisitor_Pass4().visit(self.p3)
+
+        # return self
 
 #------------------------------------------------------------------------------
 

@@ -12,8 +12,24 @@ import arpeggio.cleanpeg
 from arpeggio import Terminal, NonTerminal, ParseTreeNode, SemanticActionResults
 from arpeggio import StrMatch, RegExMatch
 
-# prettyprinter, registered printers for Terminal, NonTerminal
-from p import pp
+#------------------------------------------------------------------------------
+
+# *** ONLY WHEN NEEDED
+# ***
+# ***   Don't import here unless troubleshooting here, as it results in
+# ***   parse trees 'docopt_parser.p.NonTerminal', etc.  An effect, diametricly
+# ***   opposed to the brevity for which p was creatd.
+# ***
+# *** BREAKS expected results for rule unit tests such as test_text.py.
+# ***
+
+if False :
+    # registered prettyprinters for Terminal, NonTerminal, Unwrap, ...
+    from p import pp
+
+def dprint(s):
+    # print(s)
+    pass
 
 #------------------------------------------------------------------------------
 
@@ -30,15 +46,51 @@ class Unwrap(object):
 
 class DocOptSimplifyVisitor_Pass1(object):
 
+    rule_groups = ' empty as_value as_lines '.split()
+
+    _empty = ( ' _ EOF blankline COMMA LBRACKET RBRACKET LPAREN RPAREN EOF '
+               ' newline '
+             )
+
+    _as_value = ( ' string_no_whitespace word words line '
+                  ' '
+                )
+
+    _as_lines = ( ' description '
+                  ' '
+                )
+
+    #--------------------------------------------------------------------------
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for group in self.rule_groups :
+            if not hasattr(self, group):
+                raise ValueError(f"INTERNAL ERROR, rule group '{group}' method "
+                                 "missing.  Please contact the maintainer.")
+            if group not in kwargs:
+                rules = getattr(self, f"_{group}").split()
+            else:
+                rules = kwargs[group]
+                rules = rules.split() if isinstance(rules, str) else rules
+                if not isinstance(rules, list):
+                    raise ValueError(f"Invalid type for rule group argument "
+                                     f"'{group}'. Expected string or list, "
+                                     f"found {str(type(rules))}")
+            for rule_name in rules:
+                setattr(self, f"visit_{rule_name}", getattr(self, group))
+
+    #--------------------------------------------------------------------------
+
     def visit(self, node, depth=0):
 
         i = ' ' * 3 * depth
-        # print(f"{i} [ p2 : node = {node}")
+        dprint(f"{i} [ p2 : node = {node}")
 
         if not hasattr(node, 'rule_name'):
-            # print(f"{i}   - not a known container : {str(type(node))}")
-            # print(f"{i}   => itself")
-            # print(f"{i} ]")
+            dprint(f"{i}   - not a known container : {str(type(node))}")
+            dprint(f"{i}   => itself")
+            dprint(f"{i} ]")
             if isinstance(node, list) and len(node) == 1:
                 return node[0]
             return node
@@ -47,7 +99,7 @@ class DocOptSimplifyVisitor_Pass1(object):
 
         children = []
         if isinstance(node, (NonTerminal, SemanticActionResults)):
-            # print(f"{i}   - visiting children of '{node.name}' : len = {len(node)}")
+            dprint(f"{i}   - visiting children of '{node.name}' : len = {len(node)}")
             # each of these object types is a list
             for child in node :
                 response = self.visit(child, 1+depth)
@@ -55,18 +107,18 @@ class DocOptSimplifyVisitor_Pass1(object):
                     if not isinstance(response, NonTerminal):
                         children.append(response)
                         continue
-                    # print(f": repeatable : {node.name} : response =")
+                    dprint(f": repeatable : {node.name} : response =")
                     # pp(response)
                     if ( response.rule_name == 'repeating' and
-                         len(children) > 0 and 
+                         len(children) > 0 and
                          response[0] == children[-1] ):
-                        # print(f": repeatable : {node.name} : children =")
+                        dprint(f": repeatable : {node.name} : children =")
                         # pp(children)
                         children[-1] = response
                     else :
                         children.append(response)
 
-        # print(f"{i}   - visited children = {children}")
+        dprint(f"{i}   - visited children = {children}")
 
         #----------------------------------------------------------------------
 
@@ -74,22 +126,22 @@ class DocOptSimplifyVisitor_Pass1(object):
 
         rule_name = str(node.rule_name)
         method = f"visit_{rule_name}"
-        # print(f"{i}   - {method} ?")
+        dprint(f"{i}   - {method} ?")
         if hasattr(self, method):
-            # print(f"{i}   - method found, applying to {node.name}")
+            dprint(f"{i}   - method found, applying to {node.name}")
             out = getattr(self, method)(node, children, 1+depth)
-            # print(f"{i}   => {_res(out,i)}")
-            # print(f"{i} ]")
+            dprint(f"{i}   => {_res(out,i)}")
+            dprint(f"{i} ]")
             return out
-        # else :
-            # print(f"{i}   - no such method")
+        else :
+            dprint(f"{i}   - no such method")
 
         #----------------------------------------------------------------------
 
         if len(children) <= 0:
             out = Terminal(node.rule, 0, node.value)
-            # print(f"{i}   => {_res(out,i)}")
-            # print(f"{i} ]")
+            dprint(f"{i}   => {_res(out,i)}")
+            dprint(f"{i} ]")
             return out
 
         # if len(children) == 1:
@@ -105,11 +157,42 @@ class DocOptSimplifyVisitor_Pass1(object):
                 out = NonTerminal(node.rule, children)
                 out[0] = out[0].value
                 # FIXME: this breaks the parse tree
-        # print(f"{i}   => {_res(out,i)}")
-        # print(f"{i} ]")
+        dprint(f"{i}   => {_res(out,i)}")
+        dprint(f"{i} ]")
         return out
 
+    #------------------------------------------------------------------------------
+
+    def empty(self, node, children, depth=0):
+        return None
+
+    #--------------------------------------------------------------------------
+
+    # Gather composition elements into a terminal
+    #   (i.e. a line from a sequence of words)
+    def as_value(self, node, children, depth=0):
+        if len(children) :
+            print(f"\n: as_value() : {node.rule_name} : collecting {len(children)} children"
+                  f": {repr(children)}")
+            value = ' '.join([c.value for c in children])
+        else :
+            print(f"\n: as_value() : {node.rule_name} : single value '{node.value}'")
+            value = node.value
+        return Terminal(StrMatch('', node.rule_name), 0, value)
+
+    #--------------------------------------------------------------------------
     
+    # Gather composition elements into a terminal with line breaks
+    def as_lines(self, node, children, depth=0):
+        if len(children) :
+            print(f": as_lines() : {node.rule_name} : collecting {len(children)} children"
+                  f": {repr(children)}")
+            value = '\n'.join([c.value for c in children])
+        else :
+            print(f": as_lines() : {node.rule_name} : single value '{node.value}'")
+            value = node.value
+        return Terminal(StrMatch('', node.rule_name), 0, value)
+
     #--------------------------------------------------------------------------
 
     REPEATING = Terminal(StrMatch('...', rule_name='repeating'), 0, '...')
