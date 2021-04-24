@@ -6,7 +6,7 @@ alias c='( clear && invoke clean )'
 
 alias b='( clear && logts -b log/build invoke build )'
 
-alias t='( clear && logts -b log/test invoke test )'
+alias t='( clear && c && logts -b log/test invoke test )'
 
 # alias inst='( clear && logts -b log/install invoke install && echo "install path = $( which-module ${module} )" )'
 
@@ -37,7 +37,7 @@ done
 #------------------------------------------------------------------------------
 alias gfetch=' git fetch origin '
 alias gmod=' gfetch && git status --untracked-files=no '
-alias gstatus=' gfetch origin && git status '
+alias gstat=' gfetch origin && git status '
 alias gadd=' git fetch origin && git add '
 alias gpull=' gfetch && git pull origin master '
 alias gpush=' gpull && git push origin master '
