@@ -20,7 +20,7 @@ class PreInstallCommand(InstallCommand):
 slurp = lambda fname : [(f.read(), f.close()) for f in [open(fname,'r')]][0][0]
 
 contents = slurp('src/docopt.peg')
-vpattern = ".*#\s*__version__\s*=\s*[\"'](.*)[\"']"
+vpattern = ".*//\s*__version__\s*=\s*[\"'](.*)[\"']"
 _version = re.search ( vpattern, contents, re.M ).group(1)
 
 with open('README.rst', 'rb') as f:
