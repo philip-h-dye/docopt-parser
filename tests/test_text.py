@@ -66,8 +66,8 @@ class Test_Import ( unittest.TestCase ) :
 
         # remove leading and trailing whitespace including newlines
         output = input.strip()
-        # reduce each expanse of whitespace separating words to a single space
-        output = re.compile('[ \t]+').sub(' ', input)
+        # reduce each expanse of whitespace to a single space
+        output = re.compile('[ \t]+').sub(' ', output)
         # remove spaces before of after a newline
         output = re.compile(' ?\n ?').sub('\n', output)
 
