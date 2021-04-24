@@ -6,24 +6,25 @@ alias x=' clear && logts -b log/single python3 ${n}.py '
 
 # Otherwise, it picks opts from ../setup.cfg and dies looking for ./tests.
 
-# alias t=' clear && logts -b log/test pytest -c /dev/null '
-
-alias t=' clear && logts -b log/test ./py simple.py'
+# !!! now using 'invoke test'
+# No # # alias t=' clear && logts -b log/test pytest -c /dev/null '
+# NO # # alias t=' clear && logts -b log/test ./py simple.py'
 
 export PYTHONPATH=/home/phdyex/.local/lib/python3.8
 
 # cease the warnings about a package that I do not maintain.
 export PYTHONWARNINGS="ignore::DeprecationWarning:simplejson"
 
-#
-#
-
-alias t=' clear && logts -b log/. python parser.py '
+# !!! now using 'invoke test'
+# NO # # alias t=' clear && logts -b log/. python parser.py '
+# NO # alias t=' tst --general 63 '
 
 alias c=' rm -f *.dot *.pdf && find . -name __pycache__ | xargs rm -rf '
 
-alias tst=' clear && logts --quiet --base log    t/run-test.py '
-alias err=' clear && logts --quiet --base error  t/run-test.py '
+alias _tst=' logts --quiet --base log    t/run-test.py '
+alias _err=' logts --quiet --base error  t/run-test.py '
+alias tst=' clear && _tst '
+alias err=' clear && _err '
 
 alias g=' tst --general '
 alias p=' tst --program '
@@ -32,11 +33,18 @@ alias trail=' tst --trailing '
 
 g=2
 alias x=' g ${g} '
-
 alias ex=' /usr/bin/emacs ./log/latest.txt '
 
 alias trio="echo '# a b c / d e f / g h i / j k l / m n o'"
-
 alias eterm=' emacs --load ~/.xemacs/my-ansi-term.el '
+
+#
+
+alias pt=' ( c && export PYTHONPATH="t:.:${PYTHONPATH}" && pytest -s tests )'
+
+#
+
+SAVED_GRAMMARS=ref/saved-grammar
+alias save='( f=s/docopt.peg && set -x && cp $f ${SAVED_GRAMMARS}/$(ts --ref $f).peg )'
 
 #
