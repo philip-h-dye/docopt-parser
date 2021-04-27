@@ -1,0 +1,67 @@
+// Options
+
+list = option_list _ EOF
+
+// option_prior = COMMA / BAR / ws
+// NOPE ! // option_prior = r'[,\|\s]'
+
+// option_list = option_single ( COMMA? option_single )*
+// option_list = option_single ( option_prior option_single )*
+// WORKS // option_list = option_single option_prior option_list / option_single
+
+// NO : BREAKS : option_list = option_single ( (COMMA|BAR)? option_single )*
+
+// option_list = option_list_comma / option_list_bar / option_list_space
+option_list = option_list_bar / option_list_comma / option_list_space
+
+// option_list_comma = option_single ( COMMA? option_single )*
+// So, none of them work without ?
+// option_list_bar = option_single ( BAR option_single )*
+// option_list_space = option_single ( _ option_single )*
+
+option_list_comma   = option_single COMMA  option_list_comma   / option_single
+option_list_bar     = option_single BAR    option_list_bar     / option_single
+option_list_space   = option_single ws     option_list_space   / option_single
+
+// option_single = &option_prior short
+option_single = &COMMA short / &BAR short / &ws short
+
+// As long/short lead with &ws, tight option lists without spaces are not
+// permitted.  Perhaps we expand option\'s lookahead.  We\'ll need to ensure
+// that COMMA isn\'t permitted within usage patterns
+
+short = short_w_arg / short_stacked / short_no_arg 
+short_w_arg = short_no_arg operand_no_space
+// short_stacked = &ws _ r'-[\w][\w]+\b'
+
+short_stacked = _ r'-[\w][\w]+\b'
+
+// short_no_arg = &ws short_no_arg_
+// short_no_arg = &ws short_no_arg_ / &COMMA short_no_arg_ / &BAR short_no_arg_
+// short_no_arg = &option_prior short_no_arg_ 
+// short_no_arg_ = _ r'-[\w]'
+
+short_no_arg = _ r'-[\w]'
+
+// short_no_arg = &ws r'-[\w]' / &COMMA r'-[\w]'
+//
+// Weirdly broken on input = '-f, g, -h' :
+//   and => Expected ws or '--[\w][-_\w]*' or ',' or '-[\w][\w]+\b' at position (1, 2) => ' *-f, -g, -h'.
+//                          ^^^ long arg ?
+
+// Operand
+
+operand_no_space = ( operand_no_space_all_caps / operand_no_space_angled )
+operand_no_space_all_caps = r'[A-Z][_A-Z0-9]+\b'
+operand_no_space_angled = r'<[-_:\w]+>'
+
+// General Utility
+
+EQ = '='
+
+BAR = _ '|'
+COMMA = _ ','
+
+_ = ws*
+
+ws = r'[ \t\r]+'

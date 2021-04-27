@@ -1,0 +1,29 @@
+// Options
+// -------
+
+options_section = newline* options_intro? option_line+
+
+options_intro = line+
+
+option_line = option_detail newline / option_detail EOF
+option_detail = option_list option_help?
+
+option_list = option_single (COMMA? option_list )?
+option_single = short_with_arg / long_with_arg / short_no_arg / long_no_arg
+option_help = _ words ( newline !option_single option_help )*
+
+short_with_arg = short_no_arg operand
+long_with_arg = long_with_eq_arg / long_with_gap_arg
+long_with_gap_arg = long_no_arg operand
+
+// General Utility
+// ---------------
+
+string_no_whitespace = _ r'[^\s\n]+'
+
+newline = _ r'[\n]'
+
+BAR = _ '|' _
+COMMA = _ ',' _
+
+_ = r'[ \t\r]*'
