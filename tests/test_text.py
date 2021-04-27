@@ -30,20 +30,21 @@ GRAMMAR_PATTERN = str( Path( GRAMMAR_BASE, GRAMMAR_GROUP, '{name}.peg' ) )
 class Test_Import ( unittest.TestCase ) :
 
     def setUp(self):
-        pass
+        self.debug = False  # quiet, no parse trees displayed
+        # self.debug = 1      # show parse tree for pass >= self.debug
 
     #--------------------------------------------------------------------------
 
-    def _test_string(self) :
+    def test_string(self) :
         self.execute_passes ( 'string', 'hello', start = 'string_no_whitespace' )
 
-    def _test_word(self) :
+    def test_word(self) :
         self.execute_passes ( 'word', 'hello' )
 
-    def _test_words(self) :
+    def test_words(self) :
         self.execute_passes ( 'words', 'good morning' )
 
-    def _test_line(self) :
+    def test_line(self) :
         self.execute_passes ( 'line', 'good morning' )
 
     def test_description(self) :
@@ -52,6 +53,7 @@ class Test_Import ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def execute_passes ( self, name, input, start=None ):
+
         if start is None:
             start = name
 
@@ -78,10 +80,14 @@ class Test_Import ( unittest.TestCase ) :
         return tree
 
     def perform_pass(self, _pass, name, fcn, *args, **kwargs):
-        print(f": pass {_pass} : {name}")
+        if self.debug is not False :
+            if _pass >= self.debug :
+                print(f": pass {_pass} : {name}")
         out = fcn(*args, **kwargs)
-        pp(out)
-        print('')
+        if self.debug is not False :
+            if _pass >= self.debug :
+                pp(out)
+                print('')
         return out
 
 #------------------------------------------------------------------------------
