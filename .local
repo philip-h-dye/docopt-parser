@@ -40,7 +40,12 @@ alias eterm=' emacs --load ~/.xemacs/my-ansi-term.el '
 
 #
 
-alias pt=' ( c && export PYTHONPATH="t:.:${PYTHONPATH}" && pytest -s tests )'
+pt_target=tests
+pt_opts=
+alias pt='( c && export PYTHONPATH="t:.:${PYTHONPATH}" && logts -b log/test pytest -s ${pt_opts} ${pt_target} )'
+alias px='( c && export PYTHONPATH="t:.:${PYTHONPATH}" && pytest -s ${pt_opts} ${pt_target} )'
+
+alias cx=' clear && pyhere t/common.py '
 
 #
 
