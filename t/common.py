@@ -1,1 +1,1 @@
-../tests/test_common.py
+../tests/grammar/python/test_common.py

@@ -1,1 +1,1 @@
-../tests/test_operand.py
+../tests/grammar/peg/test_operand.py

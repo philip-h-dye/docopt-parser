@@ -1,1 +1,1 @@
-../tests/test_newline.py
+../tests/grammar/python/test_newline.py

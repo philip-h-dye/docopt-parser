@@ -1,1 +1,1 @@
-../tests/test_paragraph.py
+../tests/grammar/python/test_paragraph.py
