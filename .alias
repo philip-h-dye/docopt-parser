@@ -22,7 +22,7 @@ alias rx=' c && x '
 
 function pyhere() {
     export PYTHONPATH=".:t:tests:${PYTHONPATH}"
-    python3 "$@"
+    logts -b log/pyhere python3 "$@"
 }
 
 #------------------------------------------------------------------------------
