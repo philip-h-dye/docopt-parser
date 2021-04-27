@@ -1,1 +1,0 @@
-../tests/grammar/python/test_newline.py
