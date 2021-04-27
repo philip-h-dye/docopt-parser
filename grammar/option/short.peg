@@ -1,12 +1,1 @@
-short = short_stacked / short_no_arg
-
-short_stacked = _ r'-[\w][\w]+'
-
-short_no_arg = _ r'-[\w]'
-
-// General Utility
-// ---------------
-
-string_no_whitespace = _ r'[^\s\n]+'
-
-_ = r'[ \t\r]*'
+short/003.peg

@@ -1,0 +1,36 @@
+option = option_list _ EOF
+
+// Nope :
+//   option_list = short+
+//   short = ws ( short_w_arg / short_stacked / short_no_arg )
+
+// option_list = short ( ws option_list )?		// WORSE:  '-f *-g' with short ordered
+// option_list = short ( ws short )* / short		// WORSE:  '-f *-g'
+// option_list = ( short ws option_list / short )#	// BETTER: '-f -g*'
+// option_list = short ws option_list / short		// WORSE:  '-f *-g'
+
+// option_list = short ( ws short )*			// WORSE:  '-f *-g' with short ordered
+// short = ( short_w_arg / short_stacked / short_no_arg )
+
+// option_list = short ( ws option_list )?		// BETTER: '-f -g*' with short unordered
+// option_list	= short ( ws short )*			// BETTER: '-f -g*' with short unordered
+option_list	= short ws option_list / short		// BETTER: '-f -g*' with short unordered
+short		= ( short_w_arg / short_stacked / short_no_arg )#
+
+short_w_arg	= ( short_no_arg operand_no_space / short_no_arg ws operand_no_space )#
+short_stacked	= &ws _ r'-[\w][\w]+\b'
+short_no_arg	= &ws _ r'-[\w]\b'			// '\b', no improvement :(
+
+// operand = _ ( operand_all_caps / operand_angled )
+// operand_all_caps = ws operand_no_space_all_caps
+// operand_angled = ws operand_no_space_angled
+
+operand_no_space = operand_no_space_all_caps / operand_no_space_angled
+operand_no_space_all_caps = r'[A-Z][_A-Z0-9]+\b'
+operand_no_space_angled = r'<[-_:\w]+>'
+
+// General Utility
+
+_ = ws*
+
+ws = r'[ \t\r]+'

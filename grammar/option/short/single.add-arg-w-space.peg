@@ -1,0 +1,22 @@
+option = short EOF
+
+short = short_w_arg / short_stacked / short_no_arg 
+
+short_w_arg = short_no_arg operand_no_space / short_no_arg ws operand_no_space
+
+short_stacked = &ws _ r'-[\w][\w]+\b'
+short_no_arg = &ws _ r'-[\w]'
+
+// operand = _ ( operand_all_caps / operand_angled )
+// operand_all_caps = ws operand_no_space_all_caps
+// operand_angled = ws operand_no_space_angled
+
+operand_no_space = ( operand_no_space_all_caps / operand_no_space_angled )
+operand_no_space_all_caps = r'[A-Z][_A-Z0-9]+\b'
+operand_no_space_angled = r'<[-_:\w]+>'
+
+// General Utility
+
+_ = ws*
+
+ws = r'[ \t\r]+'
