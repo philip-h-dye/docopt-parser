@@ -25,7 +25,7 @@ GRAMMAR_FILE_NAME = 'docopt.peg'
 class DocOptParserPEG(object):
 
     def __init__(self, start='docopt', grammar_text=None, grammar_file=None,
-                 debug=False):
+                 debug=False, **kwargs):
 
         self.debug = debug
 
@@ -45,7 +45,7 @@ class DocOptParserPEG(object):
 
         self.start_rule = start
         self.parser = arpeggio.cleanpeg.ParserPEG \
-            (self.grammar_text, self.start_rule, skipws=False)
+            ( self.grammar_text, self.start_rule, skipws=False, **kwargs )
 
         # reduce_tree=False)
         # self.parser.ws = '\r\t '
