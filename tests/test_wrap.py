@@ -8,19 +8,27 @@ from prettyprinter import cpprint as pp
 
 #------------------------------------------------------------------------------
 
-from docopt_parser.wrap import WrappedList, FakeNode, wrap, unwrap, unwrap_into
+def is_unpackable_sequence(x):
+    return isinstance(x, (list, tuple))
+
+#------------------------------------------------------------------------------
+
+from docopt_parser.wrap import WrappedList, FakeNode
+from docopt_parser.wrap import wrap, unwrap
+from docopt_parser.wrap import unwrap_at, unwrap_into, unwrap_extend
+
+from docopt_parser.parsetreenodes import NonTerminal_eq
 
 #------------------------------------------------------------------------------
 
 class Test_Case ( unittest.TestCase ):
 
-    def test_marker ( self ):
-        pass
-
     def setUp ( self ):
         self.dot = StrMatch('.', rule_name = 'self.dot')
 
         self.s1 = 's1 : string'
+        self.s2 = 's2 : string'
+        self.s3 = 's3 : string'
 
         # rule, position, value
         self.t1 = Terminal(self.dot, 0, 'one')
@@ -42,103 +50,173 @@ class Test_Case ( unittest.TestCase ):
         assert isinstance(self.n4, list)
 
         self.v0 = self.n2
-        self.v1 = [ 'v1 : string 1', 'v1 : string 2' ]
+        self.v1 = [ self.s1, self.s2 ]
         self.v2 = self.t1
-        self.v3 = 'v3 : string'
+        self.v3s = self.s3
+        self.v3t = ( self.s1, self.s2 )
 
-    def test_wrap_unneccessary(self):
+    def test_000_wrap_unneccessary(self):
 
         w = wrap(deepcopy(self.v0))
         assert not hasattr(w, '_please_unwrap')
         assert w == self.v0
 
-    def test_wrap_and_unwrap__case_1 (self):
+    #------------------------------------------------------------------------------
 
+    def fcn_00x_wrap_and_unwrap(self, case, value):
+        w = wrap(deepcopy(value))
+        assert hasattr(w, '_please_unwrap')
+        assert w._please_unwrap == case
+        assert w is not value
+        if False :
+            pp(value)
+            pp(unwrap(deepcopy(w)))
+        assert unwrap(w) == value
+
+    def test_001_wrap_and_unwrap__case_1 (self):
         # Case 1 : list but [0] is not a ParseTreeNode
+        self.fcn_00x_wrap_and_unwrap(1, self.v1)
 
-        w = wrap(deepcopy(self.v1))
-        assert hasattr(w, '_please_unwrap')
-        assert w._please_unwrap == 1
-        assert w is not self.v1
-        # pp(self.v1)
-        # pp(unwrap(deepcopy(w)))
-        assert unwrap(w) == self.v1
+    def test_002_wrap_and_unwrap__case_2 (self):
+        # Case 2 : not a list, value is a Terminal
+        self.fcn_00x_wrap_and_unwrap(2, self.v2)
 
-    def test_wrap_and_unwrap__case_2 (self):
+    def test_003_wrap_and_unwrap__case_3_string (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_00x_wrap_and_unwrap(3, self.v3s)
 
-        # Case 2 : not a list, value is a ParseTreeNode
-
-        w = wrap(deepcopy(self.v2))
-        assert hasattr(w, '_please_unwrap')
-        # print(f": w2._please_unwrap == {w._please_unwrap}")
-        assert w._please_unwrap == 2
-        assert w is not self.v2
-        # pp(self.v2)
-        # pp(unwrap(deepcopy(w)))
-        # pp(w)
-        assert unwrap(w) == self.v2
-
-    def test_wrap_and_unwrap__case_3 (self):
-
-        # Case 3 : not a list, value is not a ParseTreeNode
-
-        w = wrap(deepcopy(self.v3))
-        assert hasattr(w, '_please_unwrap')
-        # print(f": w3._please_unwrap == {w._please_unwrap}")
-        assert w._please_unwrap == 3
-        assert w is not self.v3
-        # pp(self.v3)
-        # pp(unwrap(deepcopy(w)))
-        assert unwrap(w) == self.v3
+    def test_004_wrap_and_unwrap__case_3_tuple (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_00x_wrap_and_unwrap(3, self.v3t)
 
     #--------------------------------------------------------------------------
 
-    def test_unwrap_into__case_1 (self):
+    def fcn_20x_unwrap_extend(self, case, value):
 
+        debug = False
+
+        wrapped = wrap(deepcopy(value))
+        _wrapped = deepcopy(wrapped)
+
+        assert wrapped._please_unwrap == case
+
+        dst = [ self.t1 ]
+
+        if debug :
+            print(f": fcn_20x_unwrap_extend : case {case} : value = {value}")
+            print(f"    value      = {value}")
+            print(f"    wrapped    = {_wrapped}")
+            print(f"    dst prior  : ") ; pp(dst)
+
+        expect = deepcopy(dst)
+        if is_unpackable_sequence(value):
+            expect.extend(deepcopy(value))
+        else:
+            expect.append(deepcopy(value))
+
+        result = unwrap_extend( dst, wrapped )
+
+        if debug :
+            print(f": produced :") ; pp(dst)
+            print(": expected :") ; pp(expect)
+
+        assert result == dst
+        assert type(dst[1]) == type(expect[1])
+        assert dst[1] == expect[1]
+        assert dst == expect
+
+    def test_201_unwrap_extend__case_1 (self):
         # Case 1 : list but [0] is not a ParseTreeNode
+        self.fcn_20x_unwrap_extend(1, self.v1)
 
-        aaa = [ self.t1, self.v1, self.t2 ]
-        sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
+    def test_202_a_unwrap_extend__case_2_Terminal (self):
+        # Case 2 : not a list, value is a Terminal
+        self.fcn_20x_unwrap_extend(2, self.v2)
+
+    def test_203_unwrap_extend__case_3__string (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_20x_unwrap_extend(3, self.v3s)
+
+    def test_203_unwrap_extend__case_3__tuple (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_20x_unwrap_extend(3, self.v3t)
+
+    #--------------------------------------------------------------------------
+
+    def fcn_40x_unwrap_at(self, case, value):
+
+        aaa = [ self.t1, value, self.t1 ]
+        sav = deepcopy(aaa)
+        sav[1] = wrap(deepcopy(sav[1]))
+        assert sav[1]._please_unwrap == case
         dst = deepcopy(sav)
+
+        expect = deepcopy(aaa)
+
+        n = unwrap_at(dst,1)
+
+        if False :
+            print(f": produced : delta = {n}") ; pp(dst)
+            print(": expected :") ; pp(expect)
+
+        assert type(dst[1]) == type(expect[1])
+        assert dst[1] == expect[1]
+        assert dst == expect
+
+    def test_401_unwrap_at__case_1 (self):
+        # Case 1 : list but [0] is not a ParseTreeNode
+        self.fcn_40x_unwrap_at(1, self.v1)
+
+    def test_402_a_unwrap_at__case_2_Terminal (self):
+        # Case 2 : not a list, value is a Terminal
+        self.fcn_40x_unwrap_at(2, self.v2)
+
+    def test_403_unwrap_at__case_3__string (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_40x_unwrap_at(3, self.v3s)
+
+    def test_403_unwrap_at__case_3__tuple (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_40x_unwrap_at(3, self.v3t)
+
+    #--------------------------------------------------------------------------
+
+    def fcn_50x_unwrap_into(self, case, value):
+
+        aaa = [ self.t1, value, self.t1 ]
+        sav = deepcopy(aaa)
+        sav[1] = wrap(deepcopy(sav[1]))
+        assert sav[1]._please_unwrap == case
+        dst = deepcopy(sav)
+
+        expect = deepcopy(aaa)
+        if is_unpackable_sequence(expect[1]):
+            expect = [ expect[0], *expect[1], expect[2] ]
 
         n = unwrap_into(dst,1)
 
-        # print(f": sav") ; pp(sav) ; print('')
-        # print(f": dst : n = {n}") ; pp(dst) ; print('')
-        # print(f": aaa") ; pp(aaa) ; print('')
+        if False :
+            print(f": produced : delta = {n}") ; pp(dst)
+            print(": expected :") ; pp(expect)
 
-        assert dst == aaa
+        assert type(dst[1]) == type(expect[1])
+        assert dst[1] == expect[1]
+        assert dst == expect
 
-    def test_unwrap_into__case_2 (self):
+    def test_501_unwrap_into__case_1 (self):
+        # Case 1 : list but [0] is not a ParseTreeNode
+        self.fcn_50x_unwrap_into(1, self.v1)
 
-        # Case 2 : not a list, value is a ParseTreeNode
+    def test_502_a_unwrap_into__case_2_Terminal (self):
+        # Case 2 : not a list, value is a Terminal
+        self.fcn_50x_unwrap_into(2, self.v2)
 
-        aaa = [ self.t1, self.n2, self.t1 ]
-        sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
-        dst = deepcopy(sav)
+    def test_503_unwrap_into__case_3__string (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_50x_unwrap_into(3, self.v3s)
 
-        n = unwrap_into(dst,1)
-
-        # print(f": sav") ; pp(sav) ; print('')
-        # print(f": dst : n = {n}") ; pp(dst) ; print('')
-        # print(f": aaa") ; pp(aaa) ; print('')
-
-        assert dst == aaa
-
-    def test_unwrap_into__case_3 (self):
-
-        # Case 3 : not a list, value is not a ParseTreeNode
-
-        aaa = [ self.t1, self.s1 , self.t1 ]
-        sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
-        dst = deepcopy(sav)
-
-        n = unwrap_into(dst,1)
-
-        # print(f": sav") ; pp(sav) ; print('')
-        # print(f": dst : n = {n}") ; pp(dst) ; print('')
-        # print(f": aaa") ; pp(aaa) ; print('')
-
-        assert dst == aaa
+    def test_503_unwrap_into__case_3__tuple (self):
+        # Case 3 : not a list, value is not a Terminal
+        self.fcn_50x_unwrap_into(3, self.v3t)
 
 #------------------------------------------------------------------------------

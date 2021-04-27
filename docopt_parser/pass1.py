@@ -53,7 +53,8 @@ class DocOptSimplifyVisitor_Pass1(object):
              )
 
     _as_value = ( ' string_no_whitespace word words line '
-                  ' '
+                  ' short_no_arg_ '
+                  ' short_stacked '
                 )
 
     _as_lines = ( ' description '
@@ -172,11 +173,11 @@ class DocOptSimplifyVisitor_Pass1(object):
     #   (i.e. a line from a sequence of words)
     def as_value(self, node, children, depth=0):
         if len(children) :
-            print(f"\n: as_value() : {node.rule_name} : collecting {len(children)} children"
-                  f": {repr(children)}")
+            # print(f"\n: as_value() : {node.rule_name} : collecting {len(children)} children"
+            #       f": {repr(children)}")
             value = ' '.join([c.value for c in children])
         else :
-            print(f"\n: as_value() : {node.rule_name} : single value '{node.value}'")
+            # print(f"\n: as_value() : {node.rule_name} : single value '{node.value}'")
             value = node.value
         return Terminal(StrMatch('', node.rule_name), 0, value)
 
@@ -185,11 +186,11 @@ class DocOptSimplifyVisitor_Pass1(object):
     # Gather composition elements into a terminal with line breaks
     def as_lines(self, node, children, depth=0):
         if len(children) :
-            print(f": as_lines() : {node.rule_name} : collecting {len(children)} children"
-                  f": {repr(children)}")
+            # print(f": as_lines() : {node.rule_name} : collecting {len(children)} children"
+            #       f": {repr(children)}")
             value = '\n'.join([c.value for c in children])
         else :
-            print(f": as_lines() : {node.rule_name} : single value '{node.value}'")
+            # print(f": as_lines() : {node.rule_name} : single value '{node.value}'")
             value = node.value
         return Terminal(StrMatch('', node.rule_name), 0, value)
 

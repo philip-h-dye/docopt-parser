@@ -1,10 +1,10 @@
+
 import sys
 import os
+import io
 import re
 
 from contextlib import redirect_stdout
-
-from typing import Sequence, Dict, ClassVar
 
 from dataclasses import dataclass
 
@@ -12,64 +12,109 @@ from prettyprinter import cpprint as pp
 
 import arpeggio
 import arpeggio.cleanpeg
-# from arpeggio import visit_parse_tree, PTNodeVisitor, SemanticActionResults
 from arpeggio import ( Terminal, NonTerminal, StrMatch, SemanticActionResults, ParseTreeNode )
+
+from .wrap import WrappedList, wrap, unwrap, unwrap_extend
+
+# FIXME: only while debugging
+from p import pp_str
 
 #------------------------------------------------------------------------------
 
-@dataclass
-class Unwrap(object):
-    value : object
-    position : int = 0
-    def __post_init__(self):
-        assert isinstance(self.value, (list, NonTerminal))
-        assert len(self.value) > 0
-        assert isinstance(self.value[0], ParseTreeNode)
+def dprint(*args, **kwargs):
+    if dprint.debug :
+        print(*args, **kwargs)
+
+dprint.debug = False
+
+#------------------------------------------------------------------------------
+
+def sprint(*args, **kwargs):
+    with io.StringIO() as f:
+        kwargs['file'] = f
+        print(*args, **kwargs)
+        return f.getvalue()
+
+def internal_error(context, node, *args, **kwargs):
+    msg = sprint(*args, **kwargs)
+    out = ( f"INTERNAL ERROR : {context} : {node.name} -- {msg}\n"
+            f"{pp_str(node)}"
+            f"Please report this to the maintainer, <phdye@acm.org>.\n"
+            f"Thank you and have a wonderful day !")
 
 #------------------------------------------------------------------------------
 
 class DocOptSimplifyVisitor_Pass2(object):
 
-    classes = 'unwrap_single unwrap_list empty text'.split()
+    classes = \
+        ( ' divulge_list '
+          ' divulge_single '
+          ' divulge_terminal '
+          ' text '
+          ' empty '
+        ) . split()
 
-    _unwrap = ( ' other_sections other '
-                ' required '		# explicit no differnet than explicit
-                # ' expression '  	# NO, determinant for sides of implicit choice
-                ' term argument '
-                ' usage_line '          # NOT: usage or usage_pattern
-                ' option short long long_with_eq_all_caps long_with_eq_angle '
-                ' option_line option_list option_single '
-                ' operand_line ' # operand_section '
-                # ' short_no_arg short_stacked '
-                # ' long_no_arg long_with_eq_arg '
-              )
+    UNUSED_unwrap = \
+        ( ' other_sections other '
+          ' required '		# explicit no differnet than explicit
+          # ' expression '  	# NO, determinant for sides of implicit choice
+          ' term argument '
+          ' usage_line '          # NOT: usage or usage_pattern
+          ' option short long long_with_eq_all_caps long_with_eq_angle '
+          ' option_line option_list option_single '
+          ' operand_line ' # operand_section '
+          # ' short_no_arg short_stacked '	-- necessary for semantics
+          # ' long_no_arg long_with_eq_arg '	-- necessary for semantics
+        )
 
-    _unwrap_list = ( ' other_sections '
-                     ' required '
-                     ' term '
-                     ' option_list '
-                   )
-        
-    _unwrap_single = ( ' other '
-                       ' usage_line '          # NOT: usage or usage_pattern
-                       ' argument '
-                       ' option short long '
-                       ' option_line option_single long_with_eq_arg '
-                     )
-        
-    _empty = ( ' intro_line '
-               ' usage_entry '
-               ' operand_all_caps operand_angle '
-               ' LPAREN RPAREN LBRACKET RBRACKET OR COMMA EOF blankline newline '
-             )
+    # A 'list' being a NonTerminal with one or more children
+    _divulge_list = \
+        ( ' other_sections '
+          ' required '
+          ' term '
+          # NOT why working on option.list # ' list '
+          # !o # ' option_list '
+          ' option_list_comma '
+          ' option_list_bar '
+          ' option_list_space '
+        )
 
-    _text = ( ' intro '
-              ' operand_help option_help '
-              # ' operand_intro operand_help  '
-              # ' option_intro option_help '
-             )
+    # A 'single' being a NonTerminal with only one child
+    _divulge_single = \
+        ( ' other '
+          ' usage_line '          # NOT usage or usage_pattern
+          ' argument '
+          # !o # ' option '
+          ' short '
+          ' long '
+          ' option_line option_single '
+          # ' long_with_eq_arg '
+        )
 
-    # TERMINALS: ' short_no_arg short_stacked long_with_eq_all_caps long_with_eq_angle '
+    # A 'terminal' being, obviously, a Terminal node, contents in node.value
+    _divulge_terminal = \
+        ( ' short_no_arg_ '
+          ' '
+          # TERMINALS: short_no_arg short_stacked long_with_eq_all_caps long_with_eq_angle
+        )
+
+    _text = \
+        ( ' intro '
+          ' operand_help '
+          ' option_help '
+          ' short_no_arg '
+          ' long_no_arg '
+          ' operand_no_space '
+          # ' operand_intro operand_help  '
+          # ' option_intro option_help '
+        )
+
+    _empty = \
+        ( ' intro_line '
+          ' usage_entry '
+          ' operand_all_caps operand_angle '
+          ' EQ LPAREN RPAREN LBRACKET RBRACKET OR COMMA EOF blankline newline '
+        )
 
     # Used to make BAR directly searchable within the choice list
     BAR = Terminal(StrMatch('|', rule_name='BAR'), 0, '|')
@@ -81,36 +126,79 @@ class DocOptSimplifyVisitor_Pass2(object):
     #--------------------------------------------------------------------------
 
     def __init__(self, *args, **kwargs):
-        
+
+        dprint.debug = False
+
+        dprint(": pass 2 : init : ENTER")
+
         super().__init__(*args, **kwargs)
-        
-        # 'unwrap' -- does too much, break into clearly defined cases
-        for _class in classes :
+
+        # 'unwrap' -- did way too much, break into judiciously defined
+        #             groupings that can be handled easily and explicitly.
+
+        for _class in self.classes :
+            dprint(f"  : handler '{_class}'")
+            method = getattr(self, _class)
             for rule_name in getattr(self, f"_{_class}").split() :
-                setattr(self, f"visit_{rule_name}", getattr(self, _class))
+                alias = f"visit_{rule_name}"
+                dprint(f"     - rule '{rule_name}'")
+                setattr(self, alias, method)
+
+        dprint(": pass 2 : init : LEAVE")
 
     #--------------------------------------------------------------------------
 
     def visit(self, node, depth=0, path=[]):
 
+        i = ' ' * 3 * depth
+
+        dprint('')
+        dprint(f"{i} : visit : {node.name} -- START")
+
         if not isinstance(node, (NonTerminal, Terminal, SemanticActionResults)):
+            dprint(f"{i}   ** Invalid type '{str(type(node))}'")
+            dprint(f"{i}   => {_res(node)}")
+            dprint(f"{i} : visit : {node.name} -- DONE")
             return node
 
-        # print(f": visit : {node.name}")
+        #----------------------------------------------------------------------
+
+        dprint('')
+        dprint(f"{i}   Process Children -- START")
+        dprint(f"{i}     # essentially, thus :")
+        dprint(f"{i}     children = []")
+        dprint(f"{i}     for child in node :")
+        dprint(f"{i}         response = visit(child)")
+        dprint(f"{i}         if response is not None :")
+        dprint(f"{i}            children.append(response)  # generally reformed")
+        dprint('')
 
         children = []
         if isinstance(node, (NonTerminal, SemanticActionResults)):
             # these object types are lists
             for child in node : # NonTerminal IS the list
+                #print(f"{i}   Process Children -- START")
+                if hasattr(child, 'name'):
+                    dprint(f"{i}   - '{child.name}'")
+                else:
+                    if hasattr(child, '__name__'):
+                        dprint(f"{i}   - '{child.__name__}'")
+                    else:
+                        dprint(f"{i}   - id = {id(child)} : {str(type(child))}")
                 response = self.visit(child, depth=1+depth, path=path+[node.name])
-                if response:
-                    if not isinstance(response, Unwrap):
-                        children.append(response)
-                        continue
-                    if isinstance(response.value, (list, NonTerminal)):
-                        children.extend(response.value)
-                    else :
-                        children.append(response.value)
+                dprint(f"{i}   - '{child.name}'")
+                dprint(f"{i}     : response   = {_res(response)}")
+                if response is not None:
+                    value = unwrap(response)
+                    dprint(f"{i}     : unwrapped  = {_res(value)}")
+                    children.append(value)
+
+        dprint('')
+        dprint(f"[ children : final ]\n{_res(children)}")
+        dprint(f"{i}   Process Children -- Done\n")
+        dprint('')
+
+        #----------------------------------------------------------------------
 
         # In extreme circumstances, rule_name may be list.  Note, that
         # such probably means unwrapping has gone too far and your node
@@ -119,117 +207,205 @@ class DocOptSimplifyVisitor_Pass2(object):
         # print(f": visit : {rule_name}")
         method = f"visit_{rule_name}"
         if hasattr(self, method):
+            dprint(f"\n*** VISIT_{node.name} -- START")
             out = getattr(self, method)(node, children)
-            # print(f": {node.name} : {method} => {_res(out)}\n")
+            dprint(f"   => {_res(out)}\n")
+            dprint("*** VISIT_{node.name} -- DONE\n")
+            dprint('')
             return out
 
+        if isinstance(node, Terminal):
+            dprint(f"{i}   Terminal without a visit method.  Return unchanged.")
+            dprint(f"{i}   => {_res(node)}")
+            dprint(f"{i} : visit : {node.name} -- DONE")
+            dprint('')
+            return node
+
         if len(children) > 0:
-            # return nt(node.rule, children)
 
-            # FIXME -- reenable, didn't bring back usage_pattern
-            # if type(children) is list and len(children) == 1 :
-            #     if type(children[0]) is list :
-            #         # print(f": nt : unwrap embedded list")
-            #         children = children[0]
-            if ( isinstance(children, (list, NonTerminal)) and len(children) > 0
-                 and isinstance(children[0], ParseTreeNode) ):
-                return NonTerminal(node.rule, children)
+            if type(children) is list and len(children) == 1 :
+                if type(children[0]) is list :
+                    dprint(f": visit : {node.name} : list w/ single child, divulge")
+                    children = children[0]
 
-            # The above, represent all encountered configurations for children.  If
-            # we encounter something diffent, report it:
-
-            with redirect_stdout(sys.stderr):
-
-                print(f"Internal error, unhandled configuration for children of a NonTerminal")
-                print('')
-                print(f"  path :  ", end='')
-                _path = path + [node.name]
-                prefix = ''
-                for idx in range(len(_path)):
-                    i = ' ' * 3 * idx
-                    print(f"{prefix}{i}{_path[idx]}")
-                    prefix = ' ' * 10
-                print('')
-                print(f"  node = {node.name} : depth {depth}")
-                seq = isinstance(children, Sequence)
-                seq_text = ': is a sequence' if seq else ''
-                print(f"  children type     = {str(type(children))} {seq_text}")
-                if seq:
-                    print(f"  children[0] type  = {str(type(children[0]))}")
-                print(": children =")
-                pp(children)
-                print(f"Please report this scenario to the maintainer.")
-                out = NonTerminal(node.rule, children) # failure expected
-                print(f"Unexpected success, also please report this scenario to the maintainer")
+            if isinstance(children, (list, NonTerminal)):
+                which = None
+                if isinstance(children[0], ParseTreeNode):
+                    dprint(f": visit : {node.name} : list w/ children => NonTerminal")
+                    out = NonTerminal(node.rule, children)
+                    verb = 'is'
+                    #
+                    # *NO* : it strips rule info which we need.
+                    #  was :
+                    #     out = NonTerminal(node.rule, wrap(None))
+                    #     del out[0]
+                    #     out.extend(children)
+                    #
+                else :
+                    out = NonTerminal(node.rule, wrap(children))
+                    verb = 'is not'
+                dprint('')
+                dprint(f"{i}   : list or NonTerminal and [0] {verb} a node")
+                dprint(f"{i}   => {_res(out)}")
+                dprint(f"{i} : visit : {node.name} -- DONE")
+                dprint('')
                 return out
 
-        return Terminal(node.rule, 0, node.value)
+            internal_error(context, node, "Has children but neither a list nor "
+                           "ParseTreeNode.  Nothing left to try.  ")
 
-        # print(f": {node.name} : {which} => \n"
-        #       f"{node.indent(out.tree_str())}")
-        # return out
+            raise ValueError(f"Visiting {node.name}, nothing left to try.")
+
+        # - node can't be a terminal node (as they bailed earlier).
+        # - node can't be the result of a visit_* method (bailed earlier).
+        #
+        # - Academically, we should crash.  Let's continue in Battle Mode
+        #   and wrap it in a Terminal -- complaining first.        
+
+        with redirect_stdout(sys.stderr):
+            print(f"INTERNAL ERROR : Unhandled configuration for children of a NonTerminal")
+            print('')
+            print(f"  path :  ", end='')
+            _path = path + [node.name]
+            prefix = ''
+            for idx in range(len(_path)):
+                i = ' ' * 3 * idx
+                print(f"{prefix}{i}{_path[idx]}")
+                prefix = ' ' * 10
+            print('')
+            print(f"  node = {node.name} : depth {depth}")
+            seq = isinstance(children, Sequence)
+            seq_text = ': is a sequence' if seq else ''
+            print(f"  children type     = {str(type(children))} {seq_text}")
+            if seq:
+                print(f"  children[0] type  = {str(type(children[0]))}")
+            print(": children =")
+            pp(children)
+            print(f"Please report this scenario to the maintainer.")
+            out = Terminal(node.rule, 0, wrap(children))
+            dprint(f": visit : {node.name} => {_res(out)}")
+            dprint('')
+            return out
 
     #--------------------------------------------------------------------------
 
     def empty(self, node, children):
         return None
 
-    def unwrap(self, node, children):
-        return Unwrap(children)
+    #--------------------------------------------------------------------------
 
-    def X_unwrap(self, node, children):
+    # A 'terminal' being, obviously, a Terminal node, contents in node.value
+    def divulge_terminal ( self, node, children ):
+        """ Dispense with an unneeded Terminal enclosing a value.  Sanity
+	checks may result in a automatci divulge upgrade (i.e. if it is not
+	actually a Terminal node (but not quietly).
+	"""
+        context = 'divulge_terminal'
 
-        # children should be a either a ParseTreeNode or a list with one element
-        # of type ParseTreeNode
+        dprint(f": {context} : {node.name} : value = {node.value}")
 
-        # OR a list containing one such, [[p.Terminal(rule_name='program', value='copy')]]
-        if type(children) is list and len(children) == 1 :
-            if type(children[0]) is list :
-                print(f": unwrap() : unwrap embedded list")
-                # pp(children)
-                children = children[0]
+        if False :
+            # Academic Research Mode - every step must be perfect
+            assert isinstance(node, Terminal), \
+                internal_error(context, node, "is not a Terminal node")
+            assert len(children) == 0, \
+                internal_error(context, node, "Is Terminal with children ?")
+        else :
+            # Battle Mode -- keep going at all cost !  With some complaints ...
+            upgrade = False
+            if not isinstance(node, Terminal):
+                internal_error(context, node, "Is not a Terminal node.")
+                upgrade = True
+            else :
+                n = len(children)
+                if n > 0:
+                    internal_error(context, node, f"How does a Terminal have {n} children ?")
+                    upgrade = True
+            if upgrade:
+                return self.divulge_single(node, children)
 
-        if not isinstance(children, list):
-            # pp(node)
-            raise TypeError("{node.rule_name} children should be a list with one element, "
-                            f"not type '{str(type(children))}'")
-
-        if len(children) != 1:
-            # pp(node)
-            # raise ValueError("{node.rule_name} children should be a list with one "
-            #                  "element, not len {len(children)}")
-            return Unwrap(children)
-
-        if not isinstance(children[0], ParseTreeNode):
-            # pp(node)
-            raise ValueError("{node.rule_name} children[0] should be a ParseTreeNode, "
-                            f"not type '{str(type(children))}'")
-        return Unwrap(children[0])
+        dprint(f": {context} : '{node.name}' => {_res(node.value)}")
+        # Intentially breaks the Parse Tree structure so that the parent or
+        # other ancestor may trivially gather it's components.  Said gatherer
+        # must have a visitor method of course.  text() is use to gather
+        # text fragments into 
+        
+        return node.value
 
     #--------------------------------------------------------------------------
 
-    def unwrap_single ( self, node, children ):
-        if not ( len(children) == 1 and isinstance(children[0], ParseTreeNode) ):
-                 print(f": unwrap single : {node.name}")
-                 print(": children =")
-                 pp(children)
-        assert len(children) == 1, \
-            f"{node.name} has {len(children)} children, not 1 as expected"
-        single = children[0]
-        assert isinstance(single, ParseTreeNode), \
-            f"{node.name}'s child is not a ParseTreeNode"
-        return Unwrap([single])
+    def divulge_NonTerminal ( self,
+                              context : str,
+                              node : ParseTreeNode,
+                              children : list,
+                              only_child : bool ):
 
-    def unwrap_list ( self, node, children ):
-        if not ( len(children) > 0 and isinstance(children[0], ParseTreeNode) ):
-                 print(f": unwrap list : {node.name}")
-                 print(": children =")
-                 pp(children)
-        assert len(children) > 0, \
-            f"{node.name} has no children"
-        assert isinstance(children[0], ParseTreeNode), \
-            f"{node.name}'s child is not a ParseTreeNode"
-        return Unwrap(children)
+        """Sanity checks for a NonTerminal being 'divulged'.  Automatically
+	upgrades or downgrades the divulge action as necessary (with complaints).
+	"""
+
+        # Battle Mode -- keep going at all costs -- with noisy complaints for improvement ...
+
+        if not isinstance(node, NonTerminal):
+            internal_error(context, node, "Is not a NonTerminal node.  Perhaps it is a list ?")
+            if not isinstance(node, list):
+                internal_error(context, node, "Also not list.")
+                if isinstance(node, Terminal):
+                    internal_error(context, node, "It is a Terminal.  Downgrading automatically.")
+                    return self.divulge_terminal(node, children)
+
+        if only_child and len(children) > 1:
+            internal_error(context, node, f"Too many children.  Upgrading automatically.")
+            return self.divulge_list(node, children)
+
+        if len(children) <= 0:
+            internal_error(context, node, f"How does a NonTerminal have ZERO children ?  "
+                           "Let's try handling it like a Terminal.")
+            w = wrap(node.value)
+            dprint(f": {context} : '{node.name}' => {_res(w)}")
+            return w
+
+        return None
+
+    #--------------------------------------------------------------------------
+
+    # A 'single' being a NonTerminal with only one child, a ParseTreeNode
+    def divulge_single ( self, node, children ):
+        """ Dispense with an unneeded NonTerminal enclosing a single node."""
+        context = 'divulge_single'
+
+        out = self.divulge_NonTerminal(context, node, children, only_child=True)
+        if out is not None:
+            return out
+
+        single = children[0]
+        if isinstance(single, ParseTreeNode):
+            internal_error(context, node, f"And it's single child is not ParseTreeNode.  "
+                           "We'll simply let that slide.")
+        w = wrap(single)
+        dprint(f": divulge single '{node.name}' => {_res(w)}")
+        return w
+
+    #--------------------------------------------------------------------------
+
+    def divulge_list ( self, node, children ):
+        """ Dispense with an unneeded NonTerminal enclosing a 'list' of one
+        or more nodes.  Though, if it can only ever have one child,
+        divulge_single() would be more appropriate.
+	"""
+        context = 'divulge_list'
+
+        out = self.divulge_NonTerminal(context, node, children, only_child=False)
+        if out is not None:
+            return out
+
+        if isinstance(children[0], ParseTreeNode):
+            internal_error(context, node, f"And it's first child is not ParseTreeNode.  "
+                           "We'll simply let that slide.")
+
+        w = wrap(children)
+        dprint(f": {context} : '{node.name}' => {_res(w)}")
+        return w
 
     #--------------------------------------------------------------------------
 
@@ -307,12 +483,12 @@ class DocOptSimplifyVisitor_Pass2(object):
     def visit_options_intro(self, node, children):
         # print(f": visit_options_intro : {node.name}")
         # pp(children)
-        return Terminal(node.rule, 0, '\n'.join(children))       
+        return Terminal(node.rule, 0, '\n'.join(children))
 
     def visit_operand_intro(self, node, children):
         # print(f": visit_operand_intro : {node.name}")
         # pp(children)
-        return Terminal(node.rule, 0, '\n'.join(children))       
+        return Terminal(node.rule, 0, '\n'.join(children))
 
     def _visit_operand_help(self, node, children):
         while isinstance(children[-1], list):
@@ -380,13 +556,15 @@ class DocOptSimplifyVisitor_Pass2(object):
 
 def _res(x, indent=''):
     # return ('\n'+x.tree_str()) if hasattr(x, 'tree_str') else x
+    text = None
     if hasattr(x, 'tree_str'):
         try :
             text = x.tree_str()
         except :
-            text = str(x)
-    else:
-        text = str(x)
+            pass
+    if text is None :
+        # text = str(x)
+        text = pp_str(x)
     if '\n' in text:
         newline = f"\n{indent}"
         text = newline + text.replace('\n', newline)

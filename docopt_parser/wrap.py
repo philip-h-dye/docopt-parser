@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 
-from arpeggio import ParseTreeNode, Terminal, NonTerminal, StrMatch
+from copy import deepcopy
 
 from prettyprinter import cpprint as pp
 
-from copy import deepcopy
+from arpeggio import ParseTreeNode, Terminal, NonTerminal, StrMatch
+
+from .parsetreenodes import *
+
+#------------------------------------------------------------------------------
+
+def is_unpackable_sequence(x):
+    return isinstance(x, (list, tuple))
 
 #------------------------------------------------------------------------------
 
@@ -63,30 +70,69 @@ class WrappedList(list):
 
 #------------------------------------------------------------------------------
 
+from contextlib import redirect_stdout
+
+_tty = None
+
+def tprint(*args, **kwargs):
+    global _tty
+    if False :
+        if _tty is None :
+            _tty = open("/dev/tty", "w")
+        with redirect_stdout(_tty) :
+            print(*args, **kwargs)         
+
+#------------------------------------------------------------------------------
+
 def wrap(value):
+    """Wrap <value> such that NonTerminal will accept it as a list of Parse Tree Nodes.
+       Does nothing if <value> is already capable of being such.
+"""
+    tprint(f": wrap : value = {value}")
+
+    # Note: NonTerminal value is Case 0 since NonTerminal is a sub-type of list
+    #         and a NonTerminal [0] is always a ParseTreeNode
+
     if isinstance(value, list):
+
         if isinstance(value[0], ParseTreeNode):
+            # Case 0 : not wrapped : list and [0] is a ParseTreeNode
+            tprint(f"  => not wrapped : Case 0 : list and [0] is a ParseTreeNode")
             return value
+
+        # Case 1 : list but [0] is not a ParseTreeNode
+        tprint(f"  => wrapped : Case 1 : list but [0] is not a ParseTreeNode")
         value[0] = FakeNode(value[0])
         return WrappedList(value, _please_unwrap=1)
-    if isinstance(value, ParseTreeNode):
+    
+    if isinstance(value, Terminal):
+        # Case 2 : not a list, value is a Terminal
+        tprint(f"  => wrapped : Case 2 : not a list, value is a Terminal")
         return WrappedList([ value ], _please_unwrap=2)
+
+    # Case 3 : not a list, value is not a Terminal
+    tprint(f"  => wrapped : Case 3 : not a list, value is not a Terminal")
     return WrappedList([ FakeNode(value) ], _please_unwrap=3)
 
 #------------------------------------------------------------------------------
 
 def unwrap(wrapped):
+    """ ...
+    """
     # wrapped must be a WrappedList
     if not isinstance(wrapped, WrappedList):
         return wrapped
+    # Case 1 : list but [0] is not a ParseTreeNode
     if wrapped._please_unwrap == 1:
         # print('\n: unwrap 1')
         wrapped[0] = wrapped[0].value
         # pp(wrapped)
         return list(wrapped)
+    # Case 2 : not a list, value is a Terminal
     if wrapped._please_unwrap == 2:
         # print(': unwrap 2')
         return wrapped[0]
+    # Case 3 : not a list, value is not a Terminal
     if wrapped._please_unwrap == 3:
         # print(': unwrap 3')
         return wrapped[0].value
@@ -95,142 +141,82 @@ def unwrap(wrapped):
 
 #------------------------------------------------------------------------------
 
-# returns how many elements added to dst
-def unwrap_into(dst, idx):
+def unwrap_extend(dst, wrapped):
 
-    wrapped = dst[idx]
+    """appends unwrapped element(s) to the end list 'dst'"""
 
-    # wrapped must be a WrappedList
-    if not isinstance(wrapped, WrappedList):
-        return 0
+    debug = False
 
-    if wrapped._please_unwrap == 1:
-        wrapped[0] = wrapped[0].value
-        dst[idx] = list(wrapped)
-        return 0
+    if debug:
+        print(f"\n[ unwrap_extend : enter")
+        print("[wrapped]")
+        pp(wrapped)
+    
+    value = unwrap(wrapped)
 
-    if wrapped._please_unwrap == 2:
-        del dst[idx]
-        for elt in wrapped[::-1]:
-            dst.insert(idx, elt)
-        return len(wrapped) - 1
+    if debug:
+        print("[value]")
+        pp(value)
 
-    if wrapped._please_unwrap == 3:
-        dst[idx] = wrapped[0].value
-        return 0
+    if debug:
+        print("[dst] : before")
+        pp(dst)
 
-    raise ValueError(f"unwrap(): unrecognized _please_unwrap value "
-                     f"{wrapped._please_unwrap}")
+    if is_unpackable_sequence(value):
+        dst.extend(value)
+    else:
+        dst.append(value)
+
+    if debug:
+        print("[dst] : after")
+        pp(dst)
+
+    return dst
 
 #------------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def unwrap_at(dst, idx):
+    dst[idx] = unwrap(dst[idx])
+    return dst[idx]
+    
+#------------------------------------------------------------------------------
 
-    dot = StrMatch('.', rule_name = 'dot')
+# returns how many elements added to dst
+def unwrap_into(dst, idx):
 
-    s1 = 's1 : string'
+    """Replaces wrapped element dst[idx] with unwrapped value.
+       if unwrapped value is a list or NonTerminal, explode list in place.
+       return number additional elements added to the list.
+       (i.e. zero (0) when values isn't a list or NonTerminal)
+    """
 
-    # rule, position, value
-    t1 = Terminal(dot, 0, 'one')
-    t2 = Terminal(dot, 0, 'two')
-    t3 = Terminal(dot, 0, 'three')
+    wrapped = dst[idx]
 
-    assert not isinstance(t1, list)
-    assert not isinstance(t2, list)
-    assert not isinstance(t3, list)
+    tprint(f": unwrap_into : type(wrapped?) = {str(type(wrapped))}")
+    
+    # wrapped is always a WrappedList
+    if not isinstance(wrapped, WrappedList):
+        tprint(f"  => not a WrappedList  -- nothing to do")
+        return 0
 
-    # rule, value : a list where the first element is a node
-    # n1 = NonTerminal(dot, t1)   # TypeError: 'Terminal' object is not subscriptable
-    n2 = NonTerminal(dot, [t1])
-    n3 = NonTerminal(dot, n2)
-    n4 = NonTerminal(dot, [n2])
+    value = unwrap(wrapped)
 
-    assert isinstance(n2, list)
-    assert isinstance(n3, list)
-    assert isinstance(n4, list)
+    tprint(f": unwrap_into : type(value) = {str(type(value))}")
 
-    v0 = n2
-    v1 = [ 'v1 : string 1', 'v1 : string 2' ]
-    v2 = t1
-    v3 = 'v3 : string'
+    if not is_unpackable_sequence(value):
+        tprint(f"  => not an unpackable sequence, simply assign value to dst[idx]")
+        dst[idx] = value
+        return 0
+        
+    tprint(f"  : exploding inplace")
 
-    w0 = wrap(deepcopy(v0))
-    assert not hasattr(w0, '_please_unwrap')
-    assert w0 == v0
+    del dst[idx]
 
-    w1 = wrap(deepcopy(v1))
-    assert hasattr(w1, '_please_unwrap')
-    assert w1._please_unwrap == 1
-    assert w1 is not v1
-    # pp(v1)
-    # pp(unwrap(deepcopy(w1)))
-    assert unwrap(w1) == v1
+    for elt in value[::-1]:
+        dst.insert(idx, elt)
 
-    w2 = wrap(deepcopy(v2))
-    assert hasattr(w2, '_please_unwrap')
-    # print(f": w2._please_unwrap == {w2._please_unwrap}")
-    assert w2._please_unwrap == 2
-    assert w2 is not v2
-    # pp(v2)
-    # pp(unwrap(deepcopy(w2)))
-    # pp(w2)
-    assert unwrap(w2) == v2
-
-    w3 = wrap(deepcopy(v3))
-    assert hasattr(w3, '_please_unwrap')
-    # print(f": w3._please_unwrap == {w3._please_unwrap}")
-    assert w3._please_unwrap == 3
-    assert w3 is not v3
-    # pp(v3)
-    # pp(unwrap(deepcopy(w3)))
-    assert unwrap(w3) == v3
-
-    #--------------------------------------------------------------------------
-
-    # Case 1 : list but [0] is not a ParseTreeNode
-
-    aaa = [ t1, v1, t2 ]
-    sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
-    dst = deepcopy(sav)
-
-    n = unwrap_into(dst,1)
-
-    # print(f": sav") ; pp(sav) ; print('')
-    # print(f": dst : n = {n}") ; pp(dst) ; print('')
-    # print(f": aaa") ; pp(aaa) ; print('')
-
-    assert dst == aaa
-
-    #--------------------------------------------------------------------------
-
-    # Case 2 : not a list, value is a ParseTreeNode
-
-    aaa = [ t1, n2, t1 ]
-    sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
-    dst = deepcopy(sav)
-
-    n = unwrap_into(dst,1)
-
-    # print(f": sav") ; pp(sav) ; print('')
-    # print(f": dst : n = {n}") ; pp(dst) ; print('')
-    # print(f": aaa") ; pp(aaa) ; print('')
-
-    assert dst == aaa
-
-    #--------------------------------------------------------------------------
-
-    # Case 3 : not a list, value is not a ParseTreeNode
-
-    aaa = [ t1, s1 , t1 ]
-    sav = deepcopy(aaa) ; sav[1] = wrap(deepcopy(sav[1]))
-    dst = deepcopy(sav)
-
-    n = unwrap_into(dst,1)
-
-    # print(f": sav") ; pp(sav) ; print('')
-    # print(f": dst : n = {n}") ; pp(dst) ; print('')
-    # print(f": aaa") ; pp(aaa) ; print('')
-
-    assert dst == aaa
+    delta = len(value) - 1
+    tprint(f"  => delta = {delta}")
+    return delta
 
 #------------------------------------------------------------------------------
