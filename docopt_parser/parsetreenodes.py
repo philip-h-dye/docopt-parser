@@ -20,12 +20,17 @@ def NonTerminal_eq_structural(self, other):
         pp(other)   
     if not isinstance(other, NonTerminal):
         return False
-    if self.rule != other.rule:
+    if self.rule_name != other.rule_name:
+        print(f"eq issue:  '{self.name}' vs '{other.name}' : rules differ : "
+              f"{self.rule_name} != {other.rule_name}")
         return False        
     if len(self) != len(other):
         return False
     for idx in range(len(self)):
-        if self[idx] != other[idx]:
+        if isinstance(self[idx], NonTerminal):
+            if not NonTerminal_eq_structural(self[idx], other[idx]) :
+                return False
+        elif self[idx] != other[idx]:
             return False
     return True
 
@@ -51,6 +56,6 @@ def NonTerminal_restore_original_eq():
 
 #------------------------------------------------------------------------------
 
-NonTerminal_enable_structural_eq()
+# NonTerminal_enable_structural_eq()
 
 #------------------------------------------------------------------------------
