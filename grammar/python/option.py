@@ -63,20 +63,13 @@ def long_no_arg():
 # FIXME:  Create composite from to_match attributes of
 #         long_no_arg() and operand().
 
-def command():
-    """Something neiher an option or operand.  In "naval_fate move <n>",
-       'move' is a command.  Defined broadly as a non-whitespace string,
-       it is catch all and must be the last item in an OrderedChoice.
-    """
-    return _(r'[\S]+', rule_name="command")
-
 def long_eq_arg():
     """long argument, equal sign and operand without whitespace :
          '--file=foobar.txt'
     """
     # '\b' is required to not improperly match '--file=FOO' of '--file=FOObar'
     #   as an all caps option-argument.  Such must be matched as an
-    #   option-value using the command catch-all.
+    #   option-value using the regular expression from the command() catch-all.
     return RegExMatchBounded \
         ( r'--(?P<name>[\w][\w]+)' '=' r'(?P<argument>(<([-_:\w]+)>|[A-Z][A-Z_]+\b|[\S]+))',
           lead=r'(^|(?<=\s))', rule_name='long_eq_arg', skipws=False )
