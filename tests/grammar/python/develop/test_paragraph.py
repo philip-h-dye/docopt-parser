@@ -170,22 +170,18 @@ class Test_Import ( unittest.TestCase ) :
             inputs,
         )
 
-        n = input.count('\n')
-        # print(f"newlines = {n}")
-
-        # print(f"\n: input :\n<--start-->\n{input}<--done-->")
-
+        # print('\n: input = '{input}'")
         # print('\n: expect') ; pp(expect)
 
-        with open("expect.raw", 'w') as f, redirect_stdout(f) :
-            pp(expect)
+        # with open("expect.raw", 'w') as f, redirect_stdout(f) :
+        #     pp(expect)
 
         parser = ParserPython( document, skipws=False )
         parsed = parser.parse(input)
 
         # print('\n: parsed') ; pp(parsed)
-        with open("parsed.raw", 'w') as f, redirect_stdout(f) :
-            pp(parsed)
+        # with open("parsed.raw", 'w') as f, redirect_stdout(f) :
+        #     pp(parsed)
 
         # assert parsed == expect, \
 
