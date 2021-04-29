@@ -6,7 +6,7 @@ from arpeggio import OrderedChoice, Sequence, ZeroOrMore
 from arpeggio import RegExMatch as _
 
 from ..common import EQ, ws
-from ..generic.operand import operand
+from ..operand import operand
 
 ALL = ( ' option_list ol_first_option ol_element '
         ' ol_option_lead ol_long ol_short  '

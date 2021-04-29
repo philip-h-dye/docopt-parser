@@ -2,10 +2,10 @@ from arpeggio import EOF, Optional, ZeroOrMore, OneOrMore # , RegExMatch
 from arpeggio import OrderedChoice, Sequence, And, Not
 from arpeggio import RegExMatch as _
 
-from .boundedre import RegExMatchBounded
+from docopt_parser.boundedre import RegExMatchBounded
 
 from .common import EQ, BAR, ws, wx
-from .generic.operand import operand
+from .operand import operand
 from .option import option
 
 ALL = ( ' option_list ol_first_option ol_term '

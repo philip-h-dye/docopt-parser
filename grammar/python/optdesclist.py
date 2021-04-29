@@ -2,10 +2,10 @@ from arpeggio import EOF, Optional, ZeroOrMore, OneOrMore # , RegExMatch
 from arpeggio import OrderedChoice, Sequence, And, Not
 from arpeggio import RegExMatch as _
 
-from .boundedre import RegExMatchBounded
+from docopt_parser.boundedre import RegExMatchBounded
 
 from .common import COMMA, BAR, SPACE, wx
-from .generic.operand import operand
+from .operand import operand
 from .option import option
 
 ALL = ( ' option_list ol_first_option ol_term '
@@ -49,15 +49,24 @@ def ol_first_option():
 def ol_space():
     return Sequence ( SPACE, Not(SPACE) )
 
+def ol_separator():
+    return OrderedChoice( COMMA, BAR, ol_space() )
+
 def ol_term():
-    return OrderedChoice( [ option, operand, BAR, COMMA, ol_space ],
+    # semantic analysis :
+    #   - ol_separator present to facilite reporting a common typo
+    return OrderedChoice( [ option, operand, ol_separator ],
                             rule_name='ol_term', skipws=False )
+def ol_term_with_separator():
+    return Sequence( ( ol_separator, ol_term ),
+                     rule_name='ol_term_w_separator', skipws=False )
+                     
 def option_list():
     # semantic analysis :
     #   - validate that series of option, operand, BAR, COMMA and ol_space
     #     form a meaninful comma/bar/space option-list
     #   - disallow BAR without a prior option-line
-    return Sequence( ( ol_first_option, ZeroOrMore(ol_term) ),
+    return Sequence( ( ol_first_option, ZeroOrMore(ol_term_with_separator) ),
                      rule_name='option_list', skipws=False )
 
 def option_line_gap():

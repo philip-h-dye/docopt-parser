@@ -20,7 +20,7 @@
 from arpeggio import OrderedChoice
 
 from ..common import EQ, ws
-from ..generic.operand import operand
+from ..operand import operand
 
 from ..generic.option import short_no_arg, long_no_arg
 

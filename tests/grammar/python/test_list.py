@@ -19,7 +19,7 @@ from p import pp_str
 #------------------------------------------------------------------------------
 
 from grammar.python.common import ws, newline, COMMA, BAR
-from grammar.python.generic.operand import *
+from grammar.python.operand import *
 # # operand, operand_all_caps, operand_angled
 from grammar.python.option import *
 # # option, ...
@@ -131,68 +131,134 @@ class Test_Option_List ( unittest.TestCase ) :
         # self.tty = None
         pass
 
-    #==========================================================================
-
-    # boundry, first option handled separately from others, not a TERM
-    def test_simple_short_single_EOF (self) :
-        input = '-f'
-        parsed = self.parser.parse(input)
-        # tprint("\n", parsed.tree_str(), "\n")
-        tprint("[parsed]")
-        pp(parsed)
-
-    # boundry, first option handled separately from others, not a TERM
-    def test_simple_short_single_space_one (self) :
-        input = '-f '
-        parsed = self.parser.parse(input)
-        # tprint("\n", parsed.tree_str(), "\n")
-        tprint("[parsed]")
-        pp(parsed)
-
-    # boundry, first option handled separately from others, not a TERM
-    def test_simple_short_single_space_two (self) :
-        input = '-f  '
-        parsed = self.parser.parse(input)
-        # tprint("\n", parsed.tree_str(), "\n")
-        tprint("[parsed]")
-        pp(parsed)
-
-    #--------------------------------------------------------------------------
-
-    # boundry, second option is 1) first TERM() of ol_list
-    #                           2) first possible option-argumemt
-    def test_simple_short_pair (self) :
-        input = '-f -x'
-        parsed = self.parser.parse(input)
-        # tprint("\n", parsed.tree_str(), "\n")
-        tprint("[parsed]")
-        # pp(parsed)
-        lst = DocOptListViewVisitor().visit(parsed)
-        pp(lst)
-
-    #--------------------------------------------------------------------------
-
-    # first term not on boundry
-    def test_simple_short_trio (self) :
-        input = '-f -x -q'
-        parsed = self.parser.parse(input)
-        # tprint("\n", parsed.tree_str(), "\n")
-        tprint("[parsed]")
-        # pp(parsed)
-        lst = DocOptListViewVisitor().visit(parsed)
-        pp(lst)
-
-    #==========================================================================
-
 #------------------------------------------------------------------------------
 
 def tprint(*args, **kwargs):
     if tprint._on :
         kwargs['file'] = tprint._file
+        print('')
         print(*args, **kwargs)
+        tprint._file.flush()
 
-tprint._file = open("/dev/tty", 'w')
-tprint._on = False
+tprint._file = sys.stdout # open("/dev/tty", 'w')
+# tprint._on = False
+tprint._on = True
+
+#------------------------------------------------------------------------------
+
+def replace_matching ( name, matcher, prefix ):
+
+    if matcher.search(name) :
+        name1 = name
+        name = ''
+        pos = 0
+        for m in matcher.finditer(name1):
+            if False :
+                #print(f": name      =  '{name}'")
+                tprint(f". group()   =  '{m.group()}'")
+                tprint(f". group(0)  =  '{m.group(0)}'")
+                tprint(f". group(1)  =  '{m.group(1)}'")
+            name += name1[pos:m.start()] + prefix + m.group(1)
+            pos = m.end()
+        name += name1[pos:]
+
+    return name
+
+#------------------------------------------------------------------------------
+
+underscores		= re.compile(r'_+')
+eq_option_angle		= re.compile(r'=<([^>]+)>')
+eq_option_caps		= re.compile(r'=([A-Z][A-Z]+\b)')
+			# '\b' so that not accept '=FOO' of '=FOObar'
+eq_option_other		= re.compile(r'=([\S]+)')
+
+# FIXME:  floating values for invalid input tests, any non-identifier character
+
+def method_name ( initial_input ):
+
+    # FIXME: Simplify flow here using separate function: method_name(<input>)
+
+    name = initial_input
+    # tprint(f"[1] name      =  '{name}'")
+    name = name.replace('-','dash_').replace(' ','_space_').replace('space__','space_')
+    # tprint(f"[2] name      =  '{name}'")
+
+    # '=<ARG>' => '_eq_angle_ARG'
+    name = replace_matching ( name, eq_option_angle, '_eq_angle_')
+    # '=ARG' => '_eq_caps_ARG'
+    name = replace_matching ( name, eq_option_caps, '_eq_caps_' )
+    # '=\S+' => '_eq_other_ARG'
+    name = replace_matching ( name, eq_option_other, '_eq_other_' )
+
+    name = name.replace('|', '_BAR_')
+    name = name.replace(',', '_comma_')
+
+    name = underscores.sub(name, '_')
+
+    # During ALPHA, trap any unexpected characters by crashing
+    #   reenable for BETA and beyond
+    if False : # not name.isidentifier() :
+        import unicodedata
+        gather = [ ]
+        for ch in name :
+            if ch.isidentifier() :
+                gather.append ( ch )
+            else :
+                gather.append ( unicodedata.name(ch).replace(' ','_') )
+        name = ''.join(gather)
+
+    return 'test_' + name
+
+#------------------------------------------------------------------------------
+
+def generate(initial_input):
+
+    def create_method(actual_input):
+        def BASIS_test (self) :
+            input = actual_input
+            parsed = self.parser.parse(input)
+            # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
+            # tprint("[parsed]") ; pp(parsed)
+            # tprint(f"\ninput = '{input}'\n")
+        return BASIS_test
+
+    name = method_name(initial_input)
+
+    for n_spaces in range(1) : # range(4):
+        setattr ( Test_Option_List, f"{name}__trailing_{n_spaces}",
+                  create_method ( initial_input + ( ' ' * n_spaces ) ) )
+
+    if False :
+        def method(self):
+            tprint(f": {name}")
+        setattr(Test_Option_List, 'test_000', method)
+        
+#------------------------------------------------------------------------------
+
+# boundry condition, the first option is handled separately from succeeding terms
+# and it is an ol_first_option, not an ol_term
+generate('-f')
+
+# boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
+# the first possible position for a option-argument
+generate('-f -x')
+
+# one past boundry condition, first term on on a boundry
+generate('-f -x -l')
+
+generate("--file")
+generate("--file --example")
+generate("--file --example --list")
+
+generate("--file=<FILE> -x")
+generate("--file=<file> --example=<example>")
+generate("--file=<file> --example=<example> --list=<list>")
+
+generate("--file=<FILE> -x --example=<EXAMPLE> -y --query=<QUERY> -q")
+
+generate("--file=FILE -x")
+generate("--file=FOObar -x")
+generate("--file=a|b|c -x")
 
 #------------------------------------------------------------------------------
 

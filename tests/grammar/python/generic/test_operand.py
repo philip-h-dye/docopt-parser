@@ -11,7 +11,7 @@ import p
 
 from docopt_parser.parsetreenodes import NonTerminal_eq_structural
 
-from grammar.python.generic.operand import *
+from grammar.python.operand import *
 from grammar.python.common import ws
 
 #------------------------------------------------------------------------------

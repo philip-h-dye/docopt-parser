@@ -19,7 +19,7 @@ from p import pp_str
 #------------------------------------------------------------------------------
 
 from grammar.python.common import ws, COMMA, BAR
-from grammar.python.generic.operand import operand, \
+from grammar.python.operand import operand, \
     operand_all_caps, operand_angled
 
 from grammar.python.optdesc.list import option_list

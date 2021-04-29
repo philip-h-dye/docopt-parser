@@ -30,7 +30,7 @@ from arpeggio import RegExMatch as _
 from docopt_parser.boundedre import RegExMatchBounded
 
 from .common import EQ, ws # , wx
-from .generic.operand import operand
+from .operand import operand
 
 ALL = ( ' long_eq_arg long_no_arg '
         ' short_adj_arg short_stacked short_no_arg '

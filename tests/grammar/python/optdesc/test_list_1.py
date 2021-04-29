@@ -19,7 +19,7 @@ from p import pp_str
 #------------------------------------------------------------------------------
 
 from grammar.python.common import ws, COMMA, BAR
-# from grammar.python.generic.operand import *
+# from grammar.python.operand import *
 from grammar.python.optdesc.list import option_list
 from grammar.python.optdesc.list import ol_first_option, ol_element
 from grammar.python.optdesc.list import ol_operand_lead, ol_operand

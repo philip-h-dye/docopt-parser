@@ -19,7 +19,7 @@ import p
 #------------------------------------------------------------------------------
 
 from grammar.python.common import ws, COMMA, BAR
-from grammar.python.generic.operand import *
+from grammar.python.operand import *
 from grammar.python.optdesc.option import *
 
 #------------------------------------------------------------------------------
