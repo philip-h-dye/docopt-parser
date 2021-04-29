@@ -21,7 +21,7 @@ import arpeggio
 
 sys.path.insert(0, 'canonical')
 
-import common
+from grammar.python import common
 
 from p import pp_str
 

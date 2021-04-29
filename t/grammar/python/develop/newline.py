@@ -1,0 +1,1 @@
+../../../../tests/grammar/python/develop/test_newline.py

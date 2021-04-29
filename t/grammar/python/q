@@ -1,0 +1,11 @@
+def element():
+    # Without an enclosing list for 'words, newline', OrderedChoice
+    #   implicitly becomes Sequence !
+    return OrderedChoice ( [ words, newline ], rule_name='element' )
+
+def body():
+    return OneOrMore ( element, rule_name='body' )
+
+def document():
+    return Sequence( body, EOF, rule_name='document' )
+

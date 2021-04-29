@@ -1,37 +1,51 @@
+import sys
+import os
+import re
+
+from contextlib import redirect_stdout
+
 import unittest
 
 from arpeggio import ParserPython, NonTerminal, Terminal
 from arpeggio import Sequence, ZeroOrMore, OneOrMore, EOF
 from arpeggio import RegExMatch as _
 
+#------------------------------------------------------------------------------
+
 from prettyprinter import cpprint as pp
+from docopt_parser.parsetreenodes import NonTerminal_eq_structural
 import p
 
 #------------------------------------------------------------------------------
 
-from docopt_parser.parsetreenodes import NonTerminal_eq_structural
-
-from grammar.python.common import ws
-from grammar.python.operand import *
-from grammar.python.option import *
+from grammar.python.common import ws, COMMA, BAR
+from grammar.python.generic.operand import *
+from grammar.python.optdesc.option import *
 
 #------------------------------------------------------------------------------
 
-from docopt_parser import DocOptParserPEG
-from docopt_parser import DocOptSimplifyVisitor_Pass1 as Simplify_Pass1
-from docopt_parser import DocOptSimplifyVisitor_Pass2 as Simplify_Pass2
+# from docopt_parser import DocOptParserPEG
+# from docopt_parser import DocOptSimplifyVisitor_Pass1 as Simplify_Pass1
+# from docopt_parser import DocOptSimplifyVisitor_Pass2 as Simplify_Pass2
 
 #------------------------------------------------------------------------------
+
+# grammar_elements = [ long_no_arg, short_no_arg, ws ]
+grammar_elements = [ ]
 
 def grammar():
-    return Sequence( OneOrMore ( [ long_no_arg, short_no_arg, ws ] ),
-                     EOF, rule_name='grammar', skipws=False )
+    return Sequence( ( OneOrMore ( grammar_elements ), EOF ),
+                     rule_name='grammar', skipws=False )
 
 #------------------------------------------------------------------------------
     
-class Test_Import ( unittest.TestCase ) :
+class Test_1_option_ws ( unittest.TestCase ) :
 
     def setUp(self):
+
+        global grammar_elements
+
+        grammar_elements = [ option, ws ]
 
         self.parser = ParserPython(grammar, reduce_tree=True)
 
@@ -63,163 +77,145 @@ class Test_Import ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def single( self, rule, value ):
-        parsed = self.parser.parse(value)
+        parsed = self.parser.parse(' '+value)
         # tprint("\n", parsed.tree_str(), "\n")
         # print('') ; pp(parsed)
-        p_operand = Terminal(rule(), 0, value)
+        p_ws = Terminal(ws(), 0, ' ')
+        p_option = Terminal(rule(), 0, value)
         p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_operand, p_eof ])
+        expect = NonTerminal(grammar(), [ p_ws, p_option, p_eof ])
         assert NonTerminal_eq_structural(parsed, expect)
 
-    def SKIP_test_angled_single (self) :
-        self.single(operand_angled, "<angled-operand>")
+    def test_short_single (self) :
+        self.single(short_no_arg, "-l")
 
-    def SKIP_test_all_caps_single (self) :
-        self.single(operand_all_caps, "FILE")
+    def test_long_single (self) :
+        self.single(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
 
     def thrice( self, rule, value ):
         n_times = 3
-        input = ( value + ' ') * n_times
+        input = ' ' + ( value + ' ') * n_times
         parsed = self.parser.parse(input)
         # print('') ; pp(parsed)
-        p_operand = Terminal(rule(), 0, value)
+        p_option = Terminal(rule(), 0, value)
         p_ws = Terminal(ws(), 0, ' ')
-        elements = ( p_operand, p_ws ) * n_times
+        elements = ( p_option, p_ws ) * n_times
         p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ *elements, p_eof ])
+        expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
         assert NonTerminal_eq_structural(parsed, expect)
 
-    def SKIP_test_angled_thrice (self) :
-        self.thrice(operand_angled, "<angled-operand>")
+    def test_short_thrice (self) :
+        self.thrice(short_no_arg, "-l")
 
-    def SKIP_test_all_caps_thrice (self) :
-        self.thrice(operand_all_caps, "FILE")
+    def test_long_thrice (self) :
+        self.thrice(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
 
-    def SKIP_test_mixed (self) :
-        input = ' <a> <b> CC <d> EE '
+    def test_mixed (self) :
+        input = ' -a -b --file --form -l --why '
         #
         input = input.strip()
-        parsed = self.parser.parse(input)
+        parsed = self.parser.parse(' '+input)
         #
         inputs = input.split()
         p_ws = Terminal(ws(), 0, ' ')
         elements = [ ]
         for value in inputs :
-            rule = operand_angled if value[0] == '<' else operand_all_caps
+            rule = short_no_arg if value[1] == '-' else long_no_arg
             elements.append ( Terminal(rule(), 0, value) )
             elements.append ( p_ws )
         if len(elements) > 0:
             del elements[-1]
         p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ *elements, p_eof ])
+        expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
         assert NonTerminal_eq_structural(parsed, expect)
 
-#------------------------------------------------------------------------------
-
-def tprint(*args, **kwargs):
-    if tprint._on :
-        kwargs['file'] = tprint._file
-        print(*args, **kwargs)
-
-tprint._file = open("/dev/tty", 'w')
-
-tprint._on = False
-
-#------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    unittest.main()
-
-#------------------------------------------------------------------------------
-import sys
-import os
-import re
-
-from contextlib import redirect_stdout
-
-import unittest
-
-from pathlib import Path
-
-from prettyprinter import cpprint as pp
-
-from arpeggio import NonTerminal, Terminal
-
-from docopt_parser import DocOptParserPEG
-from docopt_parser import DocOptSimplifyVisitor_Pass1 as Simplify_Pass1
-from docopt_parser import DocOptSimplifyVisitor_Pass2 as Simplify_Pass2
-
-# import p
-
-#------------------------------------------------------------------------------
-
-def tprint(*args, **kwargs):
-    if tprint._on :
-        # kwargs['file'] = tprint._file
-        print(*args, **kwargs)
-
-# tprint._file = sys.stdout
-tprint._on = False
-
-#------------------------------------------------------------------------------
-
-GRAMMAR_GROUP = 'option'
-
-GRAMMAR_BASE = 'grammar'
-
-GRAMMAR_PATTERN = str( Path( GRAMMAR_BASE, GRAMMAR_GROUP, '{name}.peg' ) )
-
-#------------------------------------------------------------------------------
-
-class Test_Import ( unittest.TestCase ) :
-
-    # In the grammar, options expect to be preceeded by whitespace (i.e. '&ws).
-    # Certainly, resolving this in the grammar would be trivial using an alternate
-    # regular expression with '^'.  But these isolated grammars are intended to
-    # in whole up to the next level.  Requiring any changes during that process
-    # would defeat our central goal.
-    #
-    # So, equally trivial, prefix each input with 'ws' prior to parsing.
-    ws = ' '
 
     #--------------------------------------------------------------------------
 
-    def setUp(self):
+    def single_w_arg( self, option_rule, operand_rule, input,
+                      option_v, operand_v, sep=None ):
+        parsed = self.parser.parse(' '+input)
+        # tprint("\n", parsed.tree_str(), "\n")
+        # print('') ; pp(parsed)
+        p_ws = Terminal(ws(), 0, ' ')
+        p_option = Terminal(option_rule(), 0, option_v)
+        p_operand = Terminal(operand_rule(), 0, operand_v)
+        p_eof = Terminal(EOF(), 0, '')
+        elements = [ p_ws, p_option, p_operand, p_eof ]
+        if sep is not None:
+            elements.insert(2, sep)
+        expect = NonTerminal(grammar(), elements)
+        # print('') ; pp(expect)
+        assert NonTerminal_eq_structural(parsed, expect)
 
-        # quiet, no parse trees displayed
-        # self.debug = False
+    def SKIP_test_short_single_w_arg_ORIG (self) :
+        self.single_w_arg(short_no_arg, operand_all_caps, "-lFILE", "-l", "FILE")
 
-        # show parse tree for pass >= self.debug
-        self.debug = 2
+    def SKIP_test_short_single_w_arg (self) :
+        operands = { operand_all_caps : 'FILE', operand_angled : '<file>' }
+        for sep in "= ":
+            for operand_rule, arg in operands.items():
+                opt='-f'
+                self.single_w_arg(short_no_arg, operand_rule,
+                                  f"{opt}{sep}{arg}", opt, arg, sep)
 
-        # self.each = True
-        self.show = True
+    def _test_long_single_w_arg (self) :
+        operands = { operand_all_caps : 'FILE', operand_angled : '<file>' }
+        for sep in "= ":
+            for operand_rule, arg in operands.items():
+                opt='--work'
+                self.single_w_arg(long_no_arg, operand_rule,
+                                  f"{opt}{sep}{arg}", opt, arg, sep)
 
-        # tprint._file =
-        self.tty = open("/dev/tty", 'w')
+    #==============================================================================
 
-        # self.rstdout = redirect_stdout(self.tty)
-        # self.rstdout.__enter__()
+    def list_options_only ( self, input, optdef, sep=None):
+        grammar_elements = [ option_list, ws ]
+        parser = ParserPython(grammar, reduce_tree=True)
+        pp(parser.parser_model)
+        return
+        parsed = parser.parse(' '+input)
+        # tprint("\n", parsed.tree_str(), "\n")
+        print('') ; pp(parsed)
+        return
+        p_ws = Terminal(ws(), 0, ' ')
+        if sep is None:
+            sep = p_ws
+        elements = [ p_ws ]
+        for ( rule, opt ) in optdef :
+            elements.append ( Terminal(rule(), 0, opt) )
+            elements.append ( sep )
+        if len(elements):
+            del elements[-1]
+        elements.append( Terminal(EOF(), 0, '') )
+        expect = NonTerminal(grammar(), elements)
+        # print('') ; pp(expect)
+        assert NonTerminal_eq_structural(parsed, expect)
 
-        tprint._on = self.show or self.debug is not False
+    def test_list_short_pair_space(self) :
+        r=short_no_arg
+        optdef = ( (r, '-f'), (r, '-g') )
+        self.list_options_only( '-f -g', optdef )
+
+    def _test_list_short_pair_comma(self) :
+        r=short_no_arg
+        optdef = ( (r, '-f'), (r, '-g') )
+        self.list_options_only( '-f, -g', optdef, COMMA )
+
+    def SKIP_test_list_short_pair_bar(self) :
+        self.execute_passes ( 'short', '-f | -g', start='option' )
 
     #--------------------------------------------------------------------------
 
-    def tearDown(self):
-        # self.rstdout.__exit__(None, None, None)
-        # self.tty.close()
-        # self.tty = None
-        pass
-
-    #--------------------------------------------------------------------------
-
+    #==============================================================================
+    
     # ✓
 
-    def SKIP_test_short_no_arg(self) :
+    def SKIP_test_short_no_arg(self) :        
         self.execute_passes ( 'short', '-l', start='option' )
 
     def SKIP_test_short_stacked_lowercase(self) :
@@ -239,17 +235,6 @@ class Test_Import ( unittest.TestCase ) :
 
     def SKIP_test_short_w_arg_angle__space(self) :
         self.execute_passes ( 'short', '-f <file>', start='option' )
-
-    #--------------------------------------------------------------------------
-
-    def test_list_short_pair_space(self) :
-        self.execute_passes ( 'short', '-f -g', start='option' )
-
-    def _test_list_short_pair_comma(self) :
-        self.execute_passes ( 'short', '-f, -g', start='option' )
-
-    def SKIP_test_list_short_pair_bar(self) :
-        self.execute_passes ( 'short', '-f | -g', start='option' )
 
     #--------------------------------------------------------------------------
 
@@ -373,9 +358,18 @@ class Test_Import ( unittest.TestCase ) :
 
 #------------------------------------------------------------------------------
 
-shorts  = [ 'a', 'c', 'f' ]
-longs   = [ 'lead', 'file', 'move', 'turn' ]
+def tprint(*args, **kwargs):
+    if tprint._on :
+        kwargs['file'] = tprint._file
+        print(*args, **kwargs)
 
-sep     = [ ' ', ',', '|' ]
+tprint._file = open("/dev/tty", 'w')
+
+tprint._on = False
+
+#------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    unittest.main()
 
 #------------------------------------------------------------------------------

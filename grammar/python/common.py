@@ -12,7 +12,7 @@ from prettyprinter import cpprint as pp
 
 ALL = ( ' ws '			# captures each whitespace character
         ' wx '			# <<< Multiple whitespace or maybe lead
-        ' COMMA BAR '
+        ' EQ COMMA BAR '
         ' L_PAREN R_PAREN '
         ' L_BRACKET R_BRACKET '
         ' newline '
@@ -34,6 +34,7 @@ def wx():
     expr = whitespace().to_match + '*'
     return RegExMatch(expr, rule_name='ws', skipws=False )
 
+def EQ():		return '='
 def COMMA():		return ','
 def BAR():		return '|'
 def L_PAREN(): 		return '('
