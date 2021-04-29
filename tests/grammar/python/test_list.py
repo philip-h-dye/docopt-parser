@@ -120,7 +120,8 @@ class Test_Option_List ( unittest.TestCase ) :
         tprint._on = self.show or self.debug is not False
 
         # grammar_elements = [ option_list, ws ]
-        self.parser = ParserPython( language_def=document ) # , reduce_tree=True)
+        self.parser = ParserPython( language_def=document, skipws=False )
+        # # NEVER # reduce_tree=True -- needed meaning is lost
 
     #--------------------------------------------------------------------------
 
@@ -133,8 +134,24 @@ class Test_Option_List ( unittest.TestCase ) :
     #==========================================================================
 
     # boundry, first option handled separately from others, not a TERM
-    def test_simple_short_single (self) :
+    def test_simple_short_single_EOF (self) :
         input = '-f'
+        parsed = self.parser.parse(input)
+        # tprint("\n", parsed.tree_str(), "\n")
+        tprint("[parsed]")
+        pp(parsed)
+
+    # boundry, first option handled separately from others, not a TERM
+    def test_simple_short_single_space_one (self) :
+        input = '-f '
+        parsed = self.parser.parse(input)
+        # tprint("\n", parsed.tree_str(), "\n")
+        tprint("[parsed]")
+        pp(parsed)
+
+    # boundry, first option handled separately from others, not a TERM
+    def test_simple_short_single_space_two (self) :
+        input = '-f  '
         parsed = self.parser.parse(input)
         # tprint("\n", parsed.tree_str(), "\n")
         tprint("[parsed]")

@@ -12,7 +12,8 @@ from prettyprinter import cpprint as pp
 
 ALL = ( ' ws '			# captures each whitespace character
         ' wx '			# <<< Multiple whitespace or maybe lead
-        ' EQ COMMA BAR '
+        ' whitespace '		# single whitespace character
+        ' SPACE COMMA BAR EQ '
         ' L_PAREN R_PAREN '
         ' L_BRACKET R_BRACKET '
         ' newline '

@@ -4,7 +4,7 @@ from arpeggio import RegExMatch as _
 
 from .boundedre import RegExMatchBounded
 
-from .common import EQ, BAR, ws, wx
+from .common import COMMA, BAR, SPACE, wx
 from .generic.operand import operand
 from .option import option
 
@@ -31,64 +31,44 @@ ALL = ( ' option_list ol_first_option ol_term '
 #         - continuation lines start with extra indent
 #           and may include '|' prior to lead option
 
+# ol_* are constituent descendents of option_list
+
+# option-description section determining pattern
+# - it can't simply be folded into ol_term since a line starting
+#   with an option is the determinant.
+# - Optional(BAR) supports option-list continuation
 def ol_first_option():
-    # semantic points:
+    # semantic analysis :
     #   - disallow short_stacked
+    #   - is this a continuation of the prior option-list ?
     #   - disallow BAR without a prior option-line
     return Sequence ( ( Optional(BAR), wx, option ),
                       rule_name='ol_first_option', skipws=False )
 
+# Quite strictly a single space
+def ol_space():
+    return Sequence ( SPACE, Not(SPACE) )
+
 def ol_term():
-    return OrderedChoice( [ option, operand ],
+    return OrderedChoice( [ option, operand, BAR, COMMA, ol_space ],
                             rule_name='ol_term', skipws=False )
-
-def ol_comma():
-    return RegExMatchBounded \
-        ( r',', lead=r'\s*', trail=r'\s*',
-          rule_name='ol_comma', skipws=False )
-
-def ol_term_comma():
-    return Sequence( ( ol_comma, ol_term ),
-                     rule_name='ol_term_comma', skipws=False )
-
-def option_list_comma():
-    return Sequence( ( ol_first_option, OneOrMore(ol_term_comma) ),
-                     rule_name='option_list_comma', skipws=False )
-
-def ol_bar():
-    return RegExMatchBounded \
-        ( r',', lead=r'\s*', trail=r'\s*',
-          rule_name='ol_bar', skipws=False )
-
-def ol_term_bar():
-    return Sequence( ( ol_bar, ol_term ),
-                     rule_name='ol_term_bar', skipws=False )
-
-def option_list_bar():
-    return Sequence( ( ol_first_option, OneOrMore(ol_term_bar) ),
-                     rule_name='option_list_bar', skipws=False )
-
-def ol_term_space():
-    return Sequence( ( ws, ol_term ),
-                     rule_name='ol_term_space', skipws=False )
-
-def option_list_space():
-    return Sequence( ( ol_first_option, OneOrMore(ol_term_space) ),
-                     rule_name='option_list_space', skipws=False )
-
-def option_list_single():
-    return Sequence( ( ol_first_option, And(_(r'\s\s')) ),
-                     rule_name='option_list_single', skipws=False )
-
-# handle trailing off
-def option_list_single_EOF():
-    return Sequence( ( ol_first_option, EOF ),
-                     rule_name='option_list_single', skipws=False )
-
 def option_list():
-    return OrderedChoice ( [ option_list_comma, option_list_bar,
-                             option_list_space, option_list_single,
-                             option_list_single_EOF ],
-                           rule_name='option_list', skipws=False )
+    # semantic analysis :
+    #   - validate that series of option, operand, BAR, COMMA and ol_space
+    #     form a meaninful comma/bar/space option-list
+    #   - disallow BAR without a prior option-line
+    return Sequence( ( ol_first_option, ZeroOrMore(ol_term) ),
+                     rule_name='option_list', skipws=False )
+
+def option_line_gap():
+    return StrMatch('  ', rule_name='option_line_gap')
+
+def any_until_eol():
+    return _(r'.*$', rule_name="any_until_eol")
+
+def option_line():
+    # FIXME: implement default value
+    return Sequence( ( wx, option_list, option_line_gap(), any_until_eol() ),
+                     rule_name='option_line', skipws=False )
 
 #------------------------------------------------------------------------------
