@@ -34,9 +34,10 @@ def wx():
     expr = whitespace().to_match + '*'
     return RegExMatch(expr, rule_name='ws', skipws=False )
 
-def EQ():		return '='
+def SPACE():		return ' '
 def COMMA():		return ','
 def BAR():		return '|'
+def EQ():		return '='
 def L_PAREN(): 		return '('
 def R_PAREN():		return ')'
 def L_BRACKET(): 	return '['
