@@ -4,9 +4,9 @@ from arpeggio import RegExMatch as _
 
 from docopt_parser.boundedre import RegExMatchBounded
 
-from .common import COMMA, BAR, SPACE, wx
-from .operand import operand
-from .option import option
+from ..common import COMMA, BAR, SPACE, wx
+from ..operand import operand
+from ..option import option
 
 ALL = ( ' option_list ol_first_option ol_term '
         ' ol_list_comma  ol_comma '

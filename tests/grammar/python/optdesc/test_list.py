@@ -24,7 +24,7 @@ from grammar.python.operand import *
 from grammar.python.option import *
 # # option, ...
 
-from grammar.python.optdesclist import option_list, ol_first_option, ol_term
+from grammar.python.optdesc.list import option_list, ol_first_option, ol_term
 
 from docopt_parser import DocOptListViewVisitor
 
