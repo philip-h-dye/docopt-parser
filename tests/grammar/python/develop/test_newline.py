@@ -19,15 +19,11 @@ import arpeggio
 
 #------------------------------------------------------------------------------
 
-# sys.path.insert(0, 'canonical')
-
-import common
+from grammar.python.common import newline
 
 from p import pp_str
 
 #------------------------------------------------------------------------------
-
-newline = common.newline
 
 def words():
     return RegExMatch(r'[\S ]+', rule_name='words')
