@@ -24,7 +24,7 @@ from grammar.python.generic.operand import *
 from grammar.python.option import *
 # # option, ...
 
-from grammar.python.optdesclist_1 import option_list, ol_first_option, ol_term
+from grammar.python.optdesclist import option_list, ol_first_option, ol_term
 
 from docopt_parser import DocOptListViewVisitor
 
@@ -156,7 +156,7 @@ class Test_Option_List ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     # first term not on boundry
-    def _test_simple_short_trio (self) :
+    def test_simple_short_trio (self) :
         input = '-f -x -q'
         parsed = self.parser.parse(input)
         # tprint("\n", parsed.tree_str(), "\n")
