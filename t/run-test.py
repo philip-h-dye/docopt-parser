@@ -1,1 +1,0 @@
-../tests/run-test.py

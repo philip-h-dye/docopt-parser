@@ -1,1 +1,0 @@
-../../../../tests/grammar/python/optdesc/test_list.py

@@ -1,1 +1,0 @@
-../../../../tests/grammar/python/generic/test_option.py
