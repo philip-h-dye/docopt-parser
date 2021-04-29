@@ -38,6 +38,10 @@ alias ex=' /usr/bin/emacs ./log/latest.txt '
 alias trio="echo '# a b c / d e f / g h i / j k l / m n o'"
 alias eterm=' emacs --load ~/.xemacs/my-ansi-term.el '
 
+
+SAVED_GRAMMARS=ref/saved-grammar
+alias save='( f=s/docopt.peg && set -x && cp $f ${SAVED_GRAMMARS}/$(ts --ref $f).peg )'
+
 #
 
 pt_target=tests
@@ -45,11 +49,31 @@ pt_opts=
 alias pt='( c && export PYTHONPATH="t:.:${PYTHONPATH}" && logts -b log/test pytest -s ${pt_opts} ${pt_target} )'
 alias px='( c && export PYTHONPATH="t:.:${PYTHONPATH}" && pytest -s ${pt_opts} ${pt_target} )'
 
-alias cx=' clear && pyhere t/common.py '
-
 #
 
-SAVED_GRAMMARS=ref/saved-grammar
-alias save='( f=s/docopt.peg && set -x && cp $f ${SAVED_GRAMMARS}/$(ts --ref $f).peg )'
+# Wasn't there another feature here previously ?
+function pytest-here() {
+    export PYTHONPATH=".:t:tests:${PYTHONPATH}"
+    logts -b log/test pytest -c /dev/null "$@"
+}
+alias pt-here=pytest-here
+alias pthere=pytest-here
 
-#
+#------------------------------------------------------------------------------
+
+# cbase=grammar/peg
+cbase=grammar/python
+
+cgroup=develop
+# ctgt=newline
+ctgt=blankline
+
+# cgrp=optdesc
+# ctgt=list
+# ctgt=line
+
+copt='-s -v'
+
+alias cx=' clear && pytest-here ${copt} t/${cbase}/${cgroup}/${ctgt}.py '
+
+#------------------------------------------------------------------------------

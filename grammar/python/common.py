@@ -49,10 +49,15 @@ def newline():
     expr = whitespace().to_match + r'*\n'
     return RegExMatch(expr, rule_name='newline', skipws=False)
 
-# Without LookBehind(), grammar must handle it as a recursion separator
+# Without LookBehind(), grammar must handle it as a recursion separator#
+#   ** Use regular expressioon lookbehind (?<=...)text
+#   ** Keep in mind that 'look-behind requires fixed-width pattern'
 #
-# def blank_line():
-#     return Sequence( LookBehind(newline()), newline(),
-#                      rule_name='blank_line', skipws=False)
+def blank_line():
+    # return Sequence( LookBehind(newline()), newline(),
+    #                  rule_name='blank_line', skipws=False)
+    newline_ = newline().to_match
+    expr = r'(?<=\n)' + newline_
+    return RegExMatch(expr, rule_name='blank_line', skipws=False)
 
 #------------------------------------------------------------------------------
