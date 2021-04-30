@@ -327,7 +327,7 @@ def method_name ( initial_input ):
 
 #------------------------------------------------------------------------------
 
-def ogenerate ( optdefs ) :
+def ogenerate ( optdefs, cls=Test_Option_List ) :
 
     def create_method ( actual_input, the_terms ) :
         def the_test_method (self) :
@@ -344,14 +344,13 @@ def ogenerate ( optdefs ) :
 
     name = method_name(initial_input)
 
-    setattr ( Test_Option_List, name,
-              create_method ( initial_input, terms ) )
+    setattr ( cls, name, create_method ( initial_input, terms ) )
 
     if False :
-        setattr ( Test_Option_List, f"{name}__newline",
+        setattr ( cls, f"{name}__newline",
                   create_method ( initial_input + '\n', terms ) )
         for n_spaces in range(1) : # range(4):
-            setattr ( Test_Option_List, f"{name}__trailing_{n_spaces}",
+            setattr ( cls, f"{name}__trailing_{n_spaces}",
                       create_method ( initial_input + ( ' ' * n_spaces ) ) )
 
 #------------------------------------------------------------------------------
