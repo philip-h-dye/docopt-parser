@@ -64,16 +64,16 @@ alias pthere=pytest-here
 # cbase=grammar/peg
 cbase=grammar/python
 
-cgroup=develop
+# cgrp=develop
 # ctgt=newline
-ctgt=blankline
+# ctgt=blankline
 
-# cgrp=optdesc
+cgrp=optdesc
 # ctgt=list
-# ctgt=line
+ctgt=line
 
 copt='-s -v'
 
-alias cx=' clear && pytest-here ${copt} t/${cbase}/${cgroup}/${ctgt}.py '
+alias cx=' clear && pytest-here ${copt} t/${cbase}/${cgrp}/${ctgt}.py '
 
 #------------------------------------------------------------------------------
