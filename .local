@@ -74,6 +74,6 @@ ctgt=line
 
 copt='-s -v'
 
-alias cx=' clear && pytest-here ${copt} t/${cbase}/${cgrp}/${ctgt}.py '
+alias cx=' clear && pytest-here ${copt} tests/${cbase}/${cgrp}/test_${ctgt}.py '
 
 #------------------------------------------------------------------------------
