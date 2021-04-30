@@ -8,6 +8,10 @@ from arpeggio import RegExMatch
 class RegExMatchBounded(RegExMatch):
     def __init__ (self, *args, lead : str = '', trail : str = '', **kwargs):
         super().__init__(*args, **kwargs)
+        if lead is None :
+            lead = ''
+        if trail is None :
+            trail = ''
         self.to_match_lead = lead       # generally a lookbehind
         self.to_match_trail = trail     # generally a lookahead
 
