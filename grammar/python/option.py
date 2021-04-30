@@ -67,12 +67,8 @@ def long_eq_arg():
     """long argument, equal sign and operand without whitespace :
          '--file=foobar.txt'
     """
-    # '\b' is required to not improperly match '--file=FOO' of '--file=FOObar'
-    #   as an all caps option-argument.  Such must be matched as an
-    #   option-value using the regular expression from the command() catch-all.
-    return RegExMatchBounded \
-        ( r'--(?P<name>[\w][\w]+)' '=' r'(?P<argument>(<([-_:\w]+)>|[A-Z][A-Z_]+\b|[\S]+))',
-          lead=r'(^|(?<=\s))', rule_name='long_eq_arg', skipws=False )
+    return Sequence ( ( long_no_arg, EQ, operand ),
+                      rule_name='long_eq_arg', skipws=False )
 
 #------------------------------------------------------------------------------
 
@@ -81,11 +77,15 @@ def short_no_arg():
         ( r'-[\w]', lead=r'(^|(?<=\s))', trail=r'\b',
           rule_name='short_no_arg', skipws=False )
 
+def short_adj_arg__option():
+    short_no_arg_ = short_no_arg()
+    return RegExMatchBounded \
+        ( short_no_arg_.to_match, lead=short_no_arg_.to_match_lead,
+          rule_name='short_adj_arg__option', skipws=False )
+
 def short_adj_arg():
     """short with directly adjacent operand, i.e. -fFILE or -f<file>"""
-    return RegExMatchBounded \
-        ( ( r'-(?P<name>[\w])' + r'(?P<argument>[A-Z][A-Z]+\b)' ),
-          lead=r'(^|(?<=\s))', trail=r'\b',
+    return Sequence ( ( short_adj_arg__option, operand ),
           rule_name='short_adj_arg', skipws=False )
 
 def short_stacked():
