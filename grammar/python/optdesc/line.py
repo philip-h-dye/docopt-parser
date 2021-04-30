@@ -15,7 +15,7 @@
 #------------------------------------------------------------------------------
 
 from arpeggio import EOF, Sequence, OrderedChoice, Optional, StrMatch
-from arpeggio import RegExMatch as _
+from arpeggio import And, Not, RegExMatch as _
 
 # from docopt_parser.boundedre import RegExMatchBounded
 
@@ -35,10 +35,15 @@ def any_until_eol():
 #------------------------------------------------------------------------------
 
 def option_line_gap():
-    return StrMatch('  ', rule_name='option_line_gap')
+    """Two or more spaces -- option line gap"""
+    return _(r'   *', rule_name='option_line_gap', skipws=False )
+
+#------------------------------------------------------------------------------
 
 def option_help():
-    return Sequence ( ( any_until_eol, ), rule_name='option_help')
+    return Sequence ( ( Not(SPACE), any_until_eol, ), rule_name='option_help')
+
+#------------------------------------------------------------------------------
 
 def option_line():
 
