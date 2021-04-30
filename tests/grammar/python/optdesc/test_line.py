@@ -48,50 +48,6 @@ def document():
 
 #------------------------------------------------------------------------------
 
-def create_expect ( *terminals, eof=False, separator =
-                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' ') ) :
-
-    if len(terminals) <= 0 :
-        raise ValueError("No terminals provided.  Please provide at least one.")
-
-    expect = NonTerminal( document(), [
-        NonTerminal( body(), [
-            NonTerminal( element(), [
-                NonTerminal( option_line(), [
-                    NonTerminal( option_list(), [
-                        NonTerminal( ol_first_option(), [
-                            NonTerminal( option(), [
-                                terminals[0],
-                            ]) ,
-                        ]) ,
-                        * [
-                            NonTerminal( ol_term_with_separator(), [
-                                NonTerminal( ol_separator(), [
-                                    separator,
-                                ]) ,
-                                NonTerminal( ol_term(), [
-                                    NonTerminal( option(), [
-                                        term
-                                    ]) ,
-                                ]) ,
-                            ])
-                            for term in terminals[1:]
-                        ],
-                    ]) ,
-                    # Terminal(EOF(), 0, '') , # only if specified via 'eof'
-                ]) ,
-            ]) ,
-        ]) ,
-        Terminal(EOF(), 0, '') ,
-    ])
-
-    if eof :
-        expect[0][0][0].append(expect[-1])
-
-    return expect
-
-#------------------------------------------------------------------------------
-
 class Test_Option_Line ( unittest.TestCase ) :
 
     def setUp(self):
@@ -363,6 +319,50 @@ def expect ( input, parsed, *terms ) :
     assert parsed == expect, ( f"input = '{input}' :\n"
                                f"[expect]\n{pp_str(expect)}\n"
                                f"[parsed]\n{pp_str(parsed)}" )
+
+#------------------------------------------------------------------------------
+
+def create_expect ( *terminals, eof=False, separator =
+                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' ') ) :
+
+    if len(terminals) <= 0 :
+        raise ValueError("No terminals provided.  Please provide at least one.")
+
+    expect = NonTerminal( document(), [
+        NonTerminal( body(), [
+            NonTerminal( element(), [
+                NonTerminal( option_line(), [
+                    NonTerminal( option_list(), [
+                        NonTerminal( ol_first_option(), [
+                            NonTerminal( option(), [
+                                terminals[0],
+                            ]) ,
+                        ]) ,
+                        * [
+                            NonTerminal( ol_term_with_separator(), [
+                                NonTerminal( ol_separator(), [
+                                    separator,
+                                ]) ,
+                                NonTerminal( ol_term(), [
+                                    NonTerminal( option(), [
+                                        term
+                                    ]) ,
+                                ]) ,
+                            ])
+                            for term in terminals[1:]
+                        ],
+                    ]) ,
+                    # Terminal(EOF(), 0, '') , # only if specified via 'eof'
+                ]) ,
+            ]) ,
+        ]) ,
+        Terminal(EOF(), 0, '') ,
+    ])
+
+    if eof :
+        expect[0][0][0].append(expect[-1])
+
+    return expect
 
 #------------------------------------------------------------------------------
 
