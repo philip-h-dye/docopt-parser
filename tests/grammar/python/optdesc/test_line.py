@@ -96,7 +96,7 @@ class Test_Option_Line ( unittest.TestCase ) :
                 NonTerminal( operand(), [
                     Terminal( operand_all_caps(), 0, 'NORM' ) ,
                 ]) ,
-            ]) ,            
+            ]) ,
             eof = ( input[-1] != '\n' ) ,
         )
 
@@ -254,9 +254,45 @@ class Test_Option_Line ( unittest.TestCase ) :
 
 #------------------------------------------------------------------------------
 
+def lgenerate ( cls, optdefs, help_, indent='  ', sep=', ', offset=16 ):
+
+    # tprint(f"lgenerate :  optdefs = {optdefs}, help_ = '{help_}, sep='{sep}' )")
+
+    ( method_name, optlist_string ) = ogenerate ( cls, optdefs, sep=sep, )
+
+    if indent is None:
+        indent = ''
+    if help_ is None:
+        help_ = ''
+
+    # print(f": {'indent':<16} : '{indent}'")
+    # print(f": {'os string':<16} : '{optlist_string}'")
+    # print(f": {'help_':<16} : '{help_}'")
+    # sys.stdout.flush()
+
+    return f"{indent}{optlist_string:<{offset}}  {help_}\n"
+
+#------------------------------------------------------------------------------
+
+#lgen
+
+olines = [
+    ( ( ( '-h', ), ( '--help', ) ), "Show this usage information." ),
+    ( ( ( '-v', ), ( '--version', ) ), "Print the version and exit." ),
+]
+
+text = ''
+for ol_spec in olines :
+    text += lgenerate ( Test_Option_Line, *ol_spec )
+
+print(f"Options:\n{text}")
+
+#------------------------------------------------------------------------------
+
 def tgenerate ( optdef, *args, **kwargs ):
-    kwargs['cls'] = Test_Option_Line
-    ogenerate ( optdef, *args, **kwargs )
+    # OLD # ogenerate ( optdef, *args, cls=Test_Option_Line, **kwargs )
+    # ogenerate ( Test_Option_Line, optdef, *args, **kwargs )
+    pass
 
 #------------------------------------------------------------------------------
 
@@ -267,7 +303,7 @@ tgenerate ( ( ( '-f', ), ) )
 
 #------------------------------------------------------------------------------
 
-if False :
+if True  :
 
     # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
     # the first possible position for a option-argument

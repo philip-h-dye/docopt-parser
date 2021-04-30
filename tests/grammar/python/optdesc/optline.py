@@ -54,7 +54,7 @@ def document():
 
 #------------------------------------------------------------------------------
 
-def ogenerate ( optdefs, cls ) :
+def ogenerate ( cls, optdefs, sep= ', ') :
 
     def create_method ( actual_input, the_terms ) :
         def the_test_method (self) :
@@ -63,11 +63,12 @@ def ogenerate ( optdefs, cls ) :
             parsed = self.parser.parse(input)
             # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
             # tprint("[parsed]") ; pp(parsed)
-            # tprint(f"\ninput = '{input}'\n")
-            expect ( input, parsed, *terms )
+            # tprint(f"\ninput = '{input}'\n")            
+            expect ( input, parsed, *terms, sep=sep )
+
         return the_test_method
 
-    ( initial_input, terms ) = create_terms( optdefs, sep = ' ' ) # ', '
+    ( initial_input, terms ) = create_terms( optdefs, sep = sep ) # ', '
 
     name = method_name(initial_input)
 
@@ -80,13 +81,106 @@ def ogenerate ( optdefs, cls ) :
             setattr ( cls, f"{name}__trailing_{n_spaces}",
                       create_method ( initial_input + ( ' ' * n_spaces ) ) )
 
+    return ( name, initial_input )
+
 #------------------------------------------------------------------------------
 
-def expect ( input, parsed, *terms ) :
+# Restricted set for now:
+#   - single space
+#   - comma ',' : optionally preceeded and/or followed by a space
+#   - bar   '|' : optionally preceeded and/or followed by a space
+
+def expect_separator(sep):
+
+    space = Terminal( StrMatch(' ', rule='SPACE'), 0, ' ')
+    comma = Terminal( StrMatch(',', rule='COMMA'), 0, ',')
+    bar = Terminal( StrMatch('|', rule='BAR'), 0, '|')
+
+    if sep is None :
+        return space
+
+    if not isinstance(sep, str):
+        raise ValueError(f"Unreconized expect <sep>, type {str(type(sep))}, value '{repr(sep)}'.\n"
+                         "Expected None, a string or perhaps a ParseTreeNode.")
+
+    if len(sep) <= 0:
+        # Zero isn't possible since things would run into each other and
+        # could not then necessarily be parsed.
+        return space
+
+    if len(sep) > 3:
+        raise ValueError(f"<sep> too long, at most 3 possible.  Please resolve.")
+
+    saved_sep = sep
+
+    if sep == ' ':
+        return space
+
+    #--------------------------------------------------------------------------
+
+    # Preceeding spaces
+
+    preceeded = 0
+    while sep[0] == ' ':
+        preceeded += 1
+        sep = sep[1:]
+
+    if preceeded > 1:
+        if len(sep) > 0:
+            raise ValueError(
+                f"option-list separator string '{save_sep}' improperly has separating "
+                f"character '{sep[0]}' preceeded by two spaces.  "
+                f"No two consequtive spaces permitted since such marks the end of "
+                f"the option-list and the start of the option help text")
+        else :
+            raise ValueError(
+                f"option-list separator string '{save_sep}' is all spaces.  "
+                f"No two consequtive spaces permitted since such marks the end of "
+                f"the option-list and the start of the option help text")
+
+    #--------------------------------------------------------------------------
+
+    # Trailing
+
+    followed = 0
+    while sep[-1] == ' ':
+        followed += 1
+        sep = sep[:-1]
+
+    if followed > 1:
+        raise ValueError(
+            f"option-list separator string '{save_sep}' improperly has separating "
+            f"character '{sep[0]}' followed by two spaces.  "
+            f"No two consequtive spaces permitted since such marks the end of "
+            f"the option-list and the start of the option help text")
+
+    #--------------------------------------------------------------------------
+
+    if sep[0] == ',':
+        core = NonTerminal( ol_comma(), [ comma ] )
+    elif sep[0] == '|' :
+        core = NonTerminal( ol_bar(), [ bar ] )
+    else :
+        raise ValueError(
+            f"'{sep[0]}' is not a valid option-list separator.  Valid "
+            f"separators are COMMA ',', BAR '|' and a SPACE ' '.  "
+            f"Additionally, COMMA and BAR may be optionally preceeded"
+            f"/followed by one space on each side.")
+
+    if preceeded:
+        core.insert(0, space)
+    if followed:
+        core.append(space)
+
+    return NonTerminal( ol_separator(), [ core ] )
+
+#------------------------------------------------------------------------------
+
+def expect ( input, parsed, *terms, sep = ', ' ) :
 
     # tprint("[parsed]") ; pp(parsed)
 
-    expect = create_expect ( *terms, eof = ( input[-1] != '\n' ) )
+    expect = create_expect ( *terms, eof = ( input[-1] != '\n' ), sep=sep )
 
     assert parsed == expect, ( f"input = '{input}' :\n"
                                f"[expect]\n{pp_str(expect)}\n"
@@ -94,11 +188,12 @@ def expect ( input, parsed, *terms ) :
 
 #------------------------------------------------------------------------------
 
-def create_expect ( *terminals, eof=False, separator =
-                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' ') ) :
+def create_expect ( *terminals, eof=False, sep = None ) :
 
     if len(terminals) <= 0 :
         raise ValueError("No terminals provided.  Please provide at least one.")
+
+    separator = expect_separator(sep)
 
     expect = NonTerminal( document(), [
         NonTerminal( body(), [
@@ -112,9 +207,7 @@ def create_expect ( *terminals, eof=False, separator =
                         ]) ,
                         * [
                             NonTerminal( ol_term_with_separator(), [
-                                NonTerminal( ol_separator(), [
-                                    separator,
-                                ]) ,
+                                separator,
                                 NonTerminal( ol_term(), [
                                     NonTerminal( option(), [
                                         term
