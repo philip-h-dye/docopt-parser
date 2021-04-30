@@ -481,6 +481,141 @@ def generate(initial_input):
 
 #------------------------------------------------------------------------------
 
+from test_list import create_terms
+
+def ogenerate ( optdefs, cls=Test_Option_Line ) :
+
+    def create_method ( actual_input, the_terms ) :
+        def the_test_method (self) :
+            input = actual_input
+            terms = the_terms
+            parsed = self.parser.parse(input)
+            # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
+            # tprint("[parsed]") ; pp(parsed)
+            # tprint(f"\ninput = '{input}'\n")
+            expect ( input, parsed, *terms )
+        return the_test_method
+
+    ( initial_input, terms ) = create_terms( optdefs, sep = ' ' ) # ', '
+
+    name = method_name(initial_input)
+
+    setattr ( cls, name, create_method ( initial_input, terms ) )
+
+    if False :
+        setattr ( cls, f"{name}__newline",
+                  create_method ( initial_input + '\n', terms ) )
+        for n_spaces in range(1) : # range(4):
+            setattr ( cls, f"{name}__trailing_{n_spaces}",
+                      create_method ( initial_input + ( ' ' * n_spaces ) ) )
+
+#------------------------------------------------------------------------------
+
+def expect ( input, parsed, *terms ) :
+
+    # tprint("[parsed]") ; pp(parsed)
+
+    expect = create_expect ( *terms, eof = ( input[-1] != '\n' ) )
+
+    assert parsed == expect, ( f"input = '{input}' :\n"
+                               f"[expect]\n{pp_str(expect)}\n"
+                               f"[parsed]\n{pp_str(parsed)}" )
+
+#------------------------------------------------------------------------------
+
+# boundry condition, the first option is handled separately from succeeding terms
+# and it is an ol_first_option, not an ol_term
+# generate( '-f' )
+ogenerate ( ( ( '-f', ), ) )
+
+#------------------------------------------------------------------------------
+
+if True :
+
+    # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
+    # the first possible position for a option-argument
+    # generate( '-f -x' )
+    ogenerate ( ( ( '-f', ) ,
+                  ( '-x', ) ,
+                ) )
+
+    # one past boundry condition, first term on on a boundry
+    # generate('-f -x -l')
+    ogenerate ( ( ( '-f', ) ,
+                  ( '-x', ) ,
+                  ( '-l', ) ,
+                ) )
+
+    # generate("--file")
+    # generate("--file --example")
+    # generate("--file --example --list")
+
+    ogenerate ( ( ( '--file', ) ,
+                ) )
+    ogenerate ( ( ( '--file', ) ,
+                  ( '--example', ) ,
+                ) )
+    ogenerate ( ( ( '--file', ) ,
+                  ( '--example', ) ,
+                  ( '--list', ) ,
+                ) )
+
+    # generate("--file=<FILE> -x")
+    # generate("--file=<file> --example=<example>")
+    # generate("--file=<file> --example=<example> --list=<list>")
+
+    ogenerate ( ( ( '--file', '=', '<file>', ) ,
+                ) )
+
+    ogenerate ( ( ( '--file', '=', '<file>', ) ,
+                  ( '--example', '=', '<example>', ) ,
+                ) )
+
+    ogenerate ( ( ( '--file', '=', '<file>', ) ,
+                  ( '--example', '=', '<example>', ) ,
+                  ( '--list', '=', '<list>', ) ,
+                ) )
+
+    # generate("--file=<FILE> -x --example=<EXAMPLE> -y --query=<QUERY> -q")
+    ogenerate ( ( ( '--file', '=', '<FILE>', ) ,
+                  ( '-x', ) ,
+                  ( '--example', '=', '<EXAMPLE>', ) ,
+                  ( '-y', ) ,
+                  ( '--query', '=', '<QUERY>', ) ,
+                  ( '-q', ) ,
+                ) )
+
+    # generate("--file=FILE -x")
+    ogenerate ( ( ( '--file', '=', 'FILE', ) ,
+                  ( '-x', ) ,
+                ) )
+
+    # generate("--file=FOObar -x")
+    if False  :
+        ogenerate ( ( ( '--file', '=', 'FOObar', ) ,
+                      ( '-x', ) ,
+                    ) )
+
+    # generate("--file=a|b|c -x")
+    if False  :
+        ogenerate ( ( ( '--file', '=', 'a|b|c', ) ,
+                      ( '-x', ) ,
+                    ) )
+
+    #------------------------------------------------------------------------------
+
+    ogenerate ( ( ( '--file', '=', 'NORM' ) ,
+                  ( '--file', ' ', 'NORM' ) ,
+                  ( '--file', ) ,
+                ) )
+
+    ogenerate ( ( ( '-f', '', 'NORM' ) ,
+                  ( '-f', ' ', 'NORM' ) ,
+                  ( '-f', ) ,
+                ) )
+
+#------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     unittest.main()
 
