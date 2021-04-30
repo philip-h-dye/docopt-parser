@@ -8,7 +8,7 @@ import unittest
 
 from arpeggio import ParserPython, NonTerminal, Terminal, flatten
 from arpeggio import Sequence, OrderedChoice, ZeroOrMore, OneOrMore, EOF
-from arpeggio import RegExMatch as _
+from arpeggio import RegExMatch as _ , StrMatch
 
 #------------------------------------------------------------------------------
 
@@ -25,6 +25,7 @@ from grammar.python.option import *
 # # option, ...
 
 from grammar.python.optdesc.list import option_list, ol_first_option, ol_term
+from grammar.python.optdesc.list import ol_term_with_separator, ol_separator
 
 from docopt_parser import DocOptListViewVisitor
 
@@ -45,54 +46,6 @@ def body():
 
 def document():
     return Sequence( body, EOF, rule_name='document' )
-
-#------------------------------------------------------------------------------
-
-_short=short_no_arg
-_long=long_no_arg
-
-first=ol_first_option
-s=_short
-l=_long
-a=operand_angled
-c=operand_all_caps
-# ol=ol_operand_lead
-
-def _t(r, opt):
-    return Terminal(r(), 0, opt)
-
-#------------------------------------------------------------------------------
-
-def re_compile(f):
-    r = f()
-    r.compile()
-    return r.regex
-
-re_short  = re_compile(_short)
-re_long   = re_compile(_long)
-
-def verify_option_type_match(rule, value): # rule in s or r , value : option string
-
-    if rule is _short :
-        if re_short.fullmatch(value):
-            return
-        if len(value) < 2:
-            raise ValueError("Short option '{value}' is too short.  Please address.")
-        if len(value) > 2:
-            raise ValueError("Short option '{value}' is too large.  Please address.")
-        raise ValueError("Short option '{value}' is invalid.  Probably invalid characters.")
-
-    if rule is _long :
-        if re_long.fullmatch(value):
-            return
-        if len(value) < 4:
-            raise ValueError("Long option '{value}' is too short, it must be "
-                             "at least two dashes and two letters.  "
-                             "Please address.")
-        raise ValueError("Long option '{value}' is invalid.  Probably invalid characters.")
-
-    raise ValueError("verify_option_type_match() should be called only with "
-                     "either _long or _short.  Please address.")
 
 #------------------------------------------------------------------------------
 
@@ -131,6 +84,212 @@ class Test_Option_List ( unittest.TestCase ) :
         # self.tty = None
         pass
 
+    #--------------------------------------------------------------------------
+
+    def SKIP_test_single_short_no_arg (self):
+        input = '-f'
+        parsed = self.parser.parse(input)
+        # tprint("[parsed]") ; pp(parsed)
+        expect ( input, parsed,
+            Terminal( short_no_arg(), 0, '-f' ) ,
+        )
+
+    #--------------------------------------------------------------------------
+
+    def SKIP_test_single_short_w_arg_1 (self):
+        input = '-fNORM'
+        parsed = self.parser.parse(input)
+        # tprint("[parsed]") ; pp(parsed)
+        expect ( input, parsed,
+            NonTerminal( short_adj_arg(), [
+                Terminal( short_adj_arg__option(), 0, '-f' ) ,
+                NonTerminal( operand(), [
+                    Terminal( operand_all_caps(), 0, 'NORM' ) ,
+                ]) ,
+            ]) ,
+        )
+
+    #--------------------------------------------------------------------------
+
+    def SKIP_test_terms_short (self):
+
+        # input = '-fNORM'
+
+        optdefs = ( ( '-f', ) ,
+                    ( '-f', '' , 'NORM' ) ,
+                    ( '-f', ' ', 'NORM' ) ,
+                  )
+
+        ( input, terms ) = create_terms( optdefs, sep = ' ' ) # ', '
+
+        print(f": input = '{input}'")
+        # print(f"[ terms ]\n{pp_str(terms)}")
+
+        parsed = self.parser.parse(input)
+        # tprint("[parsed]") ; pp(parsed)
+
+        expect ( input, parsed, *terms )
+
+    #--------------------------------------------------------------------------
+
+    def SKIP_test_terms_long (self):
+
+        # input = '-fNORM'
+
+        optdefs = ( ( '--file', '=', 'NORM' ) ,
+                    ( '--file', ' ' , 'NORM' ) ,
+                    ( '--file', ) ,
+                  )
+
+        ( input, terms ) = create_terms( optdefs, sep = ' ' ) # ', '
+
+        print(f": input = '{input}'")
+        # print(f"[ terms ]\n{pp_str(terms)}")
+
+        parsed = self.parser.parse(input)
+        # tprint("[parsed]") ; pp(parsed)
+
+        expect ( input, parsed, *terms )
+
+#------------------------------------------------------------------------------
+
+def zstr(value):
+    return value if value is not None else ''
+
+#------------------------------------------------------------------------------
+
+# Assumming well-formed optdefs, with well-formed being :
+#   - Every optdef is a tuple or list like object of one to three strings
+#   - The first element is a wellformed short or long option with no argument
+#   - The second element is the gap character between the option and its
+#     operand -- empty string if none.
+#     elements with the later two allowed to by None
+#   - allowing None in place of empty string
+#   -
+#
+
+def create_terms ( optdefs, sep = ' ' ):
+
+    # print(f"\n: sep = '{sep}'\n")
+    # print(f"\n[ optdefs ]\n") ; pp(optdefs) ; print('')
+
+    input = [ ]
+    terms = [ ]
+
+    for optdef in optdefs :
+        ( opt, gap, operand, *extra ) = ( *optdef, None, None )
+        if operand is None:
+            operand = ''
+            gap = ''
+        elif gap is None:
+            gap = ''
+
+        input.append(opt + gap + operand)
+
+        if re_short.fullmatch(opt):
+            if operand:
+                if gap == '':
+                    terms.append ( term__short_adj_arg(opt, operand) )
+                else :
+                    terms.append ( term__short_no_arg(opt) )
+                    terms.append ( term__operand(operand) )
+            else :
+                    terms.append ( term__short_no_arg(opt) )
+
+        elif re_long.fullmatch(opt):
+            if operand:
+                if gap == '=':
+                    terms.append ( term__long_eq_arg(opt, operand) )
+                else :
+                    terms.append ( term__long_no_arg(opt) )
+                    terms.append ( term__operand(operand) )
+            else :
+                    terms.append ( term__long_no_arg(opt) )
+
+        else :
+            raise ValueError(
+                f"Invalid option '{opt}' in optdef '{optdef}'.\n"
+                f"Please provide a short or long without an "
+                f"argument.  Place arguments go in the third position.\n"
+                f"  ( (<option> <gap> <operand>), ... )\n"
+                f"Example:  ( ( '--file', ' ', '<file>' ),\n"
+                f"            ( '--long', '=', '<long' ),\n"
+                f"            ( '--quit' ), )\n" )
+
+    return ( sep.join(input), terms )
+
+#------------------------------------------------------------------------------
+
+def term__long_no_arg(opt):
+    return Terminal( long_no_arg(), 0, opt)
+
+def term__long_eq_arg(opt, op):
+    return NonTerminal( long_eq_arg(),
+                        [ term__short_no_arg(opt),
+                          StrMatch('=', rule='EQ'),	# FIXME: create global
+                          term__operand(op) ], )
+
+def term__short_no_arg(opt):
+    return Terminal( short_no_arg(), 0, opt)
+
+def term__short_adj_arg(opt, op):
+    return NonTerminal( short_adj_arg(),
+                        [ Terminal( short_adj_arg__option(), 0, opt ) ,
+                          term__operand(op) ], )
+
+def term__operand(op):
+    if re_operand_angled.fullmatch(op) :
+        operand_type = operand_angled
+    elif re_operand_all_caps.fullmatch(op) :
+        operand_type = operand_all_caps
+    else :
+        raise ValueError(
+            f"Invalid optdef operand '{op}'.  Expected either an "
+            f"angle operand, '<foo>', or all caps, 'FOO'.  Please address.")
+
+    return NonTerminal( operand(), [ Terminal( operand_type(), 0, op ) ] )
+
+#------------------------------------------------------------------------------
+
+def expect ( input, parsed, *terminals, separator =
+                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' ') ) :
+    # FIXME: create global for 'SPACE'
+
+    if len(terminals) <= 0 :
+        raise ValueError("No terminals provided.  Please provide at least one.")
+
+    expect = NonTerminal( document(), [
+        NonTerminal( body(), [
+            NonTerminal( element(), [
+                NonTerminal( option_list(), [
+                    NonTerminal( ol_first_option(), [
+                        NonTerminal( option(), [
+                            terminals[0],
+                        ]) ,
+                    ]) ,
+                    * [
+                        NonTerminal( ol_term_with_separator(), [
+                            NonTerminal( ol_separator(), [
+                                separator,
+                            ]) ,
+                            NonTerminal( ol_term(), [
+                                NonTerminal( option(), [
+                                    term
+                                ]) ,
+                            ]) ,
+                        ])
+                        for term in terminals[1:]
+                    ],
+                ]) ,
+            ]) ,
+        ]) ,
+        Terminal(EOF(), 0, '') ,
+    ])
+
+    assert parsed == expect, ( f"[expect]\n{pp_str(expect)}\n"
+                               f"[parsed]\n{pp_str(parsed)}"
+                               f"input = '{input}' :\n" )
+
 #------------------------------------------------------------------------------
 
 def tprint(*args, **kwargs):
@@ -146,6 +305,58 @@ tprint._on = True
 
 #------------------------------------------------------------------------------
 
+_short=short_no_arg
+_long=long_no_arg
+
+first=ol_first_option
+s=_short
+l=_long
+a=operand_angled
+c=operand_all_caps
+# ol=ol_operand_lead
+
+def _t(r, opt):
+    return Terminal(r(), 0, opt)
+
+#------------------------------------------------------------------------------
+
+def re_compile(f):
+    r = f()
+    r.compile()
+    return r.regex
+
+re_short		= re_compile(short_no_arg)
+re_long			= re_compile(long_no_arg)
+re_operand_angled	= re_compile(operand_angled)
+re_operand_all_caps	= re_compile(operand_all_caps)
+
+#------------------------------------------------------------------------------
+
+def verify_option_type_match(rule, value): # rule in s or r , value : option string
+
+    if rule is _short :
+        if re_short.fullmatch(value):
+            return
+        if len(value) < 2:
+            raise ValueError("Short option '{value}' is too short.  Please address.")
+        if len(value) > 2:
+            raise ValueError("Short option '{value}' is too large.  Please address.")
+        raise ValueError("Short option '{value}' is invalid.  Probably invalid characters.")
+
+    if rule is _long :
+        if re_long.fullmatch(value):
+            return
+        if len(value) < 4:
+            raise ValueError("Long option '{value}' is too short, it must be "
+                             "at least two dashes and two letters.  "
+                             "Please address.")
+        raise ValueError("Long option '{value}' is invalid.  Probably invalid characters.")
+
+    raise ValueError("verify_option_type_match() should be called only with "
+                     "either _long or _short.  Please address.")
+
+#------------------------------------------------------------------------------
+
 def replace_matching ( name, matcher, prefix ):
 
     if matcher.search(name) :
@@ -153,11 +364,6 @@ def replace_matching ( name, matcher, prefix ):
         name = ''
         pos = 0
         for m in matcher.finditer(name1):
-            if False :
-                #print(f": name      =  '{name}'")
-                tprint(f". group()   =  '{m.group()}'")
-                tprint(f". group(0)  =  '{m.group(0)}'")
-                tprint(f". group(1)  =  '{m.group(1)}'")
             name += name1[pos:m.start()] + prefix + m.group(1)
             pos = m.end()
         name += name1[pos:]
@@ -214,51 +420,167 @@ def method_name ( initial_input ):
 def generate(initial_input):
 
     def create_method(actual_input):
-        def BASIS_test (self) :
+        def the_test_method (self) :
             input = actual_input
             parsed = self.parser.parse(input)
             # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
-            # tprint("[parsed]") ; pp(parsed)
+            tprint("[parsed]") ; pp(parsed)
             # tprint(f"\ninput = '{input}'\n")
-        return BASIS_test
+        return the_test_method
 
     name = method_name(initial_input)
+
+    # setattr ( Test_Option_List, f"{name}__newline",
+    #           create_method ( initial_input + '\n' ) )
 
     for n_spaces in range(1) : # range(4):
         setattr ( Test_Option_List, f"{name}__trailing_{n_spaces}",
                   create_method ( initial_input + ( ' ' * n_spaces ) ) )
 
-    if False :
-        def method(self):
-            tprint(f": {name}")
-        setattr(Test_Option_List, 'test_000', method)
-        
 #------------------------------------------------------------------------------
 
 # boundry condition, the first option is handled separately from succeeding terms
 # and it is an ol_first_option, not an ol_term
-generate('-f')
+# generate('-f')
 
 # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
 # the first possible position for a option-argument
-generate('-f -x')
+# generate( '-f -x' )
 
 # one past boundry condition, first term on on a boundry
-generate('-f -x -l')
+# generate('-f -x -l')
 
-generate("--file")
-generate("--file --example")
-generate("--file --example --list")
+# generate("--file")
+# generate("--file --example")
+# generate("--file --example --list")
 
-generate("--file=<FILE> -x")
-generate("--file=<file> --example=<example>")
-generate("--file=<file> --example=<example> --list=<list>")
+# generate("--file=<FILE> -x")
+# generate("--file=<file> --example=<example>")
+# generate("--file=<file> --example=<example> --list=<list>")
 
-generate("--file=<FILE> -x --example=<EXAMPLE> -y --query=<QUERY> -q")
+# generate("--file=<FILE> -x --example=<EXAMPLE> -y --query=<QUERY> -q")
 
-generate("--file=FILE -x")
-generate("--file=FOObar -x")
-generate("--file=a|b|c -x")
+# generate("--file=FILE -x")
+# generate("--file=FOObar -x")
+# generate("--file=a|b|c -x")
+
+#------------------------------------------------------------------------------
+
+def ogenerate ( optdefs ) :
+
+    def create_method ( actual_input, the_terms ) :
+        def the_test_method (self) :
+            input = actual_input
+            terms = the_terms
+            parsed = self.parser.parse(input)
+            # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
+            # tprint("[parsed]") ; pp(parsed)
+            # tprint(f"\ninput = '{input}'\n")
+            expect ( input, parsed, *terms )
+        return the_test_method
+
+    ( initial_input, terms ) = create_terms( optdefs, sep = ' ' ) # ', '
+
+    name = method_name(initial_input)
+
+    setattr ( Test_Option_List, name,
+              create_method ( initial_input, terms ) )
+
+    if False :
+        setattr ( Test_Option_List, f"{name}__newline",
+                  create_method ( initial_input + '\n', terms ) )
+        for n_spaces in range(1) : # range(4):
+            setattr ( Test_Option_List, f"{name}__trailing_{n_spaces}",
+                      create_method ( initial_input + ( ' ' * n_spaces ) ) )
+
+#------------------------------------------------------------------------------
+
+# boundry condition, the first option is handled separately from succeeding terms
+# and it is an ol_first_option, not an ol_term
+# generate( '-f' )
+ogenerate ( ( ( '-f', ), ) )
+
+# boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
+# the first possible position for a option-argument
+# generate( '-f -x' )
+ogenerate ( ( ( '-f', ) ,
+              ( '-x', ) ,
+            ) )
+
+# one past boundry condition, first term on on a boundry
+# generate('-f -x -l')
+ogenerate ( ( ( '-f', ) ,
+              ( '-x', ) ,
+              ( '-l', ) ,
+            ) )
+
+# generate("--file")
+# generate("--file --example")
+# generate("--file --example --list")
+
+ogenerate ( ( ( '--file', ) ,
+            ) )
+ogenerate ( ( ( '--file', ) ,
+              ( '--example', ) ,
+            ) )
+ogenerate ( ( ( '--file', ) ,
+              ( '--example', ) ,
+              ( '--list', ) ,
+            ) )
+
+# generate("--file=<FILE> -x")
+# generate("--file=<file> --example=<example>")
+# generate("--file=<file> --example=<example> --list=<list>")
+
+ogenerate ( ( ( '--file', '=', '<file>', ) ,
+            ) )
+
+ogenerate ( ( ( '--file', '=', '<file>', ) ,
+              ( '--example', '=', '<example>', ) ,
+            ) )
+
+ogenerate ( ( ( '--file', '=', '<file>', ) ,
+              ( '--example', '=', '<example>', ) ,
+              ( '--list', '=', '<list>', ) ,
+            ) )
+
+# generate("--file=<FILE> -x --example=<EXAMPLE> -y --query=<QUERY> -q")
+ogenerate ( ( ( '--file', '=', '<FILE>', ) ,
+              ( '-x', ) ,
+              ( '--example', '=', '<EXAMPLE>', ) ,
+              ( '-y', ) ,
+              ( '--query', '=', '<QUERY>', ) ,
+              ( '-q', ) ,
+            ) )
+
+# generate("--file=FILE -x")
+ogenerate ( ( ( '--file', '=', 'FILE', ) ,
+              ( '-x', ) ,
+            ) )
+
+# generate("--file=FOObar -x")
+if False  :
+    ogenerate ( ( ( '--file', '=', 'FOObar', ) ,
+                  ( '-x', ) ,
+                ) )
+
+# generate("--file=a|b|c -x")
+if False  :
+    ogenerate ( ( ( '--file', '=', 'a|b|c', ) ,
+                  ( '-x', ) ,
+                ) )
+
+#------------------------------------------------------------------------------
+
+ogenerate ( ( ( '--file', '=', 'NORM' ) ,
+              ( '--file', ' ', 'NORM' ) ,
+              ( '--file', ) ,
+            ) )
+
+ogenerate ( ( ( '--file', '=', 'NORM' ) ,
+              ( '--file', ' ', 'NORM' ) ,
+              ( '--file', ) ,
+            ) )
 
 #------------------------------------------------------------------------------
 
