@@ -14,31 +14,42 @@
 
 #------------------------------------------------------------------------------
 
-from arpeggio import EOF, Optional, ZeroOrMore, OneOrMore # , RegExMatch
-from arpeggio import OrderedChoice, Sequence, And, Not
+from arpeggio import EOF, Sequence, OrderedChoice, Optional, StrMatch
 from arpeggio import RegExMatch as _
 
-from docopt_parser.boundedre import RegExMatchBounded
+# from docopt_parser.boundedre import RegExMatchBounded
 
-from ..common import COMMA, BAR, SPACE, wx
-from ..operand import operand
-from ..option import option
+from ..common import COMMA, BAR, SPACE, wx, newline
+# from ..operand import operand
+# from ..option import option
+from .list import option_list
 
-ALL = ( ' option_line '
-        ' '
+ALL = ( ' option_line option_line_gap option_help '
        ).split()
+
+#------------------------------------------------------------------------------
+
+def any_until_eol():
+    return _(r'.*$', rule_name="any_until_eol")
 
 #------------------------------------------------------------------------------
 
 def option_line_gap():
     return StrMatch('  ', rule_name='option_line_gap')
 
-def any_until_eol():
-    return _(r'.*$', rule_name="any_until_eol")
+def option_help():
+    return Sequence ( ( any_until_eol, ), rule_name='option_help')
 
 def option_line():
-    # FIXME: implement default value
-    return Sequence( ( wx, option_list, option_line_gap(), any_until_eol() ),
+
+    # It should not be necessary to incorporate EOF so often.
+    # arpeggio.NoMatch: Expected COMMA or BAR or SPACE or '  ' or
+    #   newline at position (1, 6) => '-f -x*'.
+
+    return Sequence( ( wx, option_list ,
+                       Optional ( ( option_line_gap() ,
+                                    Optional ( option_help() ) ) ) ,
+                     [ EOF, newline ] ) ,
                      rule_name='option_line', skipws=False )
 
 #------------------------------------------------------------------------------
