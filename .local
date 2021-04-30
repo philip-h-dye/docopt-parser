@@ -70,7 +70,8 @@ cbase=grammar/python
 
 cgrp=optdesc
 # ctgt=list
-ctgt=line
+# ctgt=line
+ctgt=section
 
 copt='-s -v'
 
