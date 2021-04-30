@@ -47,7 +47,10 @@ def R_BRACKET():	return ']'
 def newline():
     """newline with preceeding whitespace characters (if any)"""
     expr = whitespace().to_match + r'*\n'
+    #
     return RegExMatch(expr, rule_name='newline', skipws=False)
+    #
+    # return OrderedChoice ( [ RegExMatch(expr), EOF ], rule_name='newline', skipws=False)
 
 # Without LookBehind(), grammar must handle it as a recursion separator#
 #   ** Use regular expressioon lookbehind (?<=...)text
