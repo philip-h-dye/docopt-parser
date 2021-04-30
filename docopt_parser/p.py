@@ -38,6 +38,7 @@ def pretty_Terminal(value, ctx):
     return pretty_call(
         ctx,
         Terminal,
+        # rule_type=str(type(value.rule)),
         rule_name=value.rule_name,
         value=value.value,
     )
