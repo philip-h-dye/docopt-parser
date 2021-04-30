@@ -54,8 +54,16 @@ def ol_space():
     return Sequence ( SPACE, Not(SPACE),
                       rule_name='ol_space', skipws=False )
 
+def ol_comma():
+    return Sequence ( Optional(SPACE), COMMA, Optional(SPACE),
+                      rule_name='ol_comma', skipws=False )
+
+def ol_bar():
+    return Sequence ( Optional(SPACE), BAR, Optional(SPACE),
+                      rule_name='ol_bar', skipws=False )
+
 def ol_separator():
-    return MyOrderedChoice( COMMA, BAR, ol_space(),
+    return MyOrderedChoice( ol_comma, ol_bar, ol_space,
                             rule_name='ol_separator', skipws=False )
 
 def ol_term():
