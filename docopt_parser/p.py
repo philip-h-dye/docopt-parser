@@ -74,7 +74,7 @@ def pretty_ParsingExpression(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         # supress = value.supress,
     )
 
@@ -106,7 +106,7 @@ def pretty_RegExMatch(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         to_match_regex = value.to_match,
         ignore_case = value.ignore_case,
         multiline = value.multiline,
@@ -125,7 +125,7 @@ def pretty_Sequence(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         ws = value.ws,
         skipws = value.skipws,
         # supress = value.supress,
@@ -142,7 +142,7 @@ def pretty_UnorderedGroup(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         eolterm = value.eolterm,
         sep = value.sep,
         # supress = value.supress,
@@ -159,7 +159,7 @@ def pretty_OrderedChoice(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         # supress = value.supress,
     )
 
@@ -174,7 +174,7 @@ def pretty_Repetition(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         eolterm = value.eolterm,
         sep = value.sep,
         # supress = value.supress,
@@ -189,9 +189,9 @@ def pretty_Optional(value, ctx):
         name = value.name,
         # desc = value.desc,
         rule_name = value.rule_name,
-        elements = value.elements,
+        # elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         eolterm = value.eolterm,
         sep = value.sep,
         # supress = value.supress,
@@ -208,7 +208,7 @@ def pretty_ZeroOrMore(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         eolterm = value.eolterm,
         sep = value.sep,
         # supress = value.supress,
@@ -225,7 +225,7 @@ def pretty_OneOrMore(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         eolterm = value.eolterm,
         sep = value.sep,
         # supress = value.supress,
@@ -242,7 +242,7 @@ def pretty_And(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         # supress = value.supress,
     )
 
@@ -257,7 +257,7 @@ def pretty_Not(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         # supress = value.supress,
     )
 
@@ -272,7 +272,7 @@ def pretty_Empty(value, ctx):
         rule_name = value.rule_name,
         elements = value.elements,
         root = value.root,
-        nodes = value.nodes,
+        # nodes = value.nodes,
         # supress = value.supress,
     )
 
