@@ -122,8 +122,8 @@ class Test_Option_List ( unittest.TestCase ) :
 
 def create_terms ( optdefs, sep = ' ' ):
 
-    print(f"\n: sep = '{sep}'\n")
-    print(f"\n[ optdefs ]\n") ; pp(optdefs) ; print('')
+    # print(f"\n: sep = '{sep}'\n")
+    # print(f"\n[ optdefs ]\n") ; pp(optdefs) ; print('')
 
     input = [ ]
     terms = [ ]
