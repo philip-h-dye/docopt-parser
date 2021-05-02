@@ -74,7 +74,7 @@ def ol_term():
 
 def ol_term_with_separator():
     return Sequence( ( ol_separator, ol_term ),
-                     rule_name='ol_term_w_separator', skipws=False )
+                     rule_name='ol_term_with_separator', skipws=False )
 
 def option_list():
     # semantic analysis :
