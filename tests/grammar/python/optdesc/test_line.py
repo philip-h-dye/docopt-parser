@@ -79,9 +79,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             eof = ( input[-1] != '\n' ) ,
         )
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
@@ -100,9 +101,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             eof = ( input[-1] != '\n' ) ,
         )
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
@@ -130,9 +132,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             Terminal(EOF(), 0, '') ,
         ])
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
@@ -154,7 +157,9 @@ class Test_Option_Line ( unittest.TestCase ) :
                             ]) ,
                             NonTerminal( ol_term_with_separator(), [
                                 NonTerminal( ol_separator(), [
-                                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' '),
+                                    NonTerminal( ol_space(), [
+                                        Terminal( StrMatch(' '), 0, ' '),
+                                    ]) ,
                                 ]) ,
                                 NonTerminal( ol_term(), [
                                     NonTerminal( option(), [
@@ -170,9 +175,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             Terminal(EOF(), 0, '') ,
         ])
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
@@ -194,7 +200,9 @@ class Test_Option_Line ( unittest.TestCase ) :
                             ]) ,
                             NonTerminal( ol_term_with_separator(), [
                                 NonTerminal( ol_separator(), [
-                                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' '),
+                                    NonTerminal( ol_space(), [
+                                        Terminal( StrMatch(' '), 0, ' '),
+                                    ]) ,
                                 ]) ,
                                 NonTerminal( ol_term(), [
                                     NonTerminal( option(), [
@@ -204,7 +212,9 @@ class Test_Option_Line ( unittest.TestCase ) :
                             ]) ,
                             NonTerminal( ol_term_with_separator(), [
                                 NonTerminal( ol_separator(), [
-                                    Terminal( StrMatch(' ', rule='SPACE'), 0, ' '),
+                                    NonTerminal( ol_space(), [
+                                        Terminal( StrMatch(' '), 0, ' '),
+                                    ]) ,
                                 ]) ,
                                 NonTerminal( ol_term(), [
                                     NonTerminal( option(), [
@@ -220,9 +230,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             Terminal(EOF(), 0, '') ,
         ])
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
@@ -240,9 +251,10 @@ class Test_Option_Line ( unittest.TestCase ) :
             eof = ( input[-1] != '\n' ) ,
         )
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n"
-                                   f"[parsed]\n{pp_str(parsed)}" )
+        assert NonTerminal_eq_structural(parsed, expect), \
+            ( f"input = '{input}' :\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
