@@ -28,7 +28,8 @@ from grammar.python.optdesc.line import *
 
 from docopt_parser import DocOptListViewVisitor
 
-from test_list import create_terms, method_name
+# from test_list import create_terms, method_name
+from optlist import create_terms, method_name
 
 #------------------------------------------------------------------------------
 
@@ -92,12 +93,12 @@ def ogenerate ( cls, optdefs, sep= ', ') :
 
 def expect_separator(sep):
 
-    space = Terminal( StrMatch(' ', rule='SPACE'), 0, ' ')
-    comma = Terminal( StrMatch(',', rule='COMMA'), 0, ',')
-    bar = Terminal( StrMatch('|', rule='BAR'), 0, '|')
-
+    space = NonTerminal( ol_space(), [ Terminal( StrMatch(' ', rule_name=''), 0, ' ') ] )
+    comma = NonTerminal( ol_comma(), [ Terminal( StrMatch(',', rule_name=''), 0, ',') ] )
+    bar   = NonTerminal( ol_bar(),   [ Terminal( StrMatch('|', rule_name=''), 0, '|') ] )
+        
     if sep is None :
-        return space
+        return NonTerminal( ol_separator(), [ space ] )
 
     if not isinstance(sep, str):
         raise ValueError(f"Unreconized expect <sep>, type {str(type(sep))}, value '{repr(sep)}'.\n"
@@ -106,7 +107,7 @@ def expect_separator(sep):
     if len(sep) <= 0:
         # Zero isn't possible since things would run into each other and
         # could not then necessarily be parsed.
-        return space
+        return NonTerminal( ol_separator(), [ space ] )
 
     if len(sep) > 3:
         raise ValueError(f"<sep> too long, at most 3 possible.  Please resolve.")
@@ -114,7 +115,7 @@ def expect_separator(sep):
     saved_sep = sep
 
     if sep == ' ':
-        return space
+        return NonTerminal( ol_separator(), [ space ] )
 
     #--------------------------------------------------------------------------
 
