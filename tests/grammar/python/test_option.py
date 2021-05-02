@@ -69,10 +69,10 @@ class Test_Import ( unittest.TestCase ) :
         expect = NonTerminal(grammar(), [ p_ws, p_operand, p_eof ])
         assert NonTerminal_eq_structural(parsed, expect)
  
-    def SKIP_test_short_single (self) :
+    def test_short_single (self) :
         self.single(short_no_arg, "-l")
 
-    def SKIP_test_long_single (self) :
+    def test_long_single (self) :
         self.single(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
@@ -89,15 +89,15 @@ class Test_Import ( unittest.TestCase ) :
         expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
         assert NonTerminal_eq_structural(parsed, expect)
 
-    def SKIP_test_short_thrice (self) :
+    def test_short_thrice (self) :
         self.thrice(short_no_arg, "-l")
 
-    def SKIP_test_long_thrice (self) :
+    def test_long_thrice (self) :
         self.thrice(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
 
-    def SKIP_test_mixed (self) :
+    def test_mixed (self) :
         input = ' -a -b --file --form -l --why '
         #
         input = input.strip()
