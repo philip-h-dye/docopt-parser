@@ -1,12 +1,10 @@
+import sys
+
 from arpeggio import RegExMatch as _
 
 #------------------------------------------------------------------------------
 
-ALL = ( # single characters
-        ' TAB LF CR SPACE '
-        ' COMMA EQ BAR '
-        ' L_PAREN R_PAREN '
-        ' L_BRACKET R_BRACKET '
+ALL = ( # single character constants and rules are added dynamically
         #
         # rules
         ' whitespace '          # single whitespace character
@@ -18,38 +16,43 @@ ALL = ( # single characters
 
 #------------------------------------------------------------------------------
 
-# name                  = char  # Dec  Hex  -- ASCII
-TAB                     = '\t'  #   9  0x09
-LF                      = '\n'  #  10  0x0a
-CR                      = '\r'  #  13  0x0d
-SPACE                   = ' '   #  32  0x20
-L_PAREN                 = '('   #  40  0x28
-R_PAREN                 = ')'   #  41  0x29
-COMMA                   = ','   #  44  0x2c
-EQ                      = '='   #  61  0x32
-L_BRACKET               = '['   #  91  0x5b
-R_BRACKET               = ']'   #  94  0x5d
-BAR                     = '|'   # 124  0x7c
+CHARACTER_NAME_TO_CHAR = {
+    'tab'               : '\t' , #   9  0x09
+    'lf'                : '\n' , #  10  0x0a
+    'cr'                : '\r' , #  13  0x0d
+    'space'             : ' '  , #  32  0x20
+    'l_paren'           : '('  , #  40  0x28
+    'r_paren'           : ')'  , #  41  0x29
+    'comma'             : ','  , #  44  0x2c
+    'eq'                : '='  , #  61  0x32
+    'l_bracket'         : '['  , #  91  0x5b
+    'r_bracket'         : ']'  , #  94  0x5d
+    'bar'               : '|'  , # 124  0x7c
+}
 
 #------------------------------------------------------------------------------
 
-def tab():              return TAB
-def lf():               return LF
-def cr():               return CR
-def space():            return SPACE
-def comma():            return COMMA
-def bar():              return BAR
-def eq():               return EQ
-def l_paren():          return L_PAREN
-def r_paren():          return R_PAREN
-def l_bracket():        return L_BRACKET
-def r_bracket():        return R_BRACKET
+CHARACTER_CHAR_TO_NAME = { }
+
+def create_character_rule(ch):
+    def the_method():
+        nonlocal ch
+        return ch
+    return the_method
+
+module = sys.modules[__name__]
+for name, ch in CHARACTER_NAME_TO_CHAR.items():
+    CHARACTER_CHAR_TO_NAME[ch] = name
+    setattr ( module, name.upper(), ch )
+    setattr ( module, name, create_character_rule(ch) )
+    ALL.append(name)
+    ALL.append(name.upper)
 
 #------------------------------------------------------------------------------
 
 WHITESPACE_CHARS = ( TAB , CR , SPACE )
-WHITESPACE_CHARS = TAB + CR + SPACE
 WHITESPACE_RULES = ( tab , cr , space )
+WHITESPACE_NAMES = { ch : CHARACTER_CHAR_TO_NAME[ch] for ch in WHITESPACE_CHARS }
 
 WHITESPACE_REGEX = '[' + ''.join(WHITESPACE_CHARS) + ']'
 def whitespace():
