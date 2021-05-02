@@ -1,7 +1,13 @@
+# FIXME: - need more tests which are negative.
+#        - also, positive and negative lookahead with And(), Not()
+
 import sys
 import os
 import re
 import string
+import unicodedata
+import curses.ascii as ascii
+
 import unittest
 
 from copy import deepcopy
@@ -10,13 +16,6 @@ from itertools import chain
 from prettyprinter import cpprint as pp, pprint as pp_plain
 
 #------------------------------------------------------------------------------
-
-# from arpeggio import EOF, Optional, ZeroOrMore, OneOrMore, Sequence
-# from arpeggio import OrderedChoice
-# from arpeggio import NonTerminal, Terminal, ParseTreeNode, flatten
-# from arpeggio import ParserPython, PTNodeVisitor, visit_parse_tree
-# from arpeggio import RegExMatch as _
-# import arpeggio
 
 from arpeggio import ParserPython, flatten, Terminal, Sequence, NoMatch
 from arpeggio import EOF, StrMatch, RegExMatch, OrderedChoice, OneOrMore
@@ -38,147 +37,68 @@ FAKE_SPACE = '.' # chr(1) # Control-A
 # used in the paragraph scenario
 WORDS_CHARACTER_REGEX_NO_LF = r'[\w<space><>]'.replace('<space>', FAKE_SPACE)
 
-WORDS_CHARACTER_REGEX = r'[\w\n<space><>]'.replace('<space>', FAKE_SPACE)
-words_single_character = re.compile(WORDS_CHARACTER_REGEX)
+WORDS_CHARACTER_REGEX_WITH_LF = r'[\w\n<space><>]'.replace('<space>', FAKE_SPACE)
+# '<>' used to bracket any additional characters that need to be escaped for
+# a given test, such as '<linefeed>'.
 
-# '<>' used bracket any additional characters that need to be escaped for
-# a given test, such as '<lf>' for linefeed.
+INUSE_CHARACTERS="<><space>".replace('<space>', FAKE_SPACE)
 
 #------------------------------------------------------------------------------
 
-# FIXME: - need more tests which are negative.
-#        - also, positive and negative lookahead with And(), Not()
+def empty_string_is_accepted(name_prefix, rule_f, ch):
+    """Add test that empty string is accepted
+    """
+    def create_method (rule):
+        def the_method(self):            
+            nonlocal rule
+            parsed = ParserPython( rule, skipws=False ).parse('')
+        return the_method
 
-class Test_Common ( unittest.TestCase ) :
+    rule = rule_f()
+    if isinstance(rule, str) :
+        rule = StrMatch(ch, rule_f.__name__)
 
-    def _test_1_x09_tab (self) :
-        self.single_char_test(common.tab, common.TAB)
+    test_name = "empty_string_is_accepted"
+    method_name = f"test_{name_prefix}_rule_{rule.rule_name}_{test_name}"
+    method = create_method(rule)
+    setattr ( Test_Common, method_name, method )
 
-    def test_1_x0a_lf__linefeed (self) :
-        self.single_char_test(common.lf, common.LF)
+#------------------------------------------------------------------------------
 
-    def SKIP_test_1_x0d_cr__carriage_return (self) :
-        self.single_char_test(common.space, common.CR)
+def empty_string_raises_NoMatch(name_prefix, rule_f, ch):
+    """Add test that empty string does not match
+    """
+    def create_method (rule):
+        def the_method(self):            
+            nonlocal rule
+            with self.assertRaises(NoMatch) :
+                parsed = ParserPython( rule, skipws=False ).parse('')
+        return the_method
 
-    def SKIP_test_1_x20_space (self) :
-        self.single_char_test(common.space, common.SPACE)
+    rule = rule_f()
+    if isinstance(rule, str) :
+        rule = StrMatch(ch, rule_f.__name__)
 
-    def SKIP_test_1_x2c_comma (self) :
-        self.single_char_test(common.comma, common.COMMA)
+    test_name = "empty_string_raises_NoMatch"
+    method_name = f"test_{name_prefix}_rule_{rule.rule_name}_{test_name}"
+    method = create_method(rule)
+    setattr ( Test_Common, method_name, method )
 
-    def SKIP_test_1_x28_l_paren (self) :
-        self.single_char_test(common.l_paren, common.L_PAREN)
-    def SKIP_test_1_x29_r_paren (self) :
-        self.single_char_test(common.r_paren, common.R_PAREN)
+#------------------------------------------------------------------------------
 
-    def SKIP_test_1_x3d_eq__equals_sign (self) :
-        self.single_char_test(common.eq, common.EQ)
-
-    def SKIP_test_1_x5b_l_bracket (self) :
-        self.single_char_test(common.l_bracket, common.L_BRACKET)
-    def SKIP_test_1_x5d_r_bracket (self) :
-        self.single_char_test(common.r_bracket, common.R_BRACKET)
-
-    def SKIP_test_1_x7c_bar__vertical_bar (self) :
-        self.single_char_test(common.bar, common.BAR)
-
-    #--------------------------------------------------------------------------
-
-    def SKIP_test_2_01_whitespace_chars(self) :
-        for ch in common.WHITESPACE_CHARS :
-            rule_f = lambda : StrMatch(ch, rule_name=f"single '{ch}'")
-            self.single_char_test(rule_f, ch)
-
-    def SKIP_test_2_02_whitespace_rules(self) :
-        for rule in common.WHITESPACE_RULES :
-            self.single_char_test(rule, rule())
-
-    def SKIP_test_2_03_whitespace (self) :
-        """whitespace : One of space, tab, carriage-return"""
-        with self.assertRaises(NoMatch) :
-            parsed = ParserPython( common.whitespace(), skipws=False ).parse('')
-        for ch in common.WHITESPACE_CHARS :
-            self.single_char_test(common.whitespace, ch)
-
-    def SKIP_test_2_04_ws (self) :
-        """ws : One or more of space, tab, carriage-return"""
-        self.one_or_more_of_charset(common.ws, common.WHITESPACE_CHARS)
-
-    def BROKEN_test_2_05_wx (self) :
-        """wx : Zero or more of space, tab, carriage return"""
-        rule_f = common.wx
-        input = ''
-        parser = ParserPython( rule_f(), skipws=False )
-        # for input in [ '', ' ',
-        # for input in [ '', ' ',
-        # for input in [ '', ' ',
-        parsed = parser.parse('')
-        # When wx is a sequence : ws*
-        # # expect = []
-        # Now that it is a single regex :
-        expect = None
-        assert parsed == expect, ( f"empty string : input = '{input}' :\n"
-                                   f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
-        for ch in common.WHITESPACE_CHARS :
-            self.single_char_test(rule_f, ch)
-
-    def SKIP_test_2_06_newline (self) :
-        """newline : a newline, optionally preceeded by whitespace"""
-        # self.single_char_test(common.blank_line, '\n')
-        pass
-
-    def SKIP_test_2_07_blankline (self) :
-        """blank_line : a newline, preceeded by a newline, optional whitespace between"""
-        # self.single_char_test(common.blank_line, '\n')
-        pass
-
-    #--------------------------------------------------------------------------
-
-    def one_or_more_of_charset(self, rule_f, charset):
-        """..."""
-        with self.assertRaises(NoMatch) :
-            parsed = ParserPython( rule_f(), skipws=False ).parse('')
-        self.or_more_of_charset(rule_f, charset)
-
-    def zero_or_more_of_charset(self, rule_f, charset):
-        """..."""
-        parsed = ParserPython( rule_f(), skipws=False ).parse('')
-        self.or_more_of_charset(rule_f, charset)
-
-    def or_more_of_charset(self, rule_f, charset):
-        """..."""
-        for ch in charset :
-            print(f": ch = '{ch}'")
-            self.single_char_test(rule_f, ch)
-        for ch in charset :
-            pass # self.single_char_test(rule_f, ch*2)
-        for ch in charset :
-            pass # self.single_char_test(rule_f, ch*3)
-        for ch in charset :
-            pass # self.single_char_test(rule_f, ch+charset)
-        for ch in charset :
-            pass # self.single_char_test(rule_f, charset+ch)
-
-    #--------------------------------------------------------------------------
-
-    def single_char_test(self, rule_f, ch):
-        """Test for single : by itself and at start, middle and end of text"""
-        assert len(ch) == 1, "single_char_test() only works for single character strings !"
-        rule = rule_f()
-        if isinstance(rule, str) :
-            print(f"- rule '{rule_f.__name__}' : create StrMatch() rule for "
-                  f"literal '{ch}' : {ord(ch)} : {hex(ord(ch))}")
-            rule = StrMatch(ch, rule_f.__name__)
-        for grammar, input, expect in self.scenarios(rule, ch):
+def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False):
+    """Test for single : by itself and at start, middle, end of text,
+       and in a paragraph.
+    """
+    def create_method (name, rule_f, rule, ch, grammar, input, expect):
+        def the_method(self):
+            nonlocal name, rule_f, rule, ch, grammar, input, expect
             parser = ParserPython( grammar, skipws=False )
-            write_scratch( call={'fcn' : 'single_char_test' , 'ch' : ch ,
+            write_scratch( call={'fcn' : 'single_character_test' , 'ch' : ch ,
                                  'rule_f' : rule_f , 'rule' : rule , },
-                           grammar=grammar, input=input,
+                           name=name, grammar=grammar, input=input,
                            expect=expect, expect_f=flatten(expect),
                            model=parser.parser_model, _clean=True, )
-            if True : # '\n' in ch :
-                print(f"\n: char  = '{ch}' : {ord(ch)} : {hex(ord(ch))}")
-                print(f"\n: input = '{input}'")
             try :
                 parsed = parser.parse(input)
                 write_scratch ( parsed=parsed )
@@ -199,85 +119,138 @@ class Test_Common ( unittest.TestCase ) :
                   f"[expect]\n{pp_str(expect)}\n"
                   f"[parsed]\n{pp_str(parsed)}" )
 
+        return the_method
+
     #--------------------------------------------------------------------------
 
-    def scenarios(self, rule, s): # -> grammar, input, expect
+    assert len(ch) > 0, "Zero length ch invalid for single_character_test()"
+    assert len(ch) == 1, ( f"argument ch '{ch}' of length {len(ch)}, too long.  "
+                           "single_character_test() requires single character" )
 
-        assert FAKE_SPACE not in s, "INTERNAL ERROR, chosen 'fake space' in string to be tested !"
+    assert ch not in INUSE_CHARACTERS, \
+        ( f"argument ch '{ch}' is a member of INUSE_CHARACTERS, test code must "
+          "be reconfigured in order to handle this character." )
 
-        rule = deepcopy(rule)
+    if empty_ok:
+        empty_string_is_accepted(name_prefix, rule_f, ch)
+    else:
+        empty_string_raises_NoMatch(name_prefix, rule_f, ch)
 
-        t_eof = Terminal(EOF(), 0, '')
-        t_s = Terminal(rule, 0, s)
+    rule = rule_f()
+    if isinstance(rule, str) :
+        # print(f"- rule '{rule_f.__name__}' : create StrMatch() rule for "
+        #       f"literal '{ch}' : {ord(ch)} : {hex(ord(ch))}")
+        rule = StrMatch(ch, rule_f.__name__)
 
-        if True :
-            # 's' by itself
-            yield Sequence( (rule, EOF) ), s, ( t_s, t_eof )
+    ( ch_hex, ch_name ) = character_lookup ( ch, ch_name )
 
-        if True :
-            # 's' at start followed by a phrase
-            phrase = fake_spaces_etc('now is the time')
-            ( _words, phrase, _lf ) = self.get_words(s, phrase)
-            assert s not in phrase
-            text = ''.join([ s, phrase ])
-            body = OneOrMore( OrderedChoice ( [ rule, _words ] ) )
-            grammar = Sequence( ( body, EOF ) )
-            expect = ( ( t_s, Terminal(_words(), 0, phrase) ), t_eof )
-            yield grammar, text, expect
+    for test_name, grammar, input, expect in scenarios(rule, ch):
+        method_name = f"test_{name_prefix}_rule_{rule.rule_name}__{ch_hex}_{ch_name}_{test_name}"
+        # print(f"Adding {method_name}")
+        method = create_method(method_name, rule_f, rule, ch, grammar, input, expect)
+        setattr ( Test_Common, method_name, method )
 
-        if False :
-            # 's' at start followed by a phrase, TWICE
-            phrase = fake_spaces_etc('now is the time')
-            ( _words, phrase, _lf ) = self.get_words(s, phrase)
-            assert s not in phrase
-            text = ''.join([ *((s, phrase) * 2) ])
-            body = OneOrMore( OrderedChoice ( [ rule, _words ] ) )
-            grammar = Sequence( ( body, EOF ) )
-            expect = ( (t_s, Terminal(_words(), 0, phrase)) * 2, t_eof )
-            yield grammar, text, expect
+#--------------------------------------------------------------------------
 
-        if False :
-            # 's' at start followed by a phrase, Two Lines
-            phrase = fake_spaces_etc('now is the time')
-            # ** Won't catch the '\n' since it is added below
-            ( _words, phrase, _lf ) = self.get_words(s, phrase)
-            assert s not in phrase
-            pair = (s, phrase)
-            text = ''.join( ( *pair, '\n', *pair ) )
-            ( _words, do_not_use, _lf ) = self.get_words(s, text)
-            newline = RegExMatch( r'[\n]', rule_name='newline' )
-            body = OneOrMore( OrderedChoice ( [ rule, _words, newline ] ) )
-            grammar = Sequence( ( body, EOF ) )
-            # t_newline = Terminal(newline, 0, '\n')
-            t_words_1 = Terminal(_words(), 0, phrase+_lf)
-            t_words_2 = Terminal(_words(), 0, phrase)
-            expect = ( ( t_s, t_words_1, t_s, t_words_2 ), t_eof )
-            yield grammar, text, expect
+def character_lookup ( ch, ch_name=None ) :
 
-        # 's' in the middle between two phrases
-        left_phrase = fake_spaces_etc('for all good men')
-        right_phrase = fake_spaces_etc('to rise up')
+    ch_hex = f"x{ord(ch):02x}"
+
+    if ch_name is None :
+        if ord(ch) < len(ascii.controlnames):
+            ch_name = ascii.controlnames[ord(ch)]
+        else :
+            try :
+                ch_name = unicodedata.lookup(ch)
+            except :
+                ch_name = ch_hex
+
+    return ( ch_hex, ch_name )
+
+#--------------------------------------------------------------------------
+
+def scenarios(rule, s): # -> grammar, input, expect
+
+    assert FAKE_SPACE not in s, "INTERNAL ERROR, chosen 'fake space' in string to be tested !"
+
+    rule = deepcopy(rule)
+
+    catchall = RegExMatch( r'.*', rule_name='catch_all' )
+    newline = RegExMatch( r'[\n]', rule_name='newline' )
+
+    # t_newline = Terminal(newline, 0, '\n')
+    t_eof = Terminal(EOF(), 0, '')
+    t_s = Terminal(rule, 0, s)
+
+    def grammar ( _words ) :
+        body = OneOrMore( OrderedChoice ( [ rule, _words, catchall, newline ] ) )
+        return Sequence( ( body, EOF ) )
+
+    def itself():
+        name = f"by_itself"
+        return name, Sequence( (rule, EOF) ), s, ( t_s, t_eof )
+
+    def at_start():
+        name = 'at_start_followed_by_phrase'
+        phrase = fake_spaces_etc(s, 'now is the time')
+        assert s not in phrase
+        _words = get_words(s)
+        text = ''.join([ s, phrase ])
+        expect = ( ( t_s, Terminal(_words(), 0, phrase) ), t_eof )
+        return name, grammar(_words), text, expect
+
+    def at_start_twice():
+        name = 'at_start_followed_by_phrase_twice'
+        # 's' at start followed by a phrase, TWICE
+        phrase = fake_spaces_etc(s, 'now is the time')
+        assert s not in phrase
+        _words = get_words(s)
+        text = ''.join([ *( (s, phrase) * 2 ) ])
+        t_phrase = Terminal(_words(), 0, phrase)
+        expect = ( *( (t_s, t_phrase) * 2 ), t_eof )
+        return name, grammar(_words), text, expect
+
+    def at_start_two_lines():
+        name = 'at_start_followed_by_phrase_two_lines'
+        phrase = fake_spaces_etc(s, 'now is the time' + '\n')
+        assert s not in phrase
+        _words = get_words(s)
+        text = ''.join([ *( (s, phrase) * 2 ) ])
+        t_phrase = Terminal(_words(), 0, phrase)
+        expect = ( *( (t_s, t_phrase) * 2 ), t_eof )
+        return name, grammar(_words), text, expect
+
+    def in_the_middle():
+        name = 'in_the_middle_between_two_phrases'
+        left_phrase = fake_spaces_etc(s, 'for all good men')
+        right_phrase = fake_spaces_etc(s, 'to rise up')
         assert s not in left_phrase
         assert s not in right_phrase
-        t_left = Terminal(words(), 0, left_phrase)
-        t_right = Terminal(words(), 0, right_phrase)
-        grammar = Sequence( (words, rule, words, EOF) )
+        _words = get_words(s)
+        t_left = Terminal(_words(), 0, left_phrase)
+        t_right = Terminal(_words(), 0, right_phrase)
         expect = ( t_left, t_s, t_right, t_eof )
         text = ''.join([left_phrase, s, right_phrase])
-        yield grammar, text, expect
+        return name, grammar(_words), text, expect
 
-        # 's' at end, preceeded by a phrase
-        phrase = fake_spaces_etc('in defense of freedom')
-        t_phrase = Terminal(words(), 0, phrase)
+    def at_end():
+        name = 'at_end_preceeded_by_a_phrase'
+        phrase = fake_spaces_etc(s, 'in defense of freedom')
         assert s not in phrase
-        yield Sequence( (rule, words, EOF) ), ''.join([s, phrase ]), \
-            ( t_s, t_phrase, t_eof )
+        _words = get_words(s)
+        t_phrase = Terminal(_words(), 0, phrase)
+        text = ''.join([s, phrase ])
+        expect = ( t_s, t_phrase, t_eof )
+        return name, grammar(_words), text, expect
 
-        # 's' occuring a few times in the midst of a text
+    #--------------------------------------------------------------------------
+
+    def paragraph():
+        name = 'several_occurances_in_a_paragraph'
         text = """<s>
 <s>The essence of America — that which really unites us —
-<s>is not ethnicity, or nationality, or religion.
-It is an idea—and what an idea it is :
+<s>is not ethnicity, <s>or<s>nationality, or religion.
+It is an <s> idea—and what an <s> idea it is :
 that you can come <s><s> from humble circumstances
 and do great things.<s>
   - Condoleezza Rice
@@ -286,31 +259,25 @@ and do great things.<s>
         n_empty = 3
 
         text = text.replace('<s>', chr(7))
-        text = fake_spaces_etc(text)
+        text = fake_spaces_etc(s, text)
         text = text.replace(chr(7), '<s>')
+        assert s not in text
 
-        ( _words, text ) = self.get_words(s, text)
-
-        assert not ( s in text )
+        _words = get_words(s)
 
         phrases = re.split('<s>', text)
         assert len(phrases[0]) == 0
         assert len(phrases[-1]) == 0
 
-        catchall = RegExMatch( r'.*', rule_name='catch_all' )
-        newline = RegExMatch( r'[\n]', rule_name='newline' )
-        body = OneOrMore( OrderedChoice ( [ rule, _words, catchall, newline ] ) )
-        grammar = Sequence( ( body, EOF ) )
-
         t_s = Terminal(rule, 0, s)
-        def tw(p) :
-            return Terminal(words(), 0, p)
+        tw = lambda p : Terminal(_words(), 0, p)
         terms = [ ( ( tw(p) if len(p) > 0 else ()), t_s ) for p in phrases ]
         terms = flatten(terms)
         terms[-1] = t_eof # reuse instead of remove, was "del terms[-1]"
         assert len(terms) == 2 * len(phrases) - n_empty
 
-        # Simplistic handling of Zero/One Or Many rules
+        # Handle the simplest Zero/One Or Many rules on a character class
+        #
         if isinstance(rule, RegExMatch) and rule.to_match[-1] in '*+':
             # collapse any series of 't_s' elements into a single ts element
             limit = len(terms) - 1
@@ -325,50 +292,36 @@ and do great things.<s>
                 else :
                     idx += 1
 
-        yield grammar, s.join(phrases), tuple(terms)
+        return name, grammar(_words), s.join(phrases), tuple(terms)
 
     #--------------------------------------------------------------------------
 
-    def get_words(self, s, text):
-        """When both 's' and 'text' contains a linefeed, change the 'words'
-           regex to not accept linefeed and replace all occurances of linefeed
-           in 'text' with '<linefeed>'.
-        """
-        _lf = '\n'
-        if _lf in s and _lf in text :
-            print(": paragraph scenario with 'LF' character")
-            _lf = '<linefeed>'
-            text = text.replace('\n', _lf)
-            def _words():
-                return RegExMatch(WORDS_CHARACTER_REGEX_NO_LF+'+',
+    tests = [ at_start ,
+              at_start_twice ,
+              at_start_two_lines ,
+              in_the_middle ,
+              at_end ,
+              paragraph,
+            ]
+
+    for test in tests :
+        yield test()
+
+#------------------------------------------------------------------------------
+
+def get_words(s):
+    """When 's' contains a linefeed, 'words' rule must not not include
+       linefeed as a word character.
+    """
+    if '\n' in s :
+        def _words():
+            return RegExMatch(WORDS_CHARACTER_REGEX_NO_LF+'+',
                                   rule_name='words')
-        else :
-            _words = words
-
-        return ( _words, text, _lf )
-
-    #--------------------------------------------------------------------------
-
-    def single_char_regex_test(self, rule_f, ch):
-        """Test for single ch matched by rule : by itself and at start, middle and end of text"""
-        #wip !@#
-        for grammar, input, expect in self.scenarios(rule_f(), ch):
-            parser = ParserPython( grammar, skipws=False )
-            try :
-                parsed = parser.parse(input)
-            except :
-                print(f"\nParser FAILED : ch = '{ch}' : ascii {ord(ch)}"
-                      f"input = '{input}'\n"
-                      f"[expect]\n{pp_str(expect)}\n"
-                      f"[parsed]\n{pp_str(parsed)}" )
-                continue
-            # print_parsed(expect)
-            # print_parsed(flatten(parsed))
-            parsed = flatten(parsed)
-            expect = flatten(expect)
-            assert parsed == expect, \
-                ( f"ch = ascii {ord(ch)} : input = '{input}' :\n"
-                  f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
+    else :
+        def _words():
+            return RegExMatch(WORDS_CHARACTER_REGEX_WITH_LF+'+',
+                                  rule_name='words')
+    return _words
 
 #------------------------------------------------------------------------------
 
@@ -389,9 +342,6 @@ def print_parsed(parsed):
 #------------------------------------------------------------------------------
 
 # https://stackoverflow.com/questions/11066400/remove-punctuation-from-unicode-formatted-strings
-import unicodedata
-import sys
-
 unicode_punctuation = \
     dict.fromkeys ( i for i in range(sys.maxunicode)
                     if unicodedata.category(chr(i)).startswith('P') )
@@ -401,30 +351,34 @@ def remove_punctuation(text):
 
 #------------------------------------------------------------------------------
 
-def fake_spaces_etc(s):
-    # replace space, ' ', with FAKE_SPACE
-    s = s.replace(' ', FAKE_SPACE)
-    # replace tab, '\t', with FAKE_SPACE
-    s = s.replace("\t", FAKE_SPACE)
-    # strip punctuation
-    # NO # s = re.sub(r'[[:punct:]]', '', s)
-    # NO # s = s.strip(string.punctuation)
-    # punctuation = string.punctuation.replace('['+FAKE_SPACE+']', '')
-    # Misses unicode punctuation # s = re.sub('['+punctuation+']', '', s)
-    # s = re.sub(ur"\p{P}", '', s) # requires third-party 'regex' as 're'
-    if True : # FAKE_SPACE in unicode_punctuation : # always fails
-        s = s.replace(FAKE_SPACE, chr(3))
-    s = remove_punctuation(s)
-    if True : # FAKE_SPACE in unicode_punctuation : # always fails
-        s = s.replace(chr(3), FAKE_SPACE)
-    assert not ( '-' in s )	# ASCII dash
-    assert not ( '—' in s )	# Unicode long dash ?
-    return s
+def fake_spaces_etc(s, text):
+    """Revised the provided text such that it does not include any
+       character present in ch.
+       - The FAKE_SPACE character is used to space or tab.
+       - Removes carriage returns.
+       - Punctuation characters are removed with FAKE_SPACE protected
+         should it be a punctuation character.
+       - members of s are converted hex
+    """
+    # use FAKE_SPACE instead space and tab
+    text = text.replace(' ', FAKE_SPACE)
+    text = text.replace('\t', FAKE_SPACE)
+    text = text.replace('\r', '')
 
-# rule for use in matching scenarios
-def words():
-    expr = WORDS_CHARACTER_REGEX + '+'
-    return RegExMatch(expr, rule_name='words')
+    # Remove all punctuation but preserve FAKE_SPACE
+    non_punctuation_character = chr(3)
+    text = text.replace(FAKE_SPACE, non_punctuation_character)
+    text = remove_punctuation(text)
+    text = text.replace(non_punctuation_character, FAKE_SPACE)
+    assert '-' not in s # ASCII dash
+    assert '—' not in s # Unicode long dash ?
+
+    # Convert to hex any members of s found in text
+    for ch in s :
+        if ch in text :
+            text = text.replace(ch, f"<x{ord(ch):02x}>")
+
+    return text
 
 #------------------------------------------------------------------------------
 
@@ -435,6 +389,74 @@ def write_scratch ( **kwargs ) :
     for name in kwargs :
         with open ( f"scratch/{name}", 'w' ) as f :
             pp_plain( kwargs[name] , stream=f )
+
+#------------------------------------------------------------------------------
+
+class Test_Common ( unittest.TestCase ) :
+    pass
+
+#------------------------------------------------------------------------------
+
+if True :
+    pass
+
+    single_character_test('1_individual', common.tab, common.TAB)
+    single_character_test('1_individual', common.lf, common.LF)
+
+    single_character_test('1_individual', common.space, common.CR)
+    single_character_test('1_individual', common.space, common.SPACE)
+    single_character_test('1_individual', common.comma, common.COMMA, 'comma')
+    single_character_test('1_individual', common.l_paren, common.L_PAREN, 'left_parenthesis')
+    single_character_test('1_individual', common.r_paren, common.R_PAREN, 'right_parenthesis')
+    single_character_test('1_individual', common.eq, common.EQ, 'equals_sign')
+    single_character_test('1_individual', common.l_bracket, common.L_BRACKET, 'left_bracket')
+    single_character_test('1_individual', common.r_bracket, common.R_BRACKET, 'right_bracket')
+    single_character_test('1_individual', common.bar, common.BAR, 'vertical_bar')
+
+    for ch in common.WHITESPACE_CHARS :
+        ( ch_hex, ch_name ) = character_lookup ( ch )
+        rule_f = lambda : StrMatch(ch, rule_name=f"whitespace_character_{ch_hex}_{ch_name}")
+        single_character_test("1_individual", rule_f, ch, ch_name )
+
+if False:
+    pass
+    
+#------------------------------------------------------------------------------
+
+if False :
+    pass
+
+if True :
+    pass
+
+    for idx in range(len(common.WHITESPACE_RULES)):
+        # individual whitespace character rules, literal character, not regex
+        rule_f = common.WHITESPACE_RULES[idx]
+        ch = common.WHITESPACE_CHARS[idx]
+        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
+
+    # whitespace regular expression : One of space, tab, carriage-return
+    rule_f = common.whitespace
+    for ch in common.WHITESPACE_CHARS :
+        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
+
+    # whitespace regular expression : One or more of space, tab, carriage-return
+    rule_f = common.ws
+    for ch in common.WHITESPACE_CHARS :
+        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
+    # or multiple of charset
+
+    # whitespace regular expression : Zero or more of space, tab, carriage-return
+    rule_f = common.wx
+    for ch in common.WHITESPACE_CHARS :
+        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch], empty_ok=True)
+    # or multiple of charset
+
+    single_character_test('2_class', common.newline, '\n')
+    # or multiple of charset
+
+if False :
+    pass
 
 #------------------------------------------------------------------------------
 
