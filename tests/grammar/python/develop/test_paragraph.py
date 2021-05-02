@@ -23,9 +23,7 @@ import arpeggio
 
 #------------------------------------------------------------------------------
 
-sys.path.insert(0, 'canonical')
-
-import common
+import grammar.python.common as common
 
 from p import pp_str
 
@@ -192,40 +190,39 @@ class Test_Import ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def test_builder_001_fragment (self) :
+    def test_builder_001_line_fragment (self) :
         self.apply ( ( 'one', '\n',
                    ) )
 
-    def test_builder_001_full (self) :
+    def test_builder_001_full_line (self) :
         self.apply ( ( 'one\n', '\n',
                    ) )
 
-    def test_builder_002_fragment (self) :
+    def test_builder_002_line_fragment (self) :
         self.apply ( ( 'one\ntwo', '\n',
                    ) )
 
-    def test_builder_002_full (self) :
+    def test_builder_002_full_lines (self) :
         self.apply ( ( 'one\ntwo\n', '\n',
                    ) )
 
-    def _test_builder_003 (self) :
+    def test_builder_003 (self) :
         self.apply ( ( 'one', '\n',
                        'two', '\n',
                        'three', '\n',
                    ) )
 
-    def _test_builder_005 (self) :
+    def test_builder_005 (self) :
         self.apply ( ( texts[0], '\n', '\n',
                        # texts[3], '\n', '\n',
                        # texts[7], '\n', '\n',
                    ) )
 
-    def _test_builder_007 (self) :
-        self.apply ( ( self.words1, '\n', '\n',
-                       self.words2, '\n', '\n', '\n',
-                       self.words3, '\n',
+    def test_builder_007 (self) :
+        self.apply ( ( texts[0], '\n', '\n',
+                       texts[3], '\n', '\n',
+                       texts[7], '\n', '\n',
                    ) )
-
 
 #------------------------------------------------------------------------------
 
