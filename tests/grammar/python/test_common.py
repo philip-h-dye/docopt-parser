@@ -1,5 +1,5 @@
 # FIXME: - need more tests which are negative.
-#        - also, positive and negative lookahead with And(), Not()
+#        - test positive and negative lookahead with And(), Not()
 
 import sys
 import os
@@ -49,7 +49,7 @@ def empty_string_is_accepted(name_prefix, rule_f, ch):
     """Add test that empty string is accepted
     """
     def create_method (rule):
-        def the_method(self):            
+        def the_method(self):
             nonlocal rule
             parsed = ParserPython( rule, skipws=False ).parse('')
         return the_method
@@ -69,7 +69,7 @@ def empty_string_raises_NoMatch(name_prefix, rule_f, ch):
     """Add test that empty string does not match
     """
     def create_method (rule):
-        def the_method(self):            
+        def the_method(self):
             nonlocal rule
             with self.assertRaises(NoMatch) :
                 parsed = ParserPython( rule, skipws=False ).parse('')
@@ -86,15 +86,30 @@ def empty_string_raises_NoMatch(name_prefix, rule_f, ch):
 
 #------------------------------------------------------------------------------
 
-def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False):
-    """Test for single : by itself and at start, middle, end of text,
-       and in a paragraph.
+def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
+    """Generate test methods whether <rule_f> matches <s> in these scenarios :
+         - by itself, <s> is the entire input string to be parsed.
+         - at start of the parsed text, followed by a phrase
+         - in the middle between twp phrases
+         - at the end of the parsed text, preceeded by a phrase
+         - scattered a various points about a paragraph, at least once
+           two <s>'s directly next to each other.
+         - Test whether or not the specified rule matches an empty string :
+           If empty_ok is False (DEFAULT), a NoMatch exception is expected.
+           If empty_ok is True, a successful match is expected.
+
+         Each scenario generates an individual test.  The test names
+         include the characters being tested against.
+
+         In each scenario, the 'text' is ensured to not include any
+         characters present in <s>.
+
     """
-    def create_method (name, rule_f, rule, ch, grammar, input, expect):
+    def create_method (name, rule_f, rule, s, grammar, input, expect):
         def the_method(self):
-            nonlocal name, rule_f, rule, ch, grammar, input, expect
+            nonlocal name, rule_f, rule, s, grammar, input, expect
             parser = ParserPython( grammar, skipws=False )
-            write_scratch( call={'fcn' : 'single_character_test' , 'ch' : ch ,
+            write_scratch( call={'fcn' : 'string_test' , 's' : s ,
                                  'rule_f' : rule_f , 'rule' : rule , },
                            name=name, grammar=grammar, input=input,
                            expect=expect, expect_f=flatten(expect),
@@ -104,7 +119,7 @@ def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False)
                 write_scratch ( parsed=parsed )
                 write_scratch ( parsed_f=flatten(parsed) )
             except :
-                print(f"\nParser FAILED : ch = '{ch}' : ascii {ord(ch)}"
+                print(f"\nParser FAILED : s = '{s}' :"
                       f"\ninput = '{input}'"
                       f"[grammar]\n{pp_str(grammar)}\n"
                       f"\n[expect]\n{pp_str(expect)}")
@@ -114,7 +129,7 @@ def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False)
             parsed = flatten(parsed)
             expect = flatten(expect)
             assert parsed == expect, \
-                ( f"ch = ascii {ord(ch)} : input = '{input}' :\n"
+                ( f"s = '{s}' : input = '{input}' :\n"
                   f"[grammar]\n{pp_str(grammar)}\n"
                   f"[expect]\n{pp_str(expect)}\n"
                   f"[parsed]\n{pp_str(parsed)}" )
@@ -123,13 +138,13 @@ def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False)
 
     #--------------------------------------------------------------------------
 
-    assert len(ch) > 0, "Zero length ch invalid for single_character_test()"
-    assert len(ch) == 1, ( f"argument ch '{ch}' of length {len(ch)}, too long.  "
-                           "single_character_test() requires single character" )
+    assert len(s) > 0, "Zero length 's' invalid for string_test()"
 
-    assert ch not in INUSE_CHARACTERS, \
-        ( f"argument ch '{ch}' is a member of INUSE_CHARACTERS, test code must "
-          "be reconfigured in order to handle this character." )
+    for ch in s :
+        assert ch not in INUSE_CHARACTERS, \
+            ( f"argument s '{s}', contains '{ch}' character whuch is a "
+              f"member of INUSE_CHARACTERS, test code must be reconfigured "
+              f"in order to handle this character." )
 
     if empty_ok:
         empty_string_is_accepted(name_prefix, rule_f, ch)
@@ -142,30 +157,52 @@ def single_character_test(name_prefix, rule_f, ch, ch_name=None, empty_ok=False)
         #       f"literal '{ch}' : {ord(ch)} : {hex(ord(ch))}")
         rule = StrMatch(ch, rule_f.__name__)
 
-    ( ch_hex, ch_name ) = character_lookup ( ch, ch_name )
+    ( ch_hexes, ch_names ) = character_lookup ( s, ch_names )
+
+    if len(ch_hexes) == 1 :
+        ch_hexes = ch_hexes[0]
+        ch_names = ch_names[0]
 
     for test_name, grammar, input, expect in scenarios(rule, ch):
-        method_name = f"test_{name_prefix}_rule_{rule.rule_name}__{ch_hex}_{ch_name}_{test_name}"
+        method_name = f"test_{name_prefix}_rule_{rule.rule_name}__AGAINST_{ch_hexes}_{ch_names}_{test_name}"
         # print(f"Adding {method_name}")
         method = create_method(method_name, rule_f, rule, ch, grammar, input, expect)
         setattr ( Test_Common, method_name, method )
 
 #--------------------------------------------------------------------------
 
-def character_lookup ( ch, ch_name=None ) :
+def character_lookup ( s, ch_names=None ) :
 
-    ch_hex = f"x{ord(ch):02x}"
+    if ch_names is None or len(ch_names) <= 0 :
+        ch_names = [ None for ch in s ]
+    else :
+        assert len(ch_names) >= len(s), \
+            f"Not enough 'ch_names' for each member of 's'"
+        assert len(ch_names) <= len(s), \
+            f"Too many 'ch_names'.  More than the number of members of 's'."
+        for idx in range(len(ch_names)) :
+            # assert ch_names[idx] is not None, \
+            #     f"ch_names[{idx}] is None.  Please provide a name."
+            # assert len(ch_names[idx]) > 0,
+            #     f"ch_names[{idx}] is an empty string.  Please provide a name"
+            if ch_names[idx] is not None and len(ch_names[idx]) <= 0 :
+                ch_names[idx] = None
 
-    if ch_name is None :
-        if ord(ch) < len(ascii.controlnames):
-            ch_name = ascii.controlnames[ord(ch)]
-        else :
-            try :
-                ch_name = unicodedata.lookup(ch)
-            except :
-                ch_name = ch_hex
+    ch_hexes = [ ]
 
-    return ( ch_hex, ch_name )
+    for idx in range(len(s)) :
+        ch = s[idx]
+        ch_hexes.append ( f"x{ord(ch):02x}" )
+        if ch_names[idx] is None :
+            if ord(ch) < len(ascii.controlnames):
+                ch_names[idx] = ascii.controlnames[ord(ch)]
+            else :
+                try :
+                    ch_names[idx] = unicodedata.lookup(ch)
+                except :
+                    ch_names[idx] = ch_hexes[idx]
+
+    return ( ch_hexes, ch_names )
 
 #--------------------------------------------------------------------------
 
@@ -314,14 +351,14 @@ def get_words(s):
        linefeed as a word character.
     """
     if '\n' in s :
-        def _words():
+        def words():
             return RegExMatch(WORDS_CHARACTER_REGEX_NO_LF+'+',
                                   rule_name='words')
     else :
-        def _words():
+        def words():
             return RegExMatch(WORDS_CHARACTER_REGEX_WITH_LF+'+',
                                   rule_name='words')
-    return _words
+    return words
 
 #------------------------------------------------------------------------------
 
@@ -393,38 +430,110 @@ def write_scratch ( **kwargs ) :
 #------------------------------------------------------------------------------
 
 class Test_Common ( unittest.TestCase ) :
-    pass
+
+    def test_3_explicit_blank_line(self):
+
+        newline = common.newline
+        blank_line = common.blank_line
+        words = get_words('\n')
+
+        t_newline = Terminal(newline(), 0, '\n')
+
+        text = ""
+        expect = []
+
+        s_blank_line_empty = '\n'
+        t_blank_line_empty = Terminal(blank_line(), 0, s_blank_line_empty)
+
+        #--------------------------------------------------------------------------
+
+        text += '\n' + s_blank_line_empty
+        expect.extend ( ( t_newline, t_blank_line_empty ) )
+
+        self.check_parse ( 'test_blank_line : 1', blank_line, blank_line(),
+                           words, text, expect )
+
+        #--------------------------------------------------------------------------
+
+        phrase = fake_spaces_etc(' ', 'Testing 1, 2, 3')
+        t_phrase = Terminal(words(), 0, phrase)
+
+        # t_blank_line_empty = Terminal(blank_line(), 0, s_blank_line_empty)
+
+        text += phrase + '\n' + s_blank_line_empty
+        expect.extend ( ( t_phrase, t_newline, t_blank_line_empty ) )
+
+        self.check_parse ( 'test_blank_line : 2', blank_line, blank_line(),
+                           words, text, expect )
+
+    #--------------------------------------------------------------------------
+
+    def check_parse ( self, fcn, rule_f, rule, words, text, expect ) :
+
+        t_eof = Terminal(EOF(), 0, '')
+        expect = ( ( *expect ), t_eof )
+
+        newline = common.newline()
+        catchall = RegExMatch( r'.*', rule_name='catch_all' )
+        body = OneOrMore( OrderedChoice ( [ rule, words, catchall, newline ] ) )
+        grammar = Sequence( ( body, EOF ) )
+
+        parser = ParserPython(grammar, skipws=False)
+
+        write_scratch( call={'fcn' : '{fcn}' , 'text' : text ,
+                             'rule_f' : rule_f , 'rule' : rule , },
+                       name=fcn, grammar=grammar, text=text,
+                       expect=expect, expect_f=flatten(expect),
+                       model=parser.parser_model, _clean=True, )
+        try :
+            parsed = parser.parse(text)
+            write_scratch ( parsed=parsed )
+            write_scratch ( parsed_f=flatten(parsed) )
+        except :
+            print(f"\nParser FAILED :"
+                  f"\ntext = '{text}'"
+                  f"[grammar]\n{pp_str(grammar)}\n"
+                  f"\n[expect]\n{pp_str(expect)}")
+            raise
+        # print("[ expect ]") ; pp(expect)
+        # print("[ parsed ]") ; pp(parsed)
+        parsed = flatten(parsed)
+        expect = flatten(expect)
+        assert parsed == expect, \
+            ( f"text = '{text}' :\n"
+              f"[grammar]\n{pp_str(grammar)}\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
+
+
+#------------------------------------------------------------------------------
+
+def or_more_from_charset(rule_f, charset, suffix, levels, empty_ok=False):
+    for ch in charset :
+        s = ch + suffix
+        string_test('2_class', rule_f, s, empty_ok=empty_ok)
+        if levels > 1 :
+            or_more_from_charset(rule_f, charset, s, levels-1, empty_ok)
 
 #------------------------------------------------------------------------------
 
 if True :
     pass
 
-    single_character_test('1_individual', common.tab, common.TAB)
-    single_character_test('1_individual', common.lf, common.LF)
+    for name, ch in common.CHARACTER_NAME_TO_CHAR.items() :
+        ( ch_hexes, ch_names ) = character_lookup ( ch )
+        rule_f = lambda : StrMatch(ch, rule_name=f"common_character_{ch_hexes[0]}_{ch_names[0]}")
+        string_test("1_individual", rule_f, ch )
 
-    single_character_test('1_individual', common.space, common.CR)
-    single_character_test('1_individual', common.space, common.SPACE)
-    single_character_test('1_individual', common.comma, common.COMMA, 'comma')
-    single_character_test('1_individual', common.l_paren, common.L_PAREN, 'left_parenthesis')
-    single_character_test('1_individual', common.r_paren, common.R_PAREN, 'right_parenthesis')
-    single_character_test('1_individual', common.eq, common.EQ, 'equals_sign')
-    single_character_test('1_individual', common.l_bracket, common.L_BRACKET, 'left_bracket')
-    single_character_test('1_individual', common.r_bracket, common.R_BRACKET, 'right_bracket')
-    single_character_test('1_individual', common.bar, common.BAR, 'vertical_bar')
+if True :
+    pass
 
     for ch in common.WHITESPACE_CHARS :
-        ( ch_hex, ch_name ) = character_lookup ( ch )
-        rule_f = lambda : StrMatch(ch, rule_name=f"whitespace_character_{ch_hex}_{ch_name}")
-        single_character_test("1_individual", rule_f, ch, ch_name )
+        ( ch_hexes, ch_names ) = character_lookup ( ch )
+        rule_f = lambda : StrMatch(ch, rule_name=f"whitespace_character_{ch_hexes[0]}_{ch_names[0]}")
+        string_test("1_individual", rule_f, ch, ch_names )
 
-if False:
-    pass
-    
 #------------------------------------------------------------------------------
-
-if False :
-    pass
 
 if True :
     pass
@@ -433,30 +542,26 @@ if True :
         # individual whitespace character rules, literal character, not regex
         rule_f = common.WHITESPACE_RULES[idx]
         ch = common.WHITESPACE_CHARS[idx]
-        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
+        string_test("2_class", rule_f, ch)
 
     # whitespace regular expression : One of space, tab, carriage-return
     rule_f = common.whitespace
     for ch in common.WHITESPACE_CHARS :
-        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
+        string_test("2_class", rule_f, ch)
 
-    # whitespace regular expression : One or more of space, tab, carriage-return
-    rule_f = common.ws
-    for ch in common.WHITESPACE_CHARS :
-        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch])
-    # or multiple of charset
+#------------------------------------------------------------------------------
 
-    # whitespace regular expression : Zero or more of space, tab, carriage-return
-    rule_f = common.wx
-    for ch in common.WHITESPACE_CHARS :
-        single_character_test("2_class", rule_f, ch, common.WHITESPACE_NAMES[ch], empty_ok=True)
-    # or multiple of charset
-
-    single_character_test('2_class', common.newline, '\n')
-    # or multiple of charset
-
-if False :
+if True :
     pass
+
+    # ws regex : One or more of space, tab, carriage-return
+    or_more_from_charset(common.ws, common.WHITESPACE_CHARS, '', 2)
+
+    # wx regex : Zero or more of space, tab, carriage-return
+    or_more_from_charset(common.wx, common.WHITESPACE_CHARS, '', 2, empty_ok=True)
+
+    # newline regex : newline, possibly preceeded by whitespace
+    or_more_from_charset(common.newline, common.WHITESPACE_CHARS, '\n', 2)
 
 #------------------------------------------------------------------------------
 
