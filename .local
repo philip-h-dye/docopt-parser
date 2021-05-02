@@ -68,12 +68,15 @@ cbase=grammar/python
 # ctgt=newline
 # ctgt=blankline
 
-cgrp=optdesc
+# cgrp=optdesc
 # ctgt=list
 # ctgt=line
-ctgt=section
+# ctgt=section
 
-copt='-s -v'
+cgrp=.
+ctgt=common
+
+copt='-s -vvv'
 
 alias cx=' clear && pytest-here ${copt} tests/${cbase}/${cgrp}/test_${ctgt}.py '
 
