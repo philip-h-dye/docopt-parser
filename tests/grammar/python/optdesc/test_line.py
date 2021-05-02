@@ -69,7 +69,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def _test_single_short_no_arg (self):
+    def test_single_short_no_arg (self):
         input = '-f'
         parsed = self.parser.parse(input)
         # tprint("[parsed]") ; pp(parsed)
@@ -241,15 +241,21 @@ class Test_Option_Line ( unittest.TestCase ) :
 
         input = '-f -x -l'
 
-        parsed = self.parser.parse(input)
-        # tprint("[parsed]") ; pp(parsed)
-
         expect = create_expect (
             Terminal( short_no_arg(), 0, '-f' ) ,
             Terminal( short_no_arg(), 0, '-x' ) ,
             Terminal( short_no_arg(), 0, '-l' ) ,
             eof = ( input[-1] != '\n' ) ,
         )
+
+        # print("[ expect ]")
+        # pp(expect[0][0][0][0][1])
+
+        parsed = self.parser.parse(input)
+        # tprint("[parsed]") ; pp(parsed)
+
+        # print("[ parsed ]")
+        # pp(parsed[0][0][0][0][1])
 
         assert NonTerminal_eq_structural(parsed, expect), \
             ( f"input = '{input}' :\n"
@@ -286,18 +292,18 @@ def lgenerate ( cls, optdefs, help_, indent='  ', sep=', ', offset=16 ):
 
 #------------------------------------------------------------------------------
 
-#lgen
+if False :
+    #lgen
+    olines = [
+        ( ( ( '-h', ), ( '--help', ) ), "Show this usage information." ),
+        ( ( ( '-v', ), ( '--version', ) ), "Print the version and exit." ),
+    ]
 
-olines = [
-    ( ( ( '-h', ), ( '--help', ) ), "Show this usage information." ),
-    ( ( ( '-v', ), ( '--version', ) ), "Print the version and exit." ),
-]
+    text = ''
+    for ol_spec in olines :
+        text += lgenerate ( Test_Option_Line, *ol_spec )
 
-text = ''
-for ol_spec in olines :
-    text += lgenerate ( Test_Option_Line, *ol_spec )
-
-print(f"Options:\n{text}")
+    print(f"Options:\n{text}")
 
 #------------------------------------------------------------------------------
 
@@ -315,7 +321,7 @@ tgenerate ( ( ( '-f', ), ) )
 
 #------------------------------------------------------------------------------
 
-if True  :
+if False  :
 
     # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
     # the first possible position for a option-argument
