@@ -17,7 +17,7 @@ from docopt_parser.wrap import WrappedList, FakeNode
 from docopt_parser.wrap import wrap, unwrap
 from docopt_parser.wrap import unwrap_at, unwrap_into, unwrap_extend
 
-from docopt_parser.parsetreenodes import NonTerminal_eq
+# from docopt_parser.parsetreenodes import NonTerminal_eq_strutural
 
 #------------------------------------------------------------------------------
 
