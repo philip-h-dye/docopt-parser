@@ -47,9 +47,11 @@ ALL = ( ' long_eq_arg long_no_arg '
 # Consider supporting customization of the option regexes.  Arpeggio's
 # class customization technique might be a good model.
 
+option_lead = r'(^|(?<=[\s|,]))'
+
 def long_no_arg():
     return RegExMatchBounded \
-        ( r'--[\w][\w]+', lead=r'(^|(?<=\s))',
+        ( r'--[\w][\w]+', lead=option_lead,
           rule_name='long_no_arg', skipws=False )
 
 # Consider '--foo=a|b' : option literal choice -- without no whitespace
@@ -74,7 +76,7 @@ def long_eq_arg():
 
 def short_no_arg():
     return RegExMatchBounded \
-        ( r'-[\w]', lead=r'(^|(?<=\s))', trail=r'\b',
+        ( r'-[\w]', lead=option_lead, trail=r'\b',
           rule_name='short_no_arg', skipws=False )
 
 def short_adj_arg__option():
@@ -90,7 +92,7 @@ def short_adj_arg():
 
 def short_stacked():
     return RegExMatchBounded \
-        ( r'-[\w][\w]+', lead=r'(^|(?<=\s))', trail=r'\b',
+        ( r'-[\w][\w]+', lead=option_lead, trail=r'\b',
           rule_name='short_stacked', skipws=False )
 
 #------------------------------------------------------------------------------
