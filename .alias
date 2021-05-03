@@ -1,6 +1,7 @@
 #
 
 module=$( echo $PWD | sed -e 's/^.*\///;s/-/_/g' )
+m=${module}
 
 alias c='( clear && invoke clean )'
 
