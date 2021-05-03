@@ -183,43 +183,6 @@ def expect_document ( sections ) :
 
 #------------------------------------------------------------------------------
 
-from typing import List
-from dataclasses import dataclass, field
-
-from optlist import OptionDef, OptionListDef
-from optline import OptionLineDef
-
-@dataclass
-class OptionDescDef (object):
-    lines   : List[OptionLineDef] = field(default_factory=list)
-    sep     : str = ', '
-    indent  : str = '  '
-    offset  : int = 16
-    intro   : str = None
-
-# opt   = OptionDef
-# olst  = OptionListDef
-# ol    = OptionLineDef
-# od    = OptionDescDef
-
-#------------------------------------------------------------------------------
-
-def section_optdesc_obj ( opt_desc_def ):
-    text = ''
-
-    opt_desc = NonTerminal( option_description_section(),
-                            [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
-    del opt_desc[0]
-
-    for spec in opt_desc_def.lines :
-        ( text_, expect_ ) = ol_line_generate ( spec )
-        text += text_
-        opt_desc.append ( expect_ )
-
-    return ( text, opt_desc )
-
-#------------------------------------------------------------------------------
-
 def tprint(*args, **kwargs):
     if tprint._on :
         kwargs['file'] = tprint._file
@@ -231,5 +194,97 @@ def tprint(*args, **kwargs):
 tprint._file = open("/dev/tty", 'w')
 # tprint._on = False
 tprint._on = True
+
+#------------------------------------------------------------------------------
+
+# from typing import List
+from dataclasses import dataclass, field
+
+from optlist import OptionDef, OptionListDef
+from optline import OptionLineDef
+
+# @dataclass
+# class OptionDescDef (list):
+#     # lines   : List[OptionLineDef] = field(default_factory=list)
+#     sep     : str = ', '
+#     indent  : str = '  '
+#     int     : int = 2
+#     offset  : int = 16
+#     intro   : str = None
+
+# opt   = OptionDef
+# olst  = OptionListDef
+# ol    = OptionLineDef
+# od    = OptionDescDef
+
+#------------------------------------------------------------------------------
+
+class OptionDescDef(list):
+
+    def __init__(self, *elements, sep=', ', gap=2, indent='  ',
+                 offset=16, intro=None) :
+        # print(f": elements = {repr(elements)}")
+        if len(elements) == 1:
+            try :
+                iter(elements[0])
+                elements = elements[0]
+            except:
+                pass
+        # print(f": elements = {repr(elements)}")
+        for value in elements :
+            # print(f": value = {repr(value)}")
+            assert isinstance(value, OptionLineDef), \
+                ( f"OptionDescDef elements must be of type OptionLineDef, "
+                  f"not {str(type(value))}" )
+        super().__init__(elements)
+        self.sep     = sep
+        self.indent  = indent
+        self.gap     = gap	# gap size, minimum of 2 spaces
+        self.offset  = offset	# default width of option-list
+        self.intro   = intro
+
+        if self.gap is None or self.gap < 2 :
+            self.gap = 2
+
+    def __setitem__(self, idx, value):
+        assert isinstance(value, OptionLineDef), \
+            ( f"OptionDescDef elements must be of type OptionLineDef, "
+              f"not {str(type(value))}" )
+        super().__setitem__(idx, value)
+
+#------------------------------------------------------------------------------
+
+from prettyprinter import register_pretty, pretty_call
+
+@register_pretty(OptionDescDef)
+def pretty_OptionDescDef(value, ctx):
+    return pretty_call(
+        ctx,
+        OptionDescDef,
+        contents=list(value),
+)
+
+#------------------------------------------------------------------------------
+
+from optline import option_line_generate_obj
+
+def section_optdesc_obj ( optspecs ):
+
+    text = ''
+
+    opt_desc = NonTerminal( option_description_section(),
+                            [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
+    del opt_desc[0]
+
+    os = optspecs
+    for spec in optspecs :
+        ( text_, expect_ ) = option_line_generate_obj \
+            ( spec, sep=os.sep, indent=os.indent, offset=os.offset )
+        # print(f"[optsect] text_\n{text_}\n")
+        # print(f"[optsect]\n{pp_str(expect_)}\n")
+        text += text_
+        opt_desc.append ( expect_ )
+
+    return ( text, opt_desc )
 
 #------------------------------------------------------------------------------
