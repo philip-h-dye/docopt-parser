@@ -107,6 +107,7 @@ def create_expect ( *terminals, eof=False, sep = None ) :
         raise ValueError("No terminals provided.  Please provide at least one.")
 
     separator = expect_separator(sep)
+    sep_space = expect_separator(' ') # required for operands
 
     expect = NonTerminal( document(), [
         NonTerminal( body(), [
@@ -114,19 +115,12 @@ def create_expect ( *terminals, eof=False, sep = None ) :
                 NonTerminal( option_description_section(), [
                     NonTerminal( option_line(), [
                         NonTerminal( option_list(), [
-                            NonTerminal( ol_first_option(), [
-                                NonTerminal( option(), [
-                                    terminals[0],
-                                ]) ,
-                            ]) ,
+                            NonTerminal( ol_first_option(), [ terminals[0], ]) ,
                             * [
                                 NonTerminal( ol_term_with_separator(), [
-                                    separator,
-                                    NonTerminal( ol_term(), [
-                                        NonTerminal( option(), [
-                                            term
-                                        ]) ,
-                                    ]) ,
+                                    (sep_space if term.rule_name == 'operand'
+                                     else separator) ,
+                                    NonTerminal( ol_term(), [ term ]),
                                 ])
                                 for term in terminals[1:]
                             ],

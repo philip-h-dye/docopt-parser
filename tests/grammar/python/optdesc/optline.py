@@ -204,23 +204,12 @@ def create_expect ( *terminals, eof=False, sep = None ) :
             NonTerminal( element(), [
                 NonTerminal( option_line(), [
                     NonTerminal( option_list(), [
-                        NonTerminal( ol_first_option(), [
-                            NonTerminal( option(), [
-                                terminals[0],
-                            ]) ,
-                        ]) ,
+                        NonTerminal( ol_first_option(), [ terminals[0] ]),
                         * [
                             NonTerminal( ol_term_with_separator(), [
-                                # separator,
                                 (sep_space if term.rule_name == 'operand'
                                  else separator) ,
-                                NonTerminal( ol_term(), [
-                                    NonTerminal( option(), [
-                                        # FIXME:  Why only 'option', what about
-                                        # when term is an operand ?
-                                        term
-                                    ]) ,
-                                ]) ,
+                                NonTerminal( ol_term(), [ term ]),
                             ])
                             for term in terminals[1:]
                         ],
@@ -270,11 +259,7 @@ def option_line_expect ( *terminals, eof=False, sep=None, indent=None,
 
     members = [
         NonTerminal( option_list(), [
-            NonTerminal( ol_first_option(), [
-                NonTerminal( option(), [
-                    terminals[0],
-                ]) ,
-            ]) ,
+            NonTerminal( ol_first_option(), [ terminals[0], ]) ,
             * [
                 NonTerminal( ol_term_with_separator(), [
                     # separator,

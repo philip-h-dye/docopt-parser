@@ -18,7 +18,8 @@ from p import pp_str
 
 #------------------------------------------------------------------------------
 
-from grammar.python.common import ws, newline, COMMA, BAR
+from grammar.python.common import ws, newline
+
 from grammar.python.operand import *
 # # operand, operand_all_caps, operand_angled
 from grammar.python.option import *
@@ -26,8 +27,36 @@ from grammar.python.option import *
 
 from grammar.python.optdesc.list import option_list, ol_first_option, ol_term
 from grammar.python.optdesc.list import ol_term_with_separator, ol_separator
+from grammar.python.optdesc.list import ol_space, ol_comma, ol_bar
 
 from docopt_parser import DocOptListViewVisitor
+
+#------------------------------------------------------------------------------
+
+from grammar.python.common import space  as r_space
+from grammar.python.common import comma  as r_comma
+from grammar.python.common import bar    as r_bar
+from grammar.python.common import eq     as r_eq
+
+t_space = Terminal(r_space(), 0, ',')
+t_comma = Terminal(r_comma(), 0, ',')
+t_bar = Terminal(r_bar(), 0, '|')
+t_eq = Terminal(r_eq(), 0, '=')
+
+#------------------------------------------------------------------------------
+
+grammar_elements = [ option_list, ws, newline ]
+
+def element():
+    # To work properly, first argumnet of OrderedChoice must be a
+    # list.  IF not, it implicitly becomes Sequence !
+    return OrderedChoice ( [ *grammar_elements ], rule_name='element' )
+
+def body():
+    return OneOrMore ( element, rule_name='body' )
+
+def document():
+    return Sequence( body, EOF, rule_name='document' )
 
 #------------------------------------------------------------------------------
 
@@ -99,9 +128,8 @@ def term__long_no_arg(opt):
 def term__long_eq_arg(opt, op):
     return NonTerminal( option(), [
         NonTerminal( long_eq_arg(),
-                     [ term__short_no_arg(opt),
-                       StrMatch('=', rule='EQ'),
-                       # FIXME: create global for EQ
+                     [ term__long_no_arg(opt),
+                       t_eq,
                        term__operand(op) ], ) ])
 
 def term__short_no_arg(opt):
@@ -134,12 +162,8 @@ def term__operand(op):
 
 def expect_separator(sep):
 
-    space = Terminal( StrMatch(' ', rule='SPACE'), 0, ' ')
-    comma = Terminal( StrMatch(',', rule='COMMA'), 0, ',')
-    bar = Terminal( StrMatch('|', rule='BAR'), 0, '|')
-
     if sep is None :
-        return space
+        return NonTerminal( ol_separator(), [ t_space ] )
 
     if not isinstance(sep, str):
         raise ValueError(f"Unreconized expect <sep>, type {str(type(sep))}, value '{repr(sep)}'.\n"
@@ -148,7 +172,7 @@ def expect_separator(sep):
     if len(sep) <= 0:
         # Zero isn't possible since things would run into each other and
         # could not then necessarily be parsed.
-        return space
+        return NonTerminal( ol_separator(), [ t_space ] )
 
     if len(sep) > 3:
         raise ValueError(f"<sep> too long, at most 3 possible.  Please resolve.")
@@ -156,7 +180,7 @@ def expect_separator(sep):
     saved_sep = sep
 
     if sep == ' ':
-        return space
+        return NonTerminal( ol_separator(), [ t_space ] )
 
     #--------------------------------------------------------------------------
 
@@ -199,9 +223,9 @@ def expect_separator(sep):
     #--------------------------------------------------------------------------
 
     if sep[0] == ',':
-        core = NonTerminal( ol_comma(), [ comma ] )
+        core = NonTerminal( ol_comma(), [ t_comma ] )
     elif sep[0] == '|' :
-        core = NonTerminal( ol_bar(), [ bar ] )
+        core = NonTerminal( ol_bar(), [ t_bar ] )
     else :
         raise ValueError(
             f"'{sep[0]}' is not a valid option-list separator.  Valid "
@@ -210,15 +234,15 @@ def expect_separator(sep):
             f"/followed by one space on each side.")
 
     if preceeded:
-        core.insert(0, space)
+        core.insert(0, t_space)
     if followed:
-        core.append(space)
+        core.append(t_space)
 
     return NonTerminal( ol_separator(), [ core ] )
 
 #------------------------------------------------------------------------------
 
-def expect ( input, parsed, *terminals, sep = None ) :
+def create_expect ( *terminals, sep = None ) :
 
     separator = expect_separator(sep)
     sep_space = expect_separator(' ')
@@ -232,23 +256,13 @@ def expect ( input, parsed, *terminals, sep = None ) :
         NonTerminal( body(), [
             NonTerminal( element(), [
                 NonTerminal( option_list(), [
-                    NonTerminal( ol_first_option(), [
-                        NonTerminal( option(), [
-                            terminals[0],
-                        ]) ,
-                    ]) ,
+                    NonTerminal( ol_first_option(), [ terminals[0], ]) ,
                     * [
                         NonTerminal( ol_term_with_separator(), [
                             # separator,
                             (sep_space if term.rule_name == 'operand'
                              else separator) ,
-                            NonTerminal( ol_term(), [
-                                NonTerminal( option(), [
-                                    # Why only 'option' ?  How does 'option' disapear
-                                    # when this is an 'operand' ?
-                                    term
-                                ]) ,
-                            ]) ,
+                            NonTerminal( ol_term(), [ term ]) ,
                         ])
                         for term in terminals[1:]
                     ],
@@ -258,9 +272,7 @@ def expect ( input, parsed, *terminals, sep = None ) :
         Terminal(EOF(), 0, '') ,
     ])
 
-    assert parsed == expect, ( f"[expect]\n{pp_str(expect)}\n"
-                               f"[parsed]\n{pp_str(parsed)}"
-                               f"input = '{input}' :\n" )
+    return expect
 
 #------------------------------------------------------------------------------
 
