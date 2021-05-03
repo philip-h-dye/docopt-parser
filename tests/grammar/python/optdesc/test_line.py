@@ -389,6 +389,7 @@ if False  :
 
     # generate("--file=a|b|c -x")
     if False  :
+        # FIXME: not implemented yet
         tgenerate ( ( ( '--file', '=', 'a|b|c', ) ,
                       ( '-x', ) ,
                     ) )
@@ -404,6 +405,24 @@ if False  :
                   ( '-f', ' ', 'NORM' ) ,
                   ( '-f', ) ,
                 ) )
+
+#------------------------------------------------------------------------------
+
+# Option Line Variations
+# ----------------------
+#   indent     :  0 .. 4
+#   offset     :  0 .. 30
+#   help gap   :  2 .. 4
+#       text   :  None / '' / 'a' / 'ab' / 'Help ...'
+#   opt-list   :  handled in test_list, no concern here
+
+# Option Line Errors
+# ------------------
+#   indent     :  negative
+#   offset     :  negative
+#   help gap   :  less than 2
+#        text  :  ...
+#   opt-list   :  handled in test_list, no concern here
 
 #------------------------------------------------------------------------------
 
