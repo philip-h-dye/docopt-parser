@@ -35,10 +35,11 @@ from docopt_parser import DocOptListViewVisitor
 from optsect import tprint, document, body, element, create_expect
 from optsect import create_expect, create_terms
 from optsect import expect_document, expect_ol_line
+from optsect import section_optdesc
 
 #------------------------------------------------------------------------------
 
-class Test_Option_Line ( unittest.TestCase ) :
+class Test_Usage_Section ( unittest.TestCase ) :
 
     def setUp(self):
 
@@ -87,19 +88,19 @@ class Test_Option_Line ( unittest.TestCase ) :
             ( ( ( '-v', ), ( '--version', ) ), "Print the version and exit." ),
         ]
 
-        ( text, opt_desc ) = self.section_optdesc ( ol_line_specs )
+        ( text, opt_desc ) = section_optdesc ( ol_line_specs )
 
         expect = expect_document ( [ opt_desc ] )
         # tprint("[expect]") ; pp(expect)
-        with open ("expect.txt", 'w') as f:
-            pp_plain(expect, stream=f)
+        # with open ("expect.txt", 'w') as f :
+        #     pp_plain(expect, stream=f)
 
         tprint(f"\nOptions :\n{text}")
 
         parsed = self.parser.parse(text)
         # tprint("[parsed]") ; pp(parsed)
-        with open ("parsed.txt", 'w') as f :
-            pp_plain(parsed, stream=f)
+        # with open ("parsed.txt", 'w') as f :
+        #     pp_plain(parsed, stream=f)
 
         assert parsed == expect, ( f"input = '{input}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n"
@@ -107,31 +108,34 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def section_optdesc ( self, line_specs, sep=', ', intro=None, indent='  ',
-                          offset=16 ) :
-        text = ''
+    def WIP_test_minimal_obj(self):
 
-        opt_desc = NonTerminal( option_description_section(),
-                                [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
-        del opt_desc[0]
+        from optlist import OptionDef as opt, OptionListDef as olst
+        from optline import OptionLineDef as ol
 
-        for spec in line_specs :
-            # text += lgenerate ( Test_Option_Line, *spec )
-            ( optlist_string, terms ) = create_terms( spec[0], sep = sep )
-            help_ = spec[1]
-            if help_ is None :
-                help_ = ''
-            gap = '  ' if len(help_) > 0 else ''
-            # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
-            # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
-            text_ = f"{indent}{optlist_string:<{offset}}{gap}{help_}"
-            print(f"opt-list :  '{text_}'")
-            text += text_ + '\n'
-            opt_desc.append ( expect_ol_line (
-                *terms, sep=sep, indent=indent, gap=gap, help_=help_,
-                extra=(offset-len(optlist_string)) ))
+        olst_1   = olst ( opt( '-h', ), opt( '--help', ) )
+        oline_1  = ol   ( olst_1, "Show this usage information." )
+        olst_2   = olst ( opt( '-v', ), opt( '--version', ) )
+        oline_2  = ol   ( olst_2, "Print the version and exit." )
+        ol_line_specs = [ oline_1, oline_2 ]
 
-        return ( text, opt_desc )
+        ( text, opt_desc ) = section_optdesc_obj ( ol_line_specs )
+
+        expect = expect_document ( [ opt_desc ] )
+        # tprint("[expect]") ; pp(expect)
+        # with open ("expect.txt", 'w') as f :
+        #     pp_plain(expect, stream=f)
+
+        tprint(f"\nOptions :\n{text}")
+
+        parsed = self.parser.parse(text)
+        # tprint("[parsed]") ; pp(parsed)
+        # with open ("parsed.txt", 'w') as f :
+        #     pp_plain(parsed, stream=f)
+
+        assert parsed == expect, ( f"input = '{input}' :\n"
+                                   f"[expect]\n{pp_str(expect)}\n"
+                                   f"[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
