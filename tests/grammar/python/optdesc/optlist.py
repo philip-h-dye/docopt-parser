@@ -38,7 +38,7 @@ from grammar.python.common import comma  as r_comma
 from grammar.python.common import bar    as r_bar
 from grammar.python.common import eq     as r_eq
 
-t_space = Terminal(r_space(), 0, ',')
+t_space = Terminal(r_space(), 0, ' ')
 t_comma = Terminal(r_comma(), 0, ',')
 t_bar = Terminal(r_bar(), 0, '|')
 t_eq = Terminal(r_eq(), 0, '=')
@@ -123,17 +123,17 @@ def create_terms ( optdefs, sep = ' ' ):
 #------------------------------------------------------------------------------
 
 def term__long_no_arg(opt):
-    return NonTerminal( option(), [ Terminal( long_no_arg(), 0, opt) ] )
+    return NonTerminal( option(), [ Terminal( long_no_arg(), 0, opt ) ] )
 
 def term__long_eq_arg(opt, op):
     return NonTerminal( option(), [
         NonTerminal( long_eq_arg(),
-                     [ term__long_no_arg(opt),
+                     [ Terminal( long_no_arg(), 0, opt ) ,
                        t_eq,
                        term__operand(op) ], ) ])
 
 def term__short_no_arg(opt):
-    return NonTerminal( option(), [ Terminal( short_no_arg(), 0, opt) ] )
+    return NonTerminal( option(), [ Terminal( short_no_arg(), 0, opt ) ] )
 
 def term__short_adj_arg(opt, op):
     return NonTerminal( option(), [
@@ -162,8 +162,11 @@ def term__operand(op):
 
 def expect_separator(sep):
 
+    sep_ol_space = NonTerminal( ol_separator(),
+                                [ NonTerminal( ol_space(), [ t_space ] ) ] )
+
     if sep is None :
-        return NonTerminal( ol_separator(), [ t_space ] )
+        return sep_ol_space
 
     if not isinstance(sep, str):
         raise ValueError(f"Unreconized expect <sep>, type {str(type(sep))}, value '{repr(sep)}'.\n"
@@ -172,7 +175,7 @@ def expect_separator(sep):
     if len(sep) <= 0:
         # Zero isn't possible since things would run into each other and
         # could not then necessarily be parsed.
-        return NonTerminal( ol_separator(), [ t_space ] )
+        return sep_ol_space
 
     if len(sep) > 3:
         raise ValueError(f"<sep> too long, at most 3 possible.  Please resolve.")
@@ -180,7 +183,7 @@ def expect_separator(sep):
     saved_sep = sep
 
     if sep == ' ':
-        return NonTerminal( ol_separator(), [ t_space ] )
+        return sep_ol_space
 
     #--------------------------------------------------------------------------
 
