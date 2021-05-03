@@ -64,17 +64,21 @@ alias pthere=pytest-here
 # cbase=grammar/peg
 cbase=grammar/python
 
+# cgrp=.
+# ctgt=common
+# ctgt=operand
+# ctgt=option
+
 # cgrp=develop
 # ctgt=newline
+# ctgt=line_dev
+# ctgt=paragraph
 # ctgt=blankline
 
-# cgrp=optdesc
+cgrp=optdesc
 # ctgt=list
 # ctgt=line
-# ctgt=section
-
-cgrp=.
-ctgt=common
+ctgt=section
 
 copt='-s -vvv'
 
