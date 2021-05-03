@@ -40,23 +40,6 @@ ALL = ( ' document body element grammar_elements '
 
 #------------------------------------------------------------------------------
 
-from dataclasses import dataclass
-
-from optlist import OptionDef, OptionListDef
-
-@dataclass
-class OptionLineDef (object):
-    options : OptionListDef
-    help_ : str
-    # ? indent
-    # ? continuation ?
-
-# opt   = OptionDef
-# olst  = OptionListDef
-# ol    = OptionLineDef
-
-#------------------------------------------------------------------------------
-
 grammar_elements = [ option_line, ws, newline ]
 
 def element():
@@ -212,6 +195,9 @@ def create_expect ( *terminals, eof=False, sep = None ) :
         raise ValueError("No terminals provided.  Please provide at least one.")
 
     separator = expect_separator(sep)
+    sep_space = expect_separator(' ') # required for operands
+    # print("[sep-space]")
+    # pp(sep_space)
 
     expect = NonTerminal( document(), [
         NonTerminal( body(), [
@@ -225,9 +211,13 @@ def create_expect ( *terminals, eof=False, sep = None ) :
                         ]) ,
                         * [
                             NonTerminal( ol_term_with_separator(), [
-                                separator,
+                                # separator,
+                                (sep_space if term.rule_name == 'operand'
+                                 else separator) ,
                                 NonTerminal( ol_term(), [
                                     NonTerminal( option(), [
+                                        # FIXME:  Why only 'option', what about
+                                        # when term is an operand ?
                                         term
                                     ]) ,
                                 ]) ,
@@ -257,7 +247,7 @@ def option_line_generate ( spec, sep=', ', indent='  ', offset=16 ) :
     gap = '  ' if len(help_) > 0 else ''
     # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
     # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
-    text = f"{indent}{optlist_string:<{offset}}{gap}{help_}\n" 
+    text = f"{indent}{optlist_string:<{offset}}{gap}{help_}\n"
     # print(f"opt-list :  '{text_[:-1]}'")
     expect = option_line_expect \
         ( *terms, sep=sep, indent=indent, gap=gap, help_=help_,
@@ -274,6 +264,9 @@ def option_line_expect ( *terminals, eof=False, sep=None, indent=None,
         raise ValueError("No terminals provided.  Please provide at least one.")
 
     separator = expect_separator(sep)
+    sep_space = expect_separator(' ') # required for operands
+    # print("[sep-space]")
+    # pp(sep_space)
 
     members = [
         NonTerminal( option_list(), [
@@ -284,12 +277,10 @@ def option_line_expect ( *terminals, eof=False, sep=None, indent=None,
             ]) ,
             * [
                 NonTerminal( ol_term_with_separator(), [
-                    separator,
-                    NonTerminal( ol_term(), [
-                        NonTerminal( option(), [
-                            term
-                        ]) ,
-                    ]) ,
+                    # separator,
+                    (sep_space if term.rule_name == 'operand'
+                     else separator) ,
+                    NonTerminal( ol_term(), [ term ] ),
                 ])
                 for term in terminals[1:]
             ],
@@ -327,5 +318,55 @@ def tprint(*args, **kwargs):
 tprint._file = sys.stdout # open("/dev/tty", 'w')
 # tprint._on = False
 tprint._on = True
+
+#------------------------------------------------------------------------------
+
+from dataclasses import dataclass
+
+from optlist import OptionDef, OptionListDef, create_terms_obj
+
+@dataclass
+class OptionLineDef (object):
+    options     : OptionListDef
+    help_       : str = None
+    sep         : str = None
+    indent      : str = None
+    gap         : int = None	# default gap size, minimum of two spaces
+    offset      : int = None    # default width of option-list
+
+# opt   = OptionDef
+# olst  = OptionListDef
+# ol    = OptionLineDef
+
+#------------------------------------------------------------------------------
+
+from prettyprinter import register_pretty, pretty_call
+
+@register_pretty(OptionLineDef)
+def pretty_OptionLineDef(value, ctx):
+    return pretty_call(
+        ctx,
+        OptionLineDef,
+        options=value.options,
+        help_=value.help_,
+)
+
+#------------------------------------------------------------------------------
+
+def option_line_generate_obj ( spec, sep=', ', indent='  ', offset=16 ) :
+    ( optlist_string, terms ) = create_terms_obj ( spec.options, sep = sep )
+    if spec.help_ is None :
+        spec.help_ = ''
+    if len(spec.help_) <= 0:
+        spec.gap = ''
+        offset = 0 # eliminate unexpected gap
+    else :
+        if spec.gap is None or len(spec.gap) < 2 :
+            spec.gap = '  '
+    text = f"{indent}{optlist_string:<{offset}}{spec.gap}{spec.help_}\n"
+    expect = option_line_expect \
+        ( *terms, sep=sep, indent=indent, gap=spec.gap, help_=spec.help_,
+          extra=(offset-len(optlist_string)) )
+    return ( text, expect )
 
 #------------------------------------------------------------------------------
