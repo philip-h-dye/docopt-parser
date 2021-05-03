@@ -29,12 +29,15 @@ from grammar.python.optdesc.section import *
 
 from docopt_parser import DocOptListViewVisitor
 
-from test_list import create_terms, method_name
+# from test_list import create_terms, method_name
+from optlist import create_terms, method_name
+from optline import expect_separator
 
 #------------------------------------------------------------------------------
 
 ALL = ( ' document body element grammar_elements '
         ' ogenerate expect create_expect '
+        ' expect_ol_line '
         ' tprint '
       )
 
@@ -98,97 +101,6 @@ def expect ( input, parsed, *terms, sep = ', ' ) :
 
 #------------------------------------------------------------------------------
 
-# Restricted set for now:
-#   - single space
-#   - comma ',' : optionally preceeded and/or followed by a space
-#   - bar   '|' : optionally preceeded and/or followed by a space
-
-def expect_separator(sep):
-
-    space = Terminal( StrMatch(' ', rule_name='SPACE'), 0, ' ')
-    comma = Terminal( StrMatch(',', rule_name='COMMA'), 0, ',')
-    bar = Terminal( StrMatch('|', rule_name='BAR'), 0, '|')
-
-    if sep is None :
-        return space
-
-    if not isinstance(sep, str):
-        raise ValueError(f"Unreconized expect <sep>, type {str(type(sep))}, value '{repr(sep)}'.\n"
-                         "Expected None, a string or perhaps a ParseTreeNode.")
-
-    if len(sep) <= 0:
-        # Zero isn't possible since things would run into each other and
-        # could not then necessarily be parsed.
-        return space
-
-    if len(sep) > 3:
-        raise ValueError(f"<sep> too long, at most 3 possible.  Please resolve.")
-
-    saved_sep = sep
-
-    if sep == ' ':
-        return space
-
-    #--------------------------------------------------------------------------
-
-    # Preceeding spaces
-
-    preceeded = 0
-    while sep[0] == ' ':
-        preceeded += 1
-        sep = sep[1:]
-
-    if preceeded > 1:
-        if len(sep) > 0:
-            raise ValueError(
-                f"option-list separator string '{save_sep}' improperly has separating "
-                f"character '{sep[0]}' preceeded by two spaces.  "
-                f"No two consequtive spaces permitted since such marks the end of "
-                f"the option-list and the start of the option help text")
-        else :
-            raise ValueError(
-                f"option-list separator string '{save_sep}' is all spaces.  "
-                f"No two consequtive spaces permitted since such marks the end of "
-                f"the option-list and the start of the option help text")
-
-    #--------------------------------------------------------------------------
-
-    # Trailing
-
-    followed = 0
-    while sep[-1] == ' ':
-        followed += 1
-        sep = sep[:-1]
-
-    if followed > 1:
-        raise ValueError(
-            f"option-list separator string '{save_sep}' improperly has separating "
-            f"character '{sep[0]}' followed by two spaces.  "
-            f"No two consequtive spaces permitted since such marks the end of "
-            f"the option-list and the start of the option help text")
-
-    #--------------------------------------------------------------------------
-
-    if sep[0] == ',' :
-        core = NonTerminal( ol_comma(), [ comma ] )
-    elif sep[0] == '|' :
-        core = NonTerminal( ol_bar(), [ bar ] )
-    else :
-        raise ValueError(
-            f"'{sep[0]}' is not a valid option-list separator.  Valid "
-            f"separators are COMMA ',', BAR '|' and a SPACE ' '.  "
-            f"Additionally, COMMA and BAR may be optionally preceeded/"
-            f"followed by one space on each side.")
-
-    if preceeded :
-        core.insert(0, space)
-    if followed :
-        core.append(space)
-
-    return NonTerminal( ol_separator(), [ core ] )
-
-#------------------------------------------------------------------------------
-
 def create_expect ( *terminals, eof=False, sep = None ) :
 
     if len(terminals) <= 0 :
@@ -234,53 +146,24 @@ def create_expect ( *terminals, eof=False, sep = None ) :
 
 #------------------------------------------------------------------------------
 
-def expect_ol_line ( *terminals, eof=False, sep=None, indent=None,
-                     gap=None, help_=None, extra=0) :
+from optline import option_line_generate
+from optline import option_line_generate as expect_ol_line
 
-    if len(terminals) <= 0 :
-        raise ValueError("No terminals provided.  Please provide at least one.")
+def section_optdesc ( line_specs, sep=', ', intro=None, indent='  ',
+                      offset=16 ) :
+    text = ''
 
-    separator = expect_separator(sep)
+    opt_desc = NonTerminal( option_description_section(),
+                            [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
+    del opt_desc[0]
 
-    members = [
-        NonTerminal( option_list(), [
-            NonTerminal( ol_first_option(), [
-                NonTerminal( option(), [
-                    terminals[0],
-                ]) ,
-            ]) ,
-            * [
-                NonTerminal( ol_term_with_separator(), [
-                    separator,
-                    NonTerminal( ol_term(), [
-                        NonTerminal( option(), [
-                            term
-                        ]) ,
-                    ]) ,
-                ])
-                for term in terminals[1:]
-            ],
-        ]),
-        Terminal(newline(), 0, '\n'),
-    ]
+    for spec in line_specs :
+        ( text_, expect_ ) = option_line_generate \
+            ( spec, sep=sep, indent=indent, offset=offset )
+        text += text_
+        opt_desc.append ( expect_ )
 
-    if indent and len(indent) > 0:
-        members.insert(0, Terminal(StrMatch(' ',rule_name='wx'), 0, indent) )
-
-    if help_ and len(help_) > 0:
-        if extra < 0:
-            extra = 0
-        print(f": extra = {extra}")
-        gap += ' ' * extra
-        members.insert( -1, Terminal(StrMatch(gap, rule_name='option_line_gap'), 0, gap))
-        members.insert( -1, Terminal(StrMatch('.', rule_name='option_line_help'), 0, help_))
-
-    expect = NonTerminal( option_line(), [ *members ])
-
-    if eof :
-        expect.append( Terminal(EOF(), 0, '') )
-
-    return expect
+    return ( text, opt_desc )
 
 #------------------------------------------------------------------------------
 
@@ -297,6 +180,43 @@ def expect_document ( sections ) :
     ])
 
     return expect
+
+#------------------------------------------------------------------------------
+
+from typing import List
+from dataclasses import dataclass, field
+
+from optlist import OptionDef, OptionListDef
+from optline import OptionLineDef
+
+@dataclass
+class OptionDescDef (object):
+    lines   : List[OptionLineDef] = field(default_factory=list)
+    sep     : str = ', '
+    indent  : str = '  '
+    offset  : int = 16
+    intro   : str = None
+
+# opt   = OptionDef
+# olst  = OptionListDef
+# ol    = OptionLineDef
+# od    = OptionDescDef
+
+#------------------------------------------------------------------------------
+
+def section_optdesc_obj ( opt_desc_def ):
+    text = ''
+
+    opt_desc = NonTerminal( option_description_section(),
+                            [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
+    del opt_desc[0]
+
+    for spec in opt_desc_def.lines :
+        ( text_, expect_ ) = ol_line_generate ( spec )
+        text += text_
+        opt_desc.append ( expect_ )
+
+    return ( text, opt_desc )
 
 #------------------------------------------------------------------------------
 
