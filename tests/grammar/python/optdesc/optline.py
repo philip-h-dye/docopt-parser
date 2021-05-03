@@ -40,6 +40,23 @@ ALL = ( ' document body element grammar_elements '
 
 #------------------------------------------------------------------------------
 
+from dataclasses import dataclass
+
+from optlist import OptionDef, OptionListDef
+
+@dataclass
+class OptionLineDef (object):
+    options : OptionListDef
+    help_ : str
+    # ? indent
+    # ? continuation ?
+
+# opt   = OptionDef
+# olst  = OptionListDef
+# ol    = OptionLineDef
+
+#------------------------------------------------------------------------------
+
 grammar_elements = [ option_line, ws, newline ]
 
 def element():
@@ -64,7 +81,7 @@ def ogenerate ( cls, optdefs, sep= ', ') :
             parsed = self.parser.parse(input)
             # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
             # tprint("[parsed]") ; pp(parsed)
-            # tprint(f"\ninput = '{input}'\n")            
+            # tprint(f"\ninput = '{input}'\n")
             expect ( input, parsed, *terms, sep=sep )
 
         return the_test_method
@@ -96,7 +113,7 @@ def expect_separator(sep):
     space = NonTerminal( ol_space(), [ Terminal( StrMatch(' ', rule_name=''), 0, ' ') ] )
     comma = NonTerminal( ol_comma(), [ Terminal( StrMatch(',', rule_name=''), 0, ',') ] )
     bar   = NonTerminal( ol_bar(),   [ Terminal( StrMatch('|', rule_name=''), 0, '|') ] )
-        
+
     if sep is None :
         return NonTerminal( ol_separator(), [ space ] )
 
@@ -227,6 +244,74 @@ def create_expect ( *terminals, eof=False, sep = None ) :
 
     if eof :
         expect[0][0][0].append(expect[-1])
+
+    return expect
+
+#------------------------------------------------------------------------------
+
+def option_line_generate ( spec, sep=', ', indent='  ', offset=16 ) :
+    ( optlist_string, terms ) = create_terms( spec[0], sep = sep )
+    help_ = spec[1]
+    if help_ is None :
+        help_ = ''
+    gap = '  ' if len(help_) > 0 else ''
+    # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
+    # text += f"{indent}{optlist_string:<{offset}}  {help_}\n"
+    text = f"{indent}{optlist_string:<{offset}}{gap}{help_}\n" 
+    # print(f"opt-list :  '{text_[:-1]}'")
+    expect = option_line_expect \
+        ( *terms, sep=sep, indent=indent, gap=gap, help_=help_,
+          extra=(offset-len(optlist_string)) )
+
+    return ( text, expect )
+
+#------------------------------------------------------------------------------
+
+def option_line_expect ( *terminals, eof=False, sep=None, indent=None,
+                           gap=None, help_=None, extra=0 ) :
+
+    if len(terminals) <= 0 :
+        raise ValueError("No terminals provided.  Please provide at least one.")
+
+    separator = expect_separator(sep)
+
+    members = [
+        NonTerminal( option_list(), [
+            NonTerminal( ol_first_option(), [
+                NonTerminal( option(), [
+                    terminals[0],
+                ]) ,
+            ]) ,
+            * [
+                NonTerminal( ol_term_with_separator(), [
+                    separator,
+                    NonTerminal( ol_term(), [
+                        NonTerminal( option(), [
+                            term
+                        ]) ,
+                    ]) ,
+                ])
+                for term in terminals[1:]
+            ],
+        ]),
+        Terminal(newline(), 0, '\n'),
+    ]
+
+    if indent and len(indent) > 0:
+        members.insert(0, Terminal(StrMatch(' ',rule_name='wx'), 0, indent) )
+
+    if help_ and len(help_) > 0:
+        if extra < 0:
+            extra = 0
+        # print(f": extra = {extra}")
+        gap += ' ' * extra
+        members.insert( -1, Terminal(StrMatch(gap, rule_name='option_line_gap'), 0, gap))
+        members.insert( -1, Terminal(StrMatch('.', rule_name='option_line_help'), 0, help_))
+
+    expect = NonTerminal( option_line(), [ *members ])
+
+    if eof :
+        expect.append( Terminal(EOF(), 0, '') )
 
     return expect
 
