@@ -19,7 +19,7 @@ from arpeggio import And, Not, RegExMatch as _
 
 # from docopt_parser.boundedre import RegExMatchBounded
 
-from ..common import COMMA, BAR, SPACE, wx, newline
+from ..common import wx, newline, space
 # from ..operand import operand
 # from ..option import option
 from .list import option_list
@@ -41,14 +41,14 @@ def option_line_gap():
 #------------------------------------------------------------------------------
 
 def option_help():
-    return Sequence ( ( Not(SPACE), any_until_eol, ), rule_name='option_help')
+    return Sequence ( ( Not(space), any_until_eol, ), rule_name='option_help')
 
 #------------------------------------------------------------------------------
 
 def option_line():
 
     # It should not be necessary to incorporate EOF so often.
-    # arpeggio.NoMatch: Expected COMMA or BAR or SPACE or '  ' or
+    # arpeggio.NoMatch: Expected comma or bar or space or '  ' or
     #   newline at position (1, 6) => '-f -x*'.
 
     return Sequence( ( wx, option_list ,

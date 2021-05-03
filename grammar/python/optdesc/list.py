@@ -20,7 +20,7 @@ from arpeggio import RegExMatch as _
 
 from docopt_parser.boundedre import RegExMatchBounded
 
-from ..common import COMMA, BAR, SPACE, wx
+from ..common import comma, bar, space, wx
 from ..operand import operand
 from ..option import option
 
@@ -40,26 +40,26 @@ def MyOrderedChoice(*args, **kwargs):
 # option-description section determining pattern
 # - it can't simply be folded into ol_term since a line starting
 #   with an option is the determinant.
-# - Optional(BAR) supports option-list continuation
+# - Optional(bar) supports option-list continuation
 def ol_first_option():
     # semantic analysis :
     #   - disallow short_stacked
     #   - is this a continuation of the prior option-list ?
-    #   - disallow BAR without a prior option-line
-    return Sequence ( ( Optional(BAR), wx, option ),
+    #   - disallow bar without a prior option-line
+    return Sequence ( ( Optional(bar), wx, option ),
                       rule_name='ol_first_option', skipws=False )
 
 # Quite strictly a single space
 def ol_space():
-    return Sequence ( SPACE, Not(SPACE),
+    return Sequence ( space, Not(space),
                       rule_name='ol_space', skipws=False )
 
 def ol_comma():
-    return Sequence ( Optional(SPACE), COMMA, Optional(SPACE),
+    return Sequence ( Optional(space), comma, Optional(space),
                       rule_name='ol_comma', skipws=False )
 
 def ol_bar():
-    return Sequence ( Optional(SPACE), BAR, Optional(SPACE),
+    return Sequence ( Optional(space), bar, Optional(space),
                       rule_name='ol_bar', skipws=False )
 
 def ol_separator():
@@ -78,9 +78,9 @@ def ol_term_with_separator():
 
 def option_list():
     # semantic analysis :
-    #   - validate that series of option, operand, BAR, COMMA and ol_space
+    #   - validate that series of option, operand, ol_bar, ol_comma and ol_space
     #     form a meaninful comma/bar/space option-list
-    #   - disallow BAR without a prior option-line
+    #   - disallow bar without a prior option-line
     return Sequence( ( ol_first_option, ZeroOrMore(ol_term_with_separator) ),
                      # , Optional(EOF) ),
                      rule_name='option_list', skipws=False )

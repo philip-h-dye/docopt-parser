@@ -29,7 +29,7 @@ from arpeggio import RegExMatch as _
 
 from docopt_parser.boundedre import RegExMatchBounded
 
-from .common import EQ, ws # , wx
+from .common import eq, ws
 from .operand import operand
 
 ALL = ( ' long_eq_arg long_no_arg '
@@ -57,7 +57,7 @@ def long_no_arg():
 # FIXME: There are probably numerous other variations to consider.
 #
 # Possible drawbacks with PEG is partial match might preclude backtracking ?
-# return Sequence ( ( long_no_arg, EQ, operand ),
+# return Sequence ( ( long_no_arg, eq, operand ),
 #                   rule_name='long_eq_arg', skipws=False )
 #
 # FIXME:  Create composite from to_match attributes of
@@ -67,7 +67,7 @@ def long_eq_arg():
     """long argument, equal sign and operand without whitespace :
          '--file=foobar.txt'
     """
-    return Sequence ( ( long_no_arg, EQ, operand ),
+    return Sequence ( ( long_no_arg, eq, operand ),
                       rule_name='long_eq_arg', skipws=False )
 
 #------------------------------------------------------------------------------

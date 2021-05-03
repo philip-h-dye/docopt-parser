@@ -19,7 +19,7 @@ from arpeggio import RegExMatch as _, OneOrMore
 
 # from docopt_parser.boundedre import RegExMatchBounded
 
-from ..common import COMMA, BAR, SPACE, wx, newline, blank_line
+from ..common import wx, newline, blank_line
 # from ..operand import operand
 # from ..option import option
 # from .list import option_list
