@@ -1,6 +1,6 @@
 import sys
 
-from arpeggio import RegExMatch as _
+from arpeggio import RegExMatch as _ , StrMatch
 
 #------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ CHARACTER_NAME_TO_CHAR = {
 def create_character_rule(method_name, ch_name):
     code = f"""
 def {method_name} ():
-    return {ch_name}
+    return StrMatch({ch_name}, rule_name='{method_name}')
 """
     exec(code, globals())
 
