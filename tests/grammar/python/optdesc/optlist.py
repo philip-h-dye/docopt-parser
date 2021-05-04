@@ -366,11 +366,8 @@ def method_name ( initial_input ):
 from dataclasses import dataclass
 from typing import List
 
-# @dataclass
-# class operand_def (str):
-#     value : str
-#     # ? style
-# opr = operand_def
+class OperandDef (str):
+    style : object
 
 @dataclass
 class OptionDef (object):
@@ -380,7 +377,7 @@ class OptionDef (object):
 
 # opt = OptionDef
 
-# OptionList = list[OptionDef]  # 3.9
+# OptionListDef = list[OptionDef]  # 3.9
 
 # olst = OptionListDef
 
@@ -483,5 +480,83 @@ def create_terms_obj ( optdefs, sep = ' ' ):
                 f"              opt( '--quit' ), )\n" )
 
     return ( sep.join(text), terms )
+
+#------------------------------------------------------------------------------
+
+# Option List Variations
+# ----------------------
+#   term sep   :  None / '' / ' ' / ' ?, ?' / ' ?| ?'  # all variations
+#   n options  :  1 .. 4
+#   option     :  long        / short
+#     arg gap  :  eq | space  / adj | space
+#         type :  all-caps    / angled        [ / command ]
+
+# Option List Errors
+# ------------------
+#   n options  :  0
+#   term sep   :  ?
+#   option     :
+#     arg gap  :  missing ?
+#         type :  neither all-caps nor angled [ nor command ]
+
+#------------------------------------------------------------------------------
+
+import itertools
+
+def optlst_variations ( word ):
+
+    options = [ ]
+
+    short = f"-{word[0]}"
+    options.append( (short, ) )
+    for arg in ( word.upper(), f"<{word}>" ) :
+        for gap in ( '', ' ' ) :
+            options.append( (short, gap, arg) )
+
+    long = f"--{word}"
+    options.append( (long, ) ) 
+    for arg in ( word.upper(), f"<{word}>" ) :
+        for gap in '= ':
+            options.append( (long, gap, arg) )
+
+    for n in range(1, min(3,len(options)+1)) :
+        for result in itertools.permutations(options, n):
+            yield result
+
+#------------------------------------------------------------------------------
+
+def generate_tests_varying_sep ( cls, _generate, optlst ) :
+
+    # sep default
+    _generate ( cls, optlst )
+
+    # FIXME: Too finicky, change user supplied NONE or '' to DEFAULT
+    #
+    # sep=None, crashs in optlist, line 121 :
+    #   return ( sep.join(input), terms )
+    # => AttributeError: 'NoneType' object has no attribute 'join'
+    #
+    # sep='' :
+    # => arpeggio.NoMatch: Expected operand_angled or operand_all_caps or space
+    #    or comma or bar or long_no_arg or short_adj_arg__option or short_stacked
+    #    or short_no_arg or ws or newline or EOF at position (1, 3) => '-h*--help'.
+
+    for sep in [ ' ' ] :
+        _generate ( cls, optlst, sep=sep )
+
+    for ch in [ ',', '|' ] :
+        for before in [ '', ' ' ] :
+            for after in [ '', ' ' ] :
+                sep = before + ch + after
+                _generate ( cls, optlst, sep=sep )
+
+#------------------------------------------------------------------------------
+
+def generate_test_variations ( cls, _generate, words ) :
+
+    generate_tests_varying_sep ( cls, _generate, ( ( '-h', ), ( '--help', ) ) )
+
+    for optlst in optlst_variations( *words ) :
+        generate_tests_varying_sep ( cls, _generate, optlst )
 
 #------------------------------------------------------------------------------

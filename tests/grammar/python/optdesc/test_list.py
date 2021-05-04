@@ -30,6 +30,7 @@ from grammar.python.optdesc.list import ol_term_with_separator, ol_separator
 from docopt_parser import DocOptListViewVisitor
 
 from optlist import document, create_terms, create_expect, method_name
+from optlist import generate_test_variations
 
 #------------------------------------------------------------------------------
 
@@ -201,7 +202,7 @@ def ol_generate ( cls, optdefs, sep =', ', expect_fail=False ) :
 
 #------------------------------------------------------------------------------
 
-def _generate ( optdef, *args, **kwargs ):
+def tol_generate ( optdef, *args, **kwargs ):
     ol_generate ( Test_Option_List, optdef, *args, **kwargs )
 
 #------------------------------------------------------------------------------
@@ -214,44 +215,44 @@ if True :
 
     # boundry condition, the first option is handled separately from succeeding terms
     # and it is an ol_first_option, not an ol_term
-    _generate ( ( ( '-f', ), ) )
+    tol_generate ( ( ( '-f', ), ) )
 
     # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
     # the first possible position for a option-argument
-    _generate ( ( ( '-f', ) ,
+    tol_generate ( ( ( '-f', ) ,
                   ( '-x', ) ,
                 ) )
 
     # one past boundry condition, first term on on a boundry
-    _generate ( ( ( '-f', ) ,
+    tol_generate ( ( ( '-f', ) ,
                   ( '-x', ) ,
                   ( '-l', ) ,
                 ) )
 
-    _generate ( ( ( '--file', ) ,
+    tol_generate ( ( ( '--file', ) ,
                 ) )
 
-    _generate ( ( ( '--file', ) ,
+    tol_generate ( ( ( '--file', ) ,
                   ( '--example', ) ,
                 ) )
-    _generate ( ( ( '--file', ) ,
+    tol_generate ( ( ( '--file', ) ,
                   ( '--example', ) ,
                   ( '--list', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', '<file>', ) ,
+    tol_generate ( ( ( '--file', '=', '<file>', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', '<file>', ) ,
+    tol_generate ( ( ( '--file', '=', '<file>', ) ,
                   ( '--example', '=', '<example>', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', '<file>', ) ,
+    tol_generate ( ( ( '--file', '=', '<file>', ) ,
                   ( '--example', '=', '<example>', ) ,
                   ( '--list', '=', '<list>', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', '<FILE>', ) ,
+    tol_generate ( ( ( '--file', '=', '<FILE>', ) ,
                   ( '-x', ) ,
                   ( '--example', '=', '<EXAMPLE>', ) ,
                   ( '-y', ) ,
@@ -259,16 +260,16 @@ if True :
                   ( '-q', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', 'FILE', ) ,
+    tol_generate ( ( ( '--file', '=', 'FILE', ) ,
                   ( '-x', ) ,
                 ) )
 
-    _generate ( ( ( '--file', '=', 'NORM' ) ,
+    tol_generate ( ( ( '--file', '=', 'NORM' ) ,
                   ( '--file', ' ', 'NORM' ) ,
                   ( '--file', ) ,
                 ) )
 
-    _generate ( ( ( '-f', '', 'NORM' ) ,
+    tol_generate ( ( ( '-f', '', 'NORM' ) ,
                   ( '-f', ' ', 'NORM' ) ,
                   ( '-f', ) ,
                 ) )
@@ -279,92 +280,20 @@ if False :
 
     # *** 'command' not yet implemented -- Not Supported during generate
 
-    _generate ( ( ( '--file', '=', 'FOObar', ) ,
+    tol_generate ( ( ( '--file', '=', 'FOObar', ) ,
                   ( '-x', ) ,
                 ) ,
                 expect_fail=True )
 
-    _generate ( ( ( '--file', '=', 'a|b|c', ) ,
+    tol_generate ( ( ( '--file', '=', 'a|b|c', ) ,
                   ( '-x', ) ,
                 ) ,
                 expect_fail=True )
 
 #------------------------------------------------------------------------------
 
-# Option List Variations
-# ----------------------
-#   term sep   :  None / '' / ' ' / ' ?, ?' / ' ?| ?'  # all variations
-#   n options  :  1 .. 4
-#   option     :  long        / short
-#     arg gap  :  eq | space  / adj | space
-#         type :  all-caps    / angled        [ / command ]
-
-# Option List Errors
-# ------------------
-#   n options  :  0
-#   term sep   :  ?
-#   option     :
-#     arg gap  :  missing ?
-#         type :  neither all-caps nor angled [ nor command ]
-
-#------------------------------------------------------------------------------
-
-import itertools
-
-def option_variations ( word ):
-
-    options = [ ]
-
-    short = f"-{word[0]}"
-    options.append( (short, ) )
-    for arg in ( word.upper(), f"<{word}>" ) :
-        for gap in ( '', ' ' ) :
-            options.append( (short, gap, arg) )
-
-    long = f"--{word}"
-    options.append( (long, ) ) 
-    for arg in ( word.upper(), f"<{word}>" ) :
-        for gap in '= ':
-            options.append( (long, gap, arg) )
-
-    for n in range(1, min(4,len(options)+1)) :
-        for result in itertools.permutations(options, n):
-            yield result
-
-#------------------------------------------------------------------------------
-
-def generate_sep_variations(optdef):
-
-    # sep default
-    ol_generate ( Test_Option_List, optdef )
-    #
-    # FIXME: Too finicky, change user supplied NONE or '' to DEFAULT
-    #
-    # sep=None, crashs in optlist, line 121 :
-    #   return ( sep.join(input), terms )
-    # => AttributeError: 'NoneType' object has no attribute 'join'
-    #
-    # sep='' :
-    # => arpeggio.NoMatch: Expected operand_angled or operand_all_caps or space
-    #    or comma or bar or long_no_arg or short_adj_arg__option or short_stacked
-    #    or short_no_arg or ws or newline or EOF at position (1, 3) => '-h*--help'.
-    #
-    for sep in [ ' ' ] :
-        ol_generate ( Test_Option_List, optdef, sep=sep)
-    for ch in [ ',', '|' ] :
-        for before in [ '', ' ' ] :
-            for after in [ '', ' ' ] :
-                sep = before + ch + after
-                ol_generate ( Test_Option_List, optdef, sep=sep)
-
-#------------------------------------------------------------------------------
-
-if True :
-
-    generate_sep_variations( ( ( '-h', ), ( '--help', ) ) )
-
-    for optdef in option_variations( 'file' ) :
-        generate_sep_variations(optdef)
+# exhaustive permutations of option-list
+generate_test_variations ( Test_Option_List, ol_generate, words=['file'] )
 
 #------------------------------------------------------------------------------
 
