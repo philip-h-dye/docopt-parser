@@ -30,7 +30,7 @@ from grammar.python.optdesc.list import ol_term_with_separator, ol_separator
 from docopt_parser import DocOptListViewVisitor
 
 from optlist import document, create_terms, create_expect, method_name
-from optlist import generate_test_variations
+from optlist import generate_tests__all_permutations_of_optlst_and_sep
 
 #------------------------------------------------------------------------------
 
@@ -292,8 +292,8 @@ if False :
 
 #------------------------------------------------------------------------------
 
-# exhaustive permutations of option-list
-generate_test_variations ( Test_Option_List, ol_generate, words=['file'] )
+generate_tests__all_permutations_of_optlst_and_sep \
+    ( Test_Option_List, ol_generate, words=['file'] )
 
 #------------------------------------------------------------------------------
 

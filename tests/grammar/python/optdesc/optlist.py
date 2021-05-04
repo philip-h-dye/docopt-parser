@@ -503,7 +503,7 @@ def create_terms_obj ( optdefs, sep = ' ' ):
 
 import itertools
 
-def optlst_variations ( word, n_opt_max=3 ):
+def optlst_permutations ( word, n_opt_max=3 ):
 
     options = [ ]
 
@@ -525,7 +525,7 @@ def optlst_variations ( word, n_opt_max=3 ):
 
 #------------------------------------------------------------------------------
 
-def generate_tests_varying_sep ( cls, _generate, optlst ) :
+def generate_tests_on_optlst_varying_sep ( cls, _generate, optlst ) :
 
     # sep default
     _generate ( cls, optlst )
@@ -552,11 +552,11 @@ def generate_tests_varying_sep ( cls, _generate, optlst ) :
 
 #------------------------------------------------------------------------------
 
-def generate_test_variations ( cls, _generate, words, n_opt_max=3 ) :
+def generate_tests__all_permutations_of_optlst_and_sep ( cls, _generate, words, n_opt_max=3 ) :
 
-    generate_tests_varying_sep ( cls, _generate, ( ( '-h', ), ( '--help', ) ) )
+    generate_tests_on_optlst_varying_sep ( cls, _generate, ( ( '-h', ), ( '--help', ) ) )
 
-    for optlst in optlst_variations ( *words, n_opt_max=n_opt_max ) :
-        generate_tests_varying_sep ( cls, _generate, optlst )
+    for optlst in optlst_permutations ( *words, n_opt_max=n_opt_max ) :
+        generate_tests_on_optlst_varying_sep ( cls, _generate, optlst )
 
 #------------------------------------------------------------------------------
