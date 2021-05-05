@@ -41,21 +41,23 @@ def expression():
 def repeatable():
     return Sequence( ( term, Optional(repeating) ),
                      rule_name="repeatable", skipws=True )
+
 REPEATING = '...'
 def repeating():
     return StrMatch ( REPEATING,
-                     rule_name="repeating", skipws=True )
+                      rule_name="repeating", skipws=True )
 def term():
+    # EOF causes hang in optional/required
     return OrderedChoice( [ options_shortcut, optional, required, argument ],
                      rule_name="term", skipws=True )
 def optional():
     return Sequence ( ( l_bracket, choice, r_bracket, ) ,
                      rule_name="optional", skipws=True )
-
 def required():
     return Sequence ( ( l_paren, choice, r_paren, ) ,
                      rule_name="required", skipws=True )
-def argument():
+def argument(): 
+    # EOF causes hang in optional/required
     return Sequence( ( wx, OrderedChoice( [ option, operand, command ] ) ),
                      rule_name="argument", skipws=True )
 
@@ -70,8 +72,8 @@ def usage_pattern():
                             command ],
                           rule_name="usage_pattern", skipws=True)
 
-# usage_pattern = OR? program choice?
 def usage_pattern():
+    # usage_pattern = OR? program choice?
     return Sequence( Optional('OR'), program, Optional(choice) )
 
 # usage_line = usage_pattern newline / usage_pattern EOF
