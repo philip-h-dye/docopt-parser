@@ -1,6 +1,6 @@
 import sys
 
-from arpeggio import RegExMatch as _ , StrMatch
+from arpeggio import EOF, RegExMatch as _ , StrMatch, Terminal
 
 #------------------------------------------------------------------------------
 
@@ -39,6 +39,9 @@ def {method_name} ():
 
 def {method_name}_m ():
     return StrMatch({ch_name}, rule_name='{method_name}')
+
+t_{method_name} = Terminal({method_name}_m(), 0, {ch_name})
+
 """
     exec(code, globals())
 
@@ -99,5 +102,9 @@ BLANK_LINE_REGEX = r'(?<=\n)' + NEWLINE_REGEX
 def blank_line():
     """Two newlines with optional whitespace in between"""
     return _(BLANK_LINE_REGEX, rule_name='blank_line', skipws=False)
+
+#------------------------------------------------------------------------------
+
+t_eof = Terminal(EOF(), 0, '')
 
 #------------------------------------------------------------------------------
