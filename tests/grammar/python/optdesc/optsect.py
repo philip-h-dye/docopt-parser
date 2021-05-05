@@ -30,8 +30,8 @@ from grammar.python.optdesc.section import *
 from docopt_parser import DocOptListViewVisitor
 
 # from test_list import create_terms, method_name
-from optlist import create_terms, method_name
-from optline import expect_separator
+from .optlist import create_terms, method_name
+from .optline import expect_separator
 
 #------------------------------------------------------------------------------
 
@@ -89,63 +89,14 @@ def ogenerate ( cls, optdefs, sep= ', ') :
 
 #------------------------------------------------------------------------------
 
-def expect ( input, parsed, *terms, sep = ', ' ) :
-
-    # tprint("[parsed]") ; pp(parsed)
-
-    expect = create_expect ( *terms, eof = ( input[-1] != '\n' ), sep=sep )
-
-    assert parsed == expect, ( f"input = '{input}' :\n"
-                               f"[expect]\n{pp_str(expect)}\n"
-                               f"[parsed]\n{pp_str(parsed)}" )
-
-#------------------------------------------------------------------------------
-
-def create_expect ( *terminals, eof=False, sep = None ) :
-
-    if len(terminals) <= 0 :
-        raise ValueError("No terminals provided.  Please provide at least one.")
-
-    separator = expect_separator(sep)
-    sep_space = expect_separator(' ') # required for operands
-
-    expect = NonTerminal( document(), [
-        NonTerminal( body(), [
-            NonTerminal( element(), [
-                NonTerminal( option_description_section(), [
-                    NonTerminal( option_line(), [
-                        NonTerminal( option_list(), [
-                            NonTerminal( ol_first_option(), [ terminals[0], ]) ,
-                            * [
-                                NonTerminal( ol_term_with_separator(), [
-                                    (sep_space if term.rule_name == 'operand'
-                                     else separator) ,
-                                    NonTerminal( ol_term(), [ term ]),
-                                ])
-                                for term in terminals[1:]
-                            ],
-                        ]) ,
-                        # Terminal(EOF(), 0, '') , # only if specified via 'eof'
-                    ]) ,
-                ]) ,
-            ]) ,
-        ]) ,
-        Terminal(EOF(), 0, '') ,
-    ])
-
-    if eof :
-        expect[0][0][0].append(expect[-1])
-
-    return expect
-
-#------------------------------------------------------------------------------
-
-from optline import option_line_generate
-from optline import option_line_generate as expect_ol_line
+from .optline import option_line_generate
+from .optline import option_line_generate as expect_ol_line
 
 def section_optdesc ( line_specs, sep=', ', intro=None, indent='  ',
                       offset=16 ) :
     text = ''
+    if intro :
+        text = intro + ( '' if intro[-1] == '\n' else '\n' )
 
     opt_desc = NonTerminal( option_description_section(),
                             [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
@@ -194,8 +145,8 @@ tprint._on = True
 # from typing import List
 from dataclasses import dataclass, field
 
-from optlist import OptionDef, OptionListDef
-from optline import OptionLineDef
+from .optlist import OptionDef, OptionListDef
+from .optline import OptionLineDef
 
 # @dataclass
 # class OptionDescDef (list):
@@ -260,15 +211,18 @@ def pretty_OptionDescDef(value, ctx):
 
 #------------------------------------------------------------------------------
 
-from optline import option_line_generate_obj
+from .optline import option_line_generate_obj
 
 def section_optdesc_obj ( optspecs ):
-
-    text = ''
 
     opt_desc = NonTerminal( option_description_section(),
                             [ Terminal(StrMatch('.'), 0, 'place-holder') ] )
     del opt_desc[0]
+
+    ( text, intro_expect ) = section_intro ( optspecs.intro )
+
+    if intro_expect :
+        opt_desc.append(intro_expect)
 
     os = optspecs
     for spec in optspecs :
@@ -280,5 +234,21 @@ def section_optdesc_obj ( optspecs ):
         opt_desc.append ( expect_ )
 
     return ( text, opt_desc )
+
+#------------------------------------------------------------------------------
+
+def section_intro ( intro ):
+
+    if not intro :
+        return ( '', None )
+
+    if intro[-1] != '\n' :
+        intro += '\n'
+
+    parser = ParserPython ( option_description_intro )
+
+    expect = parser.parse(intro)
+
+    return ( intro, expect )
 
 #------------------------------------------------------------------------------
