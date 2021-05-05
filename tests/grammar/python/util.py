@@ -2,7 +2,7 @@ import sys
 import os
 import unicodedata
 
-from glob import glob
+from glob import iglob
 from pathlib import Path
 
 from prettyprinter import cpprint as pp, pprint as pp_plain
@@ -39,15 +39,28 @@ def remove_punctuation(text):
 
 def write_scratch ( **kwargs ) :
 
+    scratch = Path('scratch')
+    if not ( scratch.exists() and scratch.is_dir() ) :
+        scratch.mkdir(exist_ok=True)
+
+    color = Path('scratch', 'c')
+    if not ( color.exists() and color.is_dir() ) :
+        color.mkdir(exist_ok=True)
+
     if '_clean' in kwargs :
         if kwargs['_clean'] is True:
-            for file in glob("scratch/*"):
+            for file in iglob( str( scratch / '*' ) ):
+                if not Path(file).is_dir():
+                    os.unlink(file)
+            for file in iglob( str( color / '*' ) ):
                 if not Path(file).is_dir():
                     os.unlink(file)
         del kwargs['_clean']
 
     for name in kwargs :
-        with open ( f"scratch/{name}", 'w' ) as f :
+        with open ( scratch / name , 'w' ) as f :
             pp_plain( kwargs[name] , stream=f )
+        with open ( color / name , 'w' ) as f :
+            pp( kwargs[name] , stream=f )
 
 #------------------------------------------------------------------------------
