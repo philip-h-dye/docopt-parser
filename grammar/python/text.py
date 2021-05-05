@@ -5,7 +5,7 @@ from .common import wx
 from grammar.python.common import newline, whitespace, ws, wx
 
 def string_no_whitespace():
-    return _(r'[^\s\n.]+', rule_name="string_no_whitespace", skipws=False )
+    return _(r'[^\s\n.\[\]\(\)|]+', rule_name="string_no_whitespace", skipws=False )
 
 def word():
     return _(string_no_whitespace().to_match, rule_name="word", skipws=False )
