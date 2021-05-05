@@ -15,7 +15,7 @@
 #-----------------------------------------------------------------------------
 
 from arpeggio import EOF, Sequence, OrderedChoice, Optional, StrMatch
-from arpeggio import RegExMatch as _, OneOrMore
+from arpeggio import RegExMatch as _, OneOrMore, Not
 
 # from docopt_parser.boundedre import RegExMatchBounded
 
@@ -23,6 +23,7 @@ from ..common import wx, newline, blank_line
 # from ..operand import operand
 # from ..option import option
 # from .list import option_list
+# from ..text import line as text_line
 from .line import option_line
 
 #------------------------------------------------------------------------------
@@ -35,15 +36,25 @@ ALL = ( ' option_description_section '
 #------------------------------------------------------------------------------
 
 def option_line_start():
-    return Sequence( ( wx, option ),
-                     rule_name='option_line_start', skipws=False )
-                     
+    # return Sequence( ( wx, option ),
+    return _( r'\s*[-]' ,
+              rule_name='option_line_start', skipws=False )
+
+def any_until_end_of_line_0():
+    return Sequence ( ( _( r'.*$' ), newline ) ,
+              rule_name='any_until_end_of_line', skipws=False )
+
+def any_until_end_of_line():
+    return _( r'.*$\n' ,
+              rule_name='any_until_end_of_line', skipws=False )
+
 def option_description_intro():
-    return Sequence ( ( Not(option_line_start), wx, text_line ),
+    # return OneOrMore ( Sequence ( ( Not(option_line_start), wx, text_line ) ),
+    return OneOrMore ( Sequence ( ( Not(option_line_start), wx, any_until_end_of_line ) ),
                       rule_name='option_description_intro', skipws=False )
 
 def option_description_section():
-    return Sequence( ( # Optional(option_description_intro),
+    return Sequence( ( Optional(option_description_intro),
                        OneOrMore(option_line),
                        # [ EOF, blank_line ],
                      ),
