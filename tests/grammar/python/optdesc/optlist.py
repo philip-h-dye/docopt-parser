@@ -437,15 +437,24 @@ def pretty_OptionListDef(value, ctx):
 
 #------------------------------------------------------------------------------
 
-def create_terms_obj ( optdefs, sep = ' ' ):
+def create_terms_obj ( optlst, sep = ' ' ):
 
     # print(f"\n: sep = '{sep}'\n")
-    # print(f"\n[ optdefs ]\n") ; pp(optdefs) ; print('')
 
-    text = [ ]
+    ( texts, terms ) = create_termx_obj ( optlst )
+
+    return ( sep.join(texts), terms )
+
+#------------------------------------------------------------------------------
+
+def create_termx_obj ( optlst ):
+
+    # print(f"\n[ optlst ]\n") ; pp(optlst) ; print('')
+
+    texts = [ ]
     terms = [ ]
 
-    for o in optdefs :
+    for o in optlst :
         # ( opt, gap, operand, *extra ) = ( *optdef, None, None )
         if o.operand is None:
             o.operand = ''
@@ -453,27 +462,33 @@ def create_terms_obj ( optdefs, sep = ' ' ):
         elif o.gap is None:
             o.gap = ''
 
-        text.append(o.opt + o.gap + o.operand)
-
         if re_short.fullmatch(o.opt):
             if o.operand:
                 if o.gap == '':
                     terms.append ( term__short_adj_arg(o.opt, o.operand) )
+                    texts.append ( o.opt + o.gap + o.operand )
                 else :
                     terms.append ( term__short_no_arg(o.opt) )
                     terms.append ( term__operand(o.operand) )
+                    texts.append ( o.opt )
+                    texts.append ( o.operand )
             else :
                     terms.append ( term__short_no_arg(o.opt) )
+                    texts.append ( o.opt )
 
         elif re_long.fullmatch(o.opt):
             if o.operand:
                 if o.gap == '=':
                     terms.append ( term__long_eq_arg(o.opt, o.operand) )
+                    texts.append ( o.opt + o.gap + o.operand )
                 else :
                     terms.append ( term__long_no_arg(o.opt) )
                     terms.append ( term__operand(o.operand) )
+                    texts.append ( o.opt )
+                    texts.append ( o.operand )
             else :
                     terms.append ( term__long_no_arg(o.opt) )
+                    texts.append ( o.opt )
 
         else :
             raise ValueError(
@@ -485,7 +500,7 @@ def create_terms_obj ( optdefs, sep = ' ' ):
                 f"              opt( '--long', '=', '<long' ),\n"
                 f"              opt( '--quit' ), )\n" )
 
-    return ( sep.join(text), terms )
+    return ( texts, terms )
 
 #------------------------------------------------------------------------------
 
