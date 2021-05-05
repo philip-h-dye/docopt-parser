@@ -250,7 +250,7 @@ def clean(c, docs=False, no_bytecode=False, extra=None):
         removed += 1
 
     # From the top level downward
-    matcher_for_directories = re.compile(r'^(__pycache__|[.]pytest_cache)')
+    matcher_for_directories = re.compile(r'(__pycache__|[.]pytest_cache)')
     file_patterns = r'.*~'
     if not no_bytecode:
         file_patterns += r'|.*[.](pyc|pyo|so|o|obj)'
