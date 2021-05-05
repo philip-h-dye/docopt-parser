@@ -29,8 +29,8 @@ from grammar.python.optdesc.list import ol_term_with_separator, ol_separator
 
 from docopt_parser import DocOptListViewVisitor
 
-from optlist import document, create_terms, create_expect, method_name
-from optlist import generate_tests__all_permutations_of_optlst_and_sep
+from .optlist import document, create_terms, create_expect, method_name
+from .optlist import generate_tests__all_permutations_of_optlst_and_sep
 
 #------------------------------------------------------------------------------
 

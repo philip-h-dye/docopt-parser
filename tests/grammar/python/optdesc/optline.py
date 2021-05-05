@@ -29,7 +29,7 @@ from grammar.python.optdesc.line import *
 from docopt_parser import DocOptListViewVisitor
 
 # from test_list import create_terms, method_name
-from optlist import create_terms, method_name
+from .optlist import create_terms, method_name
 
 #------------------------------------------------------------------------------
 
@@ -293,22 +293,13 @@ def option_line_expect ( *terminals, eof=False, sep=None, indent=None,
 
 #------------------------------------------------------------------------------
 
-def tprint(*args, **kwargs):
-    if tprint._on :
-        kwargs['file'] = tprint._file
-        print('')
-        print(*args, **kwargs)
-        tprint._file.flush()
-
-tprint._file = sys.stdout # open("/dev/tty", 'w')
-# tprint._on = False
-tprint._on = True
+from util import tprint
 
 #------------------------------------------------------------------------------
 
 from dataclasses import dataclass
 
-from optlist import OptionDef, OptionListDef, create_terms_obj
+from .optlist import OptionDef, OptionListDef, create_terms_obj
 
 @dataclass
 class OptionLineDef (object):
