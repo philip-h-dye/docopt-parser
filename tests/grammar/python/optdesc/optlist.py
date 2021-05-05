@@ -38,10 +38,16 @@ from grammar.python.common import comma  as r_comma
 from grammar.python.common import bar    as r_bar
 from grammar.python.common import eq     as r_eq
 
-t_space = Terminal(r_space(), 0, ' ')
-t_comma = Terminal(r_comma(), 0, ',')
-t_bar = Terminal(r_bar(), 0, '|')
-t_eq = Terminal(r_eq(), 0, '=')
+def r_literal(rule_f, s):
+    rule = rule_f()
+    if isinstance(rule, str):
+        return StrMatch(s, rule_name=rule_f.__name__)
+    return rule
+
+t_space   = Terminal(r_literal(r_space  , ' '), 0, ' ')
+t_comma   = Terminal(r_literal(r_comma  , ','), 0, ',')
+t_bar     = Terminal(r_literal(r_bar    , '|'), 0, '|')
+t_eq      = Terminal(r_literal(r_eq     , '='), 0, '=')
 
 #------------------------------------------------------------------------------
 
@@ -405,7 +411,7 @@ class OptionListDef(list):
         assert isinstance(value, OptionDef), \
             ( f"OptionListDef elements must be of type OptionDef, "
               f"not {str(type(value))}" )
-        super().__setitem__(idx, value)                            
+        super().__setitem__(idx, value)
 
 #------------------------------------------------------------------------------
 
@@ -503,25 +509,29 @@ def create_terms_obj ( optdefs, sep = ' ' ):
 
 import itertools
 
-def optlst_permutations ( word, n_opt_max=3 ):
+def optlst_permutations ( *words, n_opt_max=3 ):
+
+    words = flatten(words)
 
     options = [ ]
 
-    short = f"-{word[0]}"
-    options.append( (short, ) )
-    for arg in ( word.upper(), f"<{word}>" ) :
-        for gap in ( '', ' ' ) :
-            options.append( (short, gap, arg) )
+    for word in words :
 
-    long = f"--{word}"
-    options.append( (long, ) ) 
-    for arg in ( word.upper(), f"<{word}>" ) :
-        for gap in '= ':
-            options.append( (long, gap, arg) )
+        short = f"-{word[0]}"
+        options.append( (short, ) )
+        for arg in ( word.upper(), f"<{word}>" ) :
+            for gap in ( '', ' ' ) :
+                options.append( (short, gap, arg) )
 
-    for length in range(1, min(n_opt_max,len(options)+1)) :
-        for result in itertools.permutations(options, length) :
-            yield result
+        long = f"--{word}"
+        options.append( (long, ) )
+        for arg in ( word.upper(), f"<{word}>" ) :
+            for gap in '= ':
+                options.append( (long, gap, arg) )
+
+        for length in range(1, min(n_opt_max,len(options)+1)) :
+            for result in itertools.permutations(options, length) :
+                yield result
 
 #------------------------------------------------------------------------------
 
