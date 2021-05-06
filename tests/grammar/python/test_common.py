@@ -1,3 +1,10 @@
+tst_debug_first_char				= False
+tst_individual_characters			= True
+tst_whitespace_chars				= True
+tst_class_whitespace_rule_per_characters	= True
+tst_class_rule_whitespace			= True
+tst_class_or_more				= True
+
 # FIXME: - need more tests which are negative.
 #        - test positive and negative lookahead with And(), Not()
 
@@ -25,6 +32,8 @@ from arpeggio import EOF, StrMatch, RegExMatch, OrderedChoice, OneOrMore
 from grammar.python import common
 
 from p import pp_str
+
+from util import write_scratch, remove_punctuation, tprint, print_parsed
 
 #------------------------------------------------------------------------------
 
@@ -113,7 +122,7 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
                                  'rule_f' : rule_f , 'rule' : rule , },
                            name=name, grammar=grammar, input=input,
                            expect=expect, expect_f=flatten(expect),
-                           model=parser.parser_model, _clean=True, )
+                           model=parser.parser_model )
             try :
                 parsed = parser.parse(input)
                 write_scratch ( parsed=parsed )
@@ -362,32 +371,6 @@ def get_words(s):
 
 #------------------------------------------------------------------------------
 
-def tprint(*args, **kwargs):
-    kwargs['file'] = tprint._tty
-    print(*args, **kwargs)
-
-tprint._tty = open("/dev/tty", 'w')
-
-#------------------------------------------------------------------------------
-
-def print_parsed(parsed):
-    if isinstance(parsed, ParseTreeNode):
-        tprint(parsed.tree_str())
-    else:
-        pp(parsed)
-
-#------------------------------------------------------------------------------
-
-# https://stackoverflow.com/questions/11066400/remove-punctuation-from-unicode-formatted-strings
-unicode_punctuation = \
-    dict.fromkeys ( i for i in range(sys.maxunicode)
-                    if unicodedata.category(chr(i)).startswith('P') )
-
-def remove_punctuation(text):
-    return text.translate(unicode_punctuation)
-
-#------------------------------------------------------------------------------
-
 def fake_spaces_etc(s, text):
     """Revised the provided text such that it does not include any
        character present in ch.
@@ -419,17 +402,10 @@ def fake_spaces_etc(s, text):
 
 #------------------------------------------------------------------------------
 
-def write_scratch ( **kwargs ) :
-    if '_clean' in kwargs and kwargs['_clean'] is True:
-        for file in glob("scratch/*"):
-            os.unlink(file)
-    for name in kwargs :
-        with open ( f"scratch/{name}", 'w' ) as f :
-            pp_plain( kwargs[name] , stream=f )
-
-#------------------------------------------------------------------------------
-
 class Test_Common ( unittest.TestCase ) :
+
+    def setUp(self):
+        write_scratch( _clean=True )
 
     def test_3_explicit_blank_line(self):
 
@@ -484,7 +460,7 @@ class Test_Common ( unittest.TestCase ) :
                              'rule_f' : rule_f , 'rule' : rule , },
                        name=fcn, grammar=grammar, text=text,
                        expect=expect, expect_f=flatten(expect),
-                       model=parser.parser_model, _clean=True, )
+                       model=parser.parser_model )
         try :
             parsed = parser.parse(text)
             write_scratch ( parsed=parsed )
@@ -517,26 +493,27 @@ def or_more_from_charset(rule_f, charset, suffix, levels, empty_ok=False):
 
 #------------------------------------------------------------------------------
 
-if True :
-    pass
+if tst_individual_characters :
 
     for name, ch in common.CHARACTER_NAME_TO_CHAR.items() :
         ( ch_hexes, ch_names ) = character_lookup ( ch )
         rule_f = lambda : StrMatch(ch, rule_name=f"common_character_{ch_hexes[0]}_{ch_names[0]}")
         string_test("1_individual", rule_f, ch )
+        if tst_debug_first_char :
+            break
 
-if True :
-    pass
+if tst_whitespace_chars :
 
     for ch in common.WHITESPACE_CHARS :
         ( ch_hexes, ch_names ) = character_lookup ( ch )
         rule_f = lambda : StrMatch(ch, rule_name=f"whitespace_character_{ch_hexes[0]}_{ch_names[0]}")
         string_test("1_individual", rule_f, ch, ch_names )
+        if tst_debug_first_char :
+            break
 
 #------------------------------------------------------------------------------
 
-if True :
-    pass
+if tst_class_whitespace_rule_per_characters :
 
     for idx in range(len(common.WHITESPACE_RULES)):
         # individual whitespace character rules, literal character, not regex
@@ -544,6 +521,7 @@ if True :
         ch = common.WHITESPACE_CHARS[idx]
         string_test("2_class", rule_f, ch)
 
+if tst_class_rule_whitespace :
     # whitespace regular expression : One of space, tab, carriage-return
     rule_f = common.whitespace
     for ch in common.WHITESPACE_CHARS :
@@ -551,7 +529,7 @@ if True :
 
 #------------------------------------------------------------------------------
 
-if True :
+if tst_class_or_more :
     pass
 
     # ws regex : One or more of space, tab, carriage-return
