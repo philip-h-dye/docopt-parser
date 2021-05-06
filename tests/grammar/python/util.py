@@ -1,6 +1,7 @@
 import sys
 import os
 import unicodedata
+import string
 
 from glob import iglob
 from pathlib import Path
@@ -32,18 +33,32 @@ unicode_punctuation = \
     dict.fromkeys ( i for i in range(sys.maxunicode)
                     if unicodedata.category(chr(i)).startswith('P') )
 
+ascii_punctuation = dict.fromkeys(string.punctuation)
+
+punctuation = { **unicode_punctuation, **ascii_punctuation }
+
 def remove_punctuation(text):
-    return text.translate(unicode_punctuation)
+    return text.translate(punctuation)
+
+if True :
+    missing = [ ]
+    for ch in string.punctuation :
+        if ch not in punctuation :
+            missing.append(ch)
+    if len(missing) :
+        raise ValueError(f"ASCII Punctuation ({str(type(string.punctuation))})"
+                         f" missing :  {repr(missing)}")
+    del missing
 
 #------------------------------------------------------------------------------
 
 def write_scratch ( **kwargs ) :
 
-    scratch = Path('scratch')
+    scratch = write_scratch.scratch
     if not ( scratch.exists() and scratch.is_dir() ) :
         scratch.mkdir(exist_ok=True)
 
-    color = Path('scratch', 'c')
+    color = write_scratch.color
     if not ( color.exists() and color.is_dir() ) :
         color.mkdir(exist_ok=True)
 
@@ -62,5 +77,8 @@ def write_scratch ( **kwargs ) :
             pp_plain( kwargs[name] , stream=f )
         with open ( color / name , 'w' ) as f :
             pp( kwargs[name] , stream=f )
+
+write_scratch.scratch = Path('scratch')
+write_scratch.color = write_scratch.scratch / 'c'
 
 #------------------------------------------------------------------------------
