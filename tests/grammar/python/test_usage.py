@@ -1,5 +1,7 @@
+parse_debug			= False
 tst_basic                       = True    # 8 tests
 tst_expression_individual       = True    # 8 tests
+tst_choice_individual           = True    # 3 tests
 tst_argument_operand            = True    # 2 tests
 tst_argument_command            = True    # 3 tests
 tst_argument_option_permute     = True    # 6 tests
@@ -41,17 +43,7 @@ class Test_Usage ( unittest.TestCase ) :
 
         tprint._on = self.show or self.debug is not False
 
-    #--------------------------------------------------------------------------
-
-    def HANGS_test_required_command (self):
-        ( text, expect ) = usage_prepare_argument_command("move")
-        ( text, expect ) = usage_prepare_required ( text, expect )
-        self.single ( required, text, expect )
-
-    def HANGS_test_optional_command (self):
-        ( text, expect ) = usage_prepare_argument_command("fire")
-        ( text, expect ) = usage_prepare_optional ( text, expect )
-        self.single ( optional, text, expect )
+        write_scratch( _clean=True )
 
     #--------------------------------------------------------------------------
 
@@ -158,14 +150,14 @@ class Test_Usage ( unittest.TestCase ) :
     def test_expression___dash_f_SPACE_file (self):
 
         # When separated by space, operand must be its own repeatable term
-        
+
         optdef = opt('-f', ' ', '<file>')
 
         children = usage_prepare_argument_optlst_expr ( olst( optdef ) )
-        
+
         ( texts, terms ) = list(zip(*children))
 
-        self.single ( expression, 
+        self.single ( expression,
                       * _expr ( (
                           * [ _repeatable( *_term ( texts[idx], terms[idx] ) )
                               for idx in range(len(terms)) ] ,
@@ -175,7 +167,7 @@ class Test_Usage ( unittest.TestCase ) :
     def test_expression__wrap_1 (self):
 
         # When separated by space, operand must be its own repeatable term
-    
+
         optlst = olst( opt('-f', ' ', '<file>') )
 
         children = _optlst_expr ( optlst )
@@ -184,18 +176,101 @@ class Test_Usage ( unittest.TestCase ) :
 
         children = _wrap ( children, (_term, ) )
         children = _wrap ( children, (_repeatable, ) )
-        
+
         self.single ( expression, *_expr ( children ) )
 
     @unittest.skipUnless(tst_expression_individual, "Expression, individual tests not enabled")
     def test_expression__wrap_2 (self):
 
         # When separated by space, operand must be its own repeatable term
-    
+
         optlst = olst( opt('-f', ) ) # ' ', '<file>') )
 
         self.single ( expression, *_expr (
             _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) ) )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_choice_individual, "Choice, individual tests not enabled")
+    def test_choice_single (self):
+
+        # hierarchy: choice expression repeatable term argument command
+
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+
+        xchoice = _choice ( ( expr, ) )
+
+        write_scratch ( choice = xchoice )
+
+        self.single ( choice, *xchoice  )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_choice_individual, "Choice, individual tests not enabled")
+    def test_choice_pair (self):
+
+        # hierarchy: choice expression repeatable term argument command
+
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+
+        xchoice = _choice ( ( expr, expr ) )
+
+        write_scratch ( choice = xchoice )
+
+        self.single ( choice, *xchoice )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_choice_individual, "Choice, individual tests not enabled")
+    def test_choice_trio (self):
+
+        # hierarchy: choice expression repeatable term argument command
+
+        optlst_1 = olst( opt('--file', ' ', '<file>') )
+        expr_1 = _expr ( _wrap ( _optlst_expr( optlst_1 ), (_repeatable, _term) ) )
+
+        optlst_2 = olst( opt('--query', '=', '<query>') )
+        expr_2 = _expr ( _wrap ( _optlst_expr( optlst_2 ), (_repeatable, _term) ) )
+
+        optlst_3 = olst( opt('-e', '', 'EXTRACT' ) )
+        expr_3 = _expr ( _wrap ( _optlst_expr( optlst_3 ), (_repeatable, _term) ) )
+
+        xchoice = _choice ( ( expr_1, expr_2, expr_3 ) )
+
+        write_scratch ( choice = xchoice )
+
+        self.single ( choice, *xchoice )
+
+    #--------------------------------------------------------------------------
+
+    # required/optional after CHOICE as it is the rule which they each enclose
+    #
+    # FIXME:  Investigate and resolve the issue
+    #
+    # Issue:  required/optional do not parse properly alone.  Parser accepts
+    #         '( fire )' but expects more input rather than accepting that it
+    #         has reached EOF.
+    #
+    # Temporary workaround:  Tacking on a space or wrapping it in a term()
+    #
+    # hierarchy: <rule> choice expression repeatable term argument command
+    #
+
+    def WIP_test_required__command (self):
+        ( text, expect ) = usage_prepare_argument_command("move")
+        ( text, expect ) = usage_prepare_required ( text, expect )
+        text += ' '
+        self.single ( required, text, expect )
+
+    def WIP_test_optional__command (self):
+        ( text, expect ) = usage_prepare_argument_command("fire")
+        ( text, expect ) = usage_prepare_optional ( text, expect )
+        text += ' '
+        self.single ( optional, text, expect )
 
     #==========================================================================
 
@@ -205,31 +280,37 @@ class Test_Usage ( unittest.TestCase ) :
         #
         # The model unfortunately will show 'rule' as a function
         # rather that it's expression.  It is tempting to then instantiate
-        # it as rule().  The parse model now show it nicely.
+        # it as rule().  The parse model will now show it nicely.
         #
         # Unfortunately, the resulting parse tree drops the node for rule.
         #
         def grammar():
-            return Sequence( ( wx, rule, EOF ) ,
+            return Sequence( ( wx, rule, wx, EOF ) ,
                              rule_name='grammar', skipws=True )
-        self.verify_grammar ( grammar, ' '+text, expect )
+        # print(f"\n: single : text = '{text}'")
+        self.verify_grammar ( grammar, ' '+text, [ expect ] )
 
     #--------------------------------------------------------------------------
 
-    def multiple_spaced ( self, rule, text, expect ):
+    def multiple ( self, rule, text, expect, n=1, sep='\n' ):
         # both rule and text get a single space prefix to assist when
         # the rule has a whitespace lookahead
         def grammar():
-            return Sequence( ( OrderedChoice ( [ rule(), ws, newline ] ), EOF ),
-                             rule_name='grammar', skipws=True )
-        self.verify_grammar ( grammar, ' '+text, expect )
+            return Sequence (
+                ( OneOrMore( OrderedChoice ( [ rule, ws, newline ] ) ), EOF ),
+                rule_name='grammar', skipws=True )
+        text = sep.join( [text] * n )
+        expect_list = [expect] * n
+        # print(f"\n: multiple : text = '{text}'")
+        self.verify_grammar ( grammar, ' '+text, expect_list )
 
     #--------------------------------------------------------------------------
 
-    def verify_grammar ( self, grammar, text, expect ):
+    def verify_grammar ( self, grammar, text, expect_list ):
         self.grammar = grammar()
-        expect = NonTerminal( self.grammar, [ expect, t_eof ] )
-        self.parser = ParserPython ( grammar, skipws=False, reduce_tree=False )
+        expect = NonTerminal( self.grammar, [ *expect_list, t_eof ] )
+        self.parser = ParserPython ( grammar, skipws=False, reduce_tree=False,
+                                     debug = parse_debug )
         self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
@@ -243,13 +324,14 @@ class Test_Usage ( unittest.TestCase ) :
 
         # tprint(f"\nOptions :\n{text}")
 
-        write_scratch( call={'fcn' : 'parse' },
-                       grammar=self.grammar, text=text,
+        # written here and in verify since may be called independently
+        write_scratch( grammar=self.grammar, text=text,
                        expect=expect, expect_f=flatten(expect),
-                       model=self.parser.parser_model, _clean=True, )
+                       model=self.parser.parser_model, )
         try :
             # print(f"\n: text = '{text}'")
             parsed = self.parser.parse(text)
+            # tprint("[parsed]") ; pp(parsed)
             write_scratch( parsed=parsed )
         except Exception as e :
             print("\n"
@@ -259,31 +341,23 @@ class Test_Usage ( unittest.TestCase ) :
                   f"{str(e)}" )
             raise
 
-        # tprint("[parsed]") ; pp(parsed)
-
-        with open ("scratch/parsed.txt", 'w') as f :
-            pp_plain(expect, stream=f)
-
         return parsed
 
     #--------------------------------------------------------------------------
 
     def verify ( self, text, expect, parsed ) :
 
-        with open ("scratch/expect.txt", 'w') as f :
-                pp_plain(expect, stream=f)
-        with open ("scratch/parsed.txt", 'w') as f :
-            pp_plain(parsed, stream=f)
+        # print("[expect]");  pp(expect) ; print("[parsed]"); pp(parsed)
+
+        # written here and in parse since may be called independently
+        write_scratch( grammar=self.grammar, text=text,
+                       expect=expect, expect_f=flatten(expect),
+                       model=self.parser.parser_model, )
 
         if False :
             nth_option_line = 0
             expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
             parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
-
-            with open ("scratch/expect.txt", 'w') as f :
-                    pp_plain(expect, stream=f)
-            with open ("scratch/parsed.txt", 'w') as f :
-                pp_plain(parsed, stream=f)
 
             print('')
             print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
@@ -303,9 +377,7 @@ class Test_Usage ( unittest.TestCase ) :
                         f"[parsed]\n{pp_str(parsed[start:])}" )
                 assert 1 == 0
 
-        # print("[expect]");  pp(expect) ; print("[parsed]"); pp(parsed)
-
-        if False :
+        if True : # Be less noisy when debugging
             if not nodes_equal(parsed, expect) :
                 print("\n!!!")
                 print("!!! no match")
