@@ -203,11 +203,13 @@ def usage_prepare_repeatable ( text : str, child : ParseTreeNode,
 
 def usage_prepare_optional ( text : str, child : ParseTreeNode ) :
     text = '[ ' + text + ' ]'
-    return ( text, NonTerminal( optional(), [ child ] ) )
+    return ( text, NonTerminal( optional(),
+                                [ t_l_bracket, child, t_r_bracket ] ) )
 
 def usage_prepare_required ( text : str, child : ParseTreeNode ) :
     text = '( ' + text + ' )'
-    return ( text, NonTerminal( required(), [ child ] ) )
+    return ( text, NonTerminal( required(),
+                                [ t_l_paren, child, t_r_paren ] ) )
 
 def usage_prepare_term ( text : str, child : ParseTreeNode ):
     # options_shortcut, optional, required, argument

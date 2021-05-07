@@ -4,6 +4,8 @@ analyzing                       = False
 tst_basic                       = True    # 8 tests
 tst_expression_individual       = True    # 8 tests
 tst_choice_individual           = True    # 3 tests
+tst_required_individual         = True    # 1 test
+tst_optional_individual         = True    # 1 test
 tst_argument_operand            = True    # 2 tests
 tst_argument_command            = True    # 3 tests
 tst_argument_option_permute     = True    # 6 tests
@@ -260,46 +262,54 @@ class Test_Usage ( unittest.TestCase ) :
 
     # required/optional after CHOICE as it is the rule which they each enclose
     #
-    # FIXME:  Investigate and resolve the issue
-    #
-    # Issue:  required/optional do not parse properly alone.  Parser accepts
-    #         '( fire )' but expects more input rather than accepting that it
-    #         has reached EOF.
-    #
-    # Temporary workaround:  Tacking on a space or wrapping it in a term()
-    #
     # hierarchy: <rule> choice expression repeatable term argument command
-    #
 
-    def WIP_test_required__command (self):
-        ( text, expect ) = usage_prepare_argument_command("move")
-        ( text, expect ) = usage_prepare_required ( text, expect )
-        text += ' '
+    @unittest.skipUnless(tst_required_individual, "Required, individual tests not enabled")
+    def test_required__command (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        xchoice = _choice ( ( expr, ) )
+        ( text, expect ) = usage_prepare_required ( *xchoice )
+        if self.record :
+            write_scratch ( required = (text, expect) )
         self.single ( required, text, expect )
 
-    def WIP_test_optional__command (self):
-        ( text, expect ) = usage_prepare_argument_command("fire")
-        ( text, expect ) = usage_prepare_optional ( text, expect )
-        text += ' '
+    @unittest.skipUnless(tst_optional_individual, "Optional, individual tests not enabled")
+    def test_optional__command (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        xchoice = _choice ( ( expr, ) )
+        ( text, expect ) = usage_prepare_optional ( *xchoice )
+        if self.record :
+            write_scratch ( optional = (text, expect) )
         self.single ( optional, text, expect )
 
     #==========================================================================
 
-    def single ( self, rule, text, expect ):
-        # both rule and text get a single space prefix to assist when
-        # the rule has a whitespace lookahead
-        #
+    def single ( self, rule, text, expect, skipws=True, lead=None ):
+        """
+        <lead> : ( text, expect ) for leading value to prefix the text
+                                  and expect.  Required when rule has
+                                  lookbehind.  For '(?<=\s)foo', an simple
+                                  lead would be ( ' ', t_space ), as
+                                  the lead includes whitespace, skipws=False
+                                  is also necessary.
+        """
         # The model unfortunately will show 'rule' as a function
         # rather that it's expression.  It is tempting to then instantiate
         # it as rule().  The parse model will now show it nicely.
         #
         # Unfortunately, the resulting parse tree drops the node for rule.
         #
+        body = [ rule, EOF ]
+        if lead is not None :
+            ( text_, expect_ ) = lead
+            text = text_ + text
+            body.insert(0, expect_ )
         def grammar():
-            return Sequence( ( wx, rule, wx, EOF ) ,
-                             rule_name='grammar', skipws=True )
+            return Sequence( ( *body ), rule_name='grammar', skipws=skipws )
         # print(f"\n: single : text = '{text}'")
-        self.verify_grammar ( grammar, ' '+text, [ expect ] )
+        self.verify_grammar ( grammar, text, [ expect ], skipws=skipws )
 
     #--------------------------------------------------------------------------
 
@@ -313,7 +323,8 @@ class Test_Usage ( unittest.TestCase ) :
         text = sep.join( [text] * n )
         expect_list = [expect] * n
         # print(f"\n: multiple : text = '{text}'")
-        self.verify_grammar ( grammar, ' '+text, expect_list )
+        # self.verify_grammar ( grammar, ' '+text, expect_list )
+        self.verify_grammar ( grammar, text, expect_list )
 
     #--------------------------------------------------------------------------
 
