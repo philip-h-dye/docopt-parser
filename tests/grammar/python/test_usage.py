@@ -10,6 +10,9 @@ tst_argument_operand            = True    # 2 tests
 tst_argument_command            = True    # 3 tests
 tst_argument_option_permute     = True    # 6 tests
 tst_expression_series_permute   = True    # 100 tests with single word and n 3
+tst_usage_pattern               = True    # 4 tests
+tst_usage_intro                 = True    # 10 tests
+tst_usage                       = True    # 3 tests
 
 import os
 
@@ -27,6 +30,7 @@ from docopt_parser.parsetreenodes import nodes_equal
 
 #------------------------------------------------------------------------------
 
+from grammar.python.common import *
 from usage import *
 
 define_usage_expression_shortnames(globals())
@@ -283,6 +287,175 @@ class Test_Usage ( unittest.TestCase ) :
         if self.record :
             write_scratch ( optional = (text, expect) )
         self.single ( optional, text, expect )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_usage_pattern, "Usage Pattern, tests not enabled")
+    def test_program (self):
+        ( text, expect ) = usage_prepare_program("naval-fate")
+        self.single ( program, text, expect )
+
+    #--------------------------------------------------------------------------
+
+    # usage_pattern = OR? program choice?
+    # FIXME:  OR implement and test
+
+    @unittest.skipUnless(tst_usage_pattern, "Usage Pattern, tests not enabled")
+    def test_usage_pattern__program_only (self):
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_ )
+        self.single ( usage_pattern, *pattern )
+
+    @unittest.skipUnless(tst_usage_pattern, "Usage Pattern, tests not enabled")
+    def test_usage_pattern__single_option (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        self.single ( usage_pattern, *pattern )
+
+    @unittest.skipUnless(tst_usage_pattern, "Usage Pattern, tests not enabled")
+    def test_usage_pattern__option_gap_operand (self):
+        optlst = olst( opt('--file', ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        self.single ( usage_pattern, *pattern )
+
+    #--------------------------------------------------------------------------
+
+    # usage_line = _ usage_pattern newline / _ usage_pattern EOF
+
+    # @unittest.skipUnless(tst_usage_pattern, "Usage Pattern, tests not enabled")
+    def test_usage_line (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line = usage_prepare_line( pattern, t_newline )
+        self.single ( usage_line, *line )
+
+    #--------------------------------------------------------------------------
+
+    # usage_intro = _ r'^\s*((?i)usage)\s*:\s*' + '(\s*\n)*'
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__whitespace_none (self):
+        self.single ( usage_intro, *usage_prepare_intro("usage:"))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__whitespace_leading (self):
+        self.single ( usage_intro, *usage_prepare_intro("   usage:"))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__whitespace_trailing (self):
+        self.single ( usage_intro, *usage_prepare_intro("usage:   "))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__whitespace_before_colon (self):
+        self.single ( usage_intro, *usage_prepare_intro("usage   :"))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__whitespace_everywhere (self):
+        self.single ( usage_intro, *usage_prepare_intro("  usage  :  "),
+                      skipws=False )
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__newline_one (self):
+        newlines = ( '\n' )
+        self.single ( usage_intro, *usage_prepare_intro("usage :", *newlines ))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__newline_two (self):
+        newlines = ( ' \n', '   \n' )
+        self.single ( usage_intro, *usage_prepare_intro("usage :", *newlines ))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__trailing_and_newlines (self):
+        newlines = ( ' \n', '   \n' )
+        self.single ( usage_intro, *usage_prepare_intro("usage :  ", *newlines ))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__implicit_newlines (self):
+        newlines = ( ' ', '   ' )
+        self.single ( usage_intro, *usage_prepare_intro("usage :  ", *newlines ))
+
+    @unittest.skipUnless(tst_usage_intro, "Usage Intro, tests not enabled")
+    def test_usage_intro__embedded_newlines_trailing_and_newlines (self):
+        newlines = ( ' \n', '   \n' )
+        self.single ( usage_intro, *usage_prepare_intro("usage :  \n  ", *newlines ))
+
+    #--------------------------------------------------------------------------
+
+    # usage = usage_intro newline* usage_line+
+
+    @unittest.skipUnless(tst_usage, "Usage, tests not enabled")
+    def Xtest_usage__001_single_line (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line = usage_prepare_line( pattern, t_newline )
+
+        intro = usage_prepare_intro("Usage :  ")
+
+        text = intro[0] + line[0]
+        expect = NonTerminal( usage_section(), [ intro[1], line[1] ] )
+
+        self.single ( usage_section, text, expect )
+
+    @unittest.skipUnless(tst_usage, "Usage, tests not enabled")
+    def Xtest_usage__002_two_lines (self):
+        optlst = olst( opt('-f', ) ) # ' ', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line = usage_prepare_line( pattern, t_newline )
+
+        intro = usage_prepare_intro("Usage :  ")
+
+        text = intro[0] + line[0] + line[0]
+        expect = NonTerminal( usage_section(), [ intro[1], line[1] , line[1] ] )
+
+        self.single ( usage_section, text, expect )
+
+    @unittest.skipUnless(tst_usage, "Usage, tests not enabled")
+    def test_usage__003_three_lines (self):
+        #
+        # FIXME: exactly where does the help text get inserted ?
+        #
+        optlst = olst( opt('-f', ), opt('-q', ), opt('--file', '=', '<file>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line_1 = usage_prepare_line( pattern, t_newline )
+
+        optlst = olst( opt('-q', ' ', '<query>'), opt('--query', '=', '<query>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line_2 = usage_prepare_line( pattern, t_newline )
+
+        optlst = olst( opt('-e', '', '<query>'), opt('--extract', '=', '<query>') )
+        expr = _expr ( _wrap ( _optlst_expr( optlst ), (_repeatable, _term) ) )
+        choice_ = _choice ( ( expr, ) )
+        program_ = usage_prepare_program("naval-fate")
+        pattern = usage_prepare_pattern( program_, choice_ )
+        line_3 = usage_prepare_line( pattern, t_newline )
+
+        intro = usage_prepare_intro("Usage :  ")
+
+        text = intro[0] + line_1[0] + line_2[0] + line_3[0]
+        expect = NonTerminal( usage_section(), [ intro[1], line_1[1], line_2[1], line_3[1] ] )
+
+        self.single ( usage_section, text, expect )
 
     #==========================================================================
 

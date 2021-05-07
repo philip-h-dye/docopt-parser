@@ -56,7 +56,7 @@ def optional():
 def required():
     return Sequence ( ( l_paren, choice, r_paren, ) ,
                      rule_name="required", skipws=True )
-def argument(): 
+def argument():
     # EOF causes hang in optional/required
     return Sequence( ( wx, OrderedChoice( [ option, operand, command ] ) ),
                      rule_name="argument", skipws=True )
@@ -65,27 +65,28 @@ def options_shortcut():
     return _( r'(?i)\[options\]',
               rule_name="options_shortcut", skipws=True )
 
-def usage_pattern():
-    return OrderedChoice( [ options_shortcut,		# at most once
-                            option,
-                            operand,
-                            command ],
-                          rule_name="usage_pattern", skipws=True)
+OR = 'OR'
 
 def usage_pattern():
     # usage_pattern = OR? program choice?
-    return Sequence( Optional('OR'), program, Optional(choice) )
+    return Sequence( ( Optional(OR), program, Optional(choice) ),
+                     rule_name="usage_pattern", skipws=True )
 
-# usage_line = usage_pattern newline / usage_pattern EOF
 def usage_line():
+    # usage_line = usage_pattern newline / usage_pattern EOF
     return OrderedChoice( [(usage_pattern, newline), (usage_pattern, EOF)],
                           rule_name="usage_line", skipws=True )
 
+# re: \s = [ \t\n\r\f\v] also non-breaking spaces, etc
+
+USAGE_INTRO_REGEX = r'^<s>*((?i)usage)<s>*:'.replace('<s>', WHITESPACE_REGEX)
 def usage_intro():
-    return Sequence( ( _(r'(?i)^\s*Usage\s*:'),
-                       ZeroOrMore( OrderedChoice( [ wx, newline ] ) ) ),
-                     rule_name="usage_intro", skipws=True)
+    # skipws=False is required to match when whitespace proceeds 'usage'
+    return Sequence( ( _(USAGE_INTRO_REGEX, skipws=False ),
+                       ZeroOrMore( newline, skipws=False ),
+                       wx() ),
+                     rule_name="usage_intro", skipws=False )
 
 def usage_section():
-    return Sequence ( ( usage_intro, OneOrMore(usage_pattern) ) ,
+    return Sequence ( ( usage_intro, OneOrMore(usage_line) ) ,
                       rule_name="usage_section", skipws=True )

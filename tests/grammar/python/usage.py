@@ -19,7 +19,7 @@ from p import pp_str
 
 #------------------------------------------------------------------------------
 
-ALL = ( # ' UsageSectionDef UsageLineDef ProgramDef UsagePatternDef '
+ALL = ( # ' UsageSectionDef UsageLineDef UsagePatternDef ProgramDef UsageExpression '
         ' ChoiceDef ExpressionDef TermDef RepeatableDef OptionalDef '
         ' RequiredDef OptionsShortCut ArgumentDef CommandDef '
         #
@@ -39,6 +39,7 @@ ALL = ( # ' UsageSectionDef UsageLineDef ProgramDef UsagePatternDef '
 #------------------------------------------------------------------------------
 
 from grammar.python.common import ws, WHITESPACE_CHARS, t_bar, t_space, t_eof
+from grammar.python.common import NEWLINE_REGEX
 
 from grammar.python.usage import *
 
@@ -194,7 +195,7 @@ def usage_prepare_expression ( children : List[Tuple[str,ParseTreeNode]],
 
 def usage_prepare_repeatable ( text : str, child : ParseTreeNode,
                                repeating=False, gap='' ) :
-    """Consider this BRITTLE code since text does not also incorporate an enclosure."""
+    """BRITTLE code since text does not also incorporate an enclosure."""
     elements = [ child ]
     if repeating :
         text += gap + REPEATING
@@ -245,6 +246,125 @@ def usage_prepare_argument_command ( text : str ) :
 
 def usage_prepare_options_shortcut ( text : str ) :
     return ( text, t_options_shortcut(text) )
+
+#------------------------------------------------------------------------------
+
+def usage_prepare_program ( word : str ) :
+
+    for ch in WHITESPACE_CHARS :
+        if ch in word :
+            raise ValueError(
+                f"Command word '{word}' contains whitespace and would be parsed "
+                f"as multiple arguments, not a program name.  Please address.")
+
+    expect = Terminal( program(), 0, word )
+
+    return ( word, expect )
+
+#------------------------------------------------------------------------------
+
+def usage_prepare_pattern ( program, choice_=None ) :
+    assert len(program) == 2
+    text = program[0]
+    expect = [ program[1] ]
+    if isinstance(choice_, tuple):
+        assert len(choice_) == 2
+        text += ' ' + choice_[0]
+        expect += [ choice_[1] ]
+    return ( text, NonTerminal( usage_pattern(), expect ) )
+
+#------------------------------------------------------------------------------
+
+# usage_prepare_line( pattern, t_newline )
+
+def usage_prepare_line ( pattern : tuple , end : ParseTreeNode ) :
+
+    if not isinstance(end, Terminal) and end.rule_name in['newline', 'EOF'] :
+        raise ValueError(
+            f"<end> must be t_newline, t_ws_newline or t_eof from grammar.python.common.  "
+            f"Not {str(type(end))}.  Please address.")
+
+    ( text, expect ) = pattern
+
+    if end is t_newline :
+        text += '\n'
+    return ( text, NonTerminal( usage_line(), [ expect, end ] ) )
+
+#------------------------------------------------------------------------------
+
+def usage_prepare_intro ( text : str, *newlines ) :
+    """
+    <newlines>
+    """
+
+    # BRITTLE: depends on internal implementation of usage_intro and newline
+
+    intro = usage_intro()
+
+    intro_expr = intro.elements[0].to_match
+    if not re.match(intro_expr, text):
+        raise ValueError(
+            f"Usage intro text '{text}' does not match regex '{expr}' such "
+            f"that it will not be accepted in the parse.  Please address.")
+
+    trailing = [ [], [] ]
+    # peal off any trailing whitespace
+    expr = f".*[^{WHITESPACE_RAW_STR}]({WS_REGEX})$"
+    match = re.match(expr, text)
+    if match:
+        trailing_ = match.group(1)
+        text = text [ : len(text) - len(trailing_) ]
+        trailing[0].append( trailing_ )
+        trailing[1].append( Terminal(wx(), 0, trailing_) )
+
+    # peal off all trailing newline (i.e. ws + linefeed) segments
+    expr = f".*[^{WHITESPACE_RAW_STR}]({NEWLINE_REGEX})$"
+    nl = re.compile(expr)
+    while ( match := nl.match(text) ) :
+        trailing_ = match.group(1)
+        text = text [ : len(text) - len(trailing_) ]
+        trailing[0].insert(0, trailing_ )
+        trailing[1].insert(0, t_wx_newline(trailing_) )
+
+    expr = f"{intro_expr}({NEWLINE_REGEX})*({WS_REGEX})?"
+    if not re.fullmatch(expr, text):
+        raise ValueError(
+            f"Usage intro text '{text}' does not match regex '{expr}' such "
+            f"it will not be accepted in the parse.  Please address.")
+
+    last_idx = len(trailing[0]) - 1
+
+    for text_ in newlines:
+        trailing[1].append ( t_wx_newline(text_) )
+        trailing[0].append ( trailing[1][-1].value )
+
+    # If text had 'trailing' whitespace AND newlines isn't empty,
+    # the text's trailing must be prepended on newlines[0]
+
+    if last_idx >= 0 :
+        write_scratch ( n_trailing=[ last_idx,
+                                     len(trailing[0]),
+                                     trailing[0][last_idx],
+                                     trailing[0][last_idx][-1] , ] )
+
+        write_scratch ( trailing=trailing )
+
+        if (last_idx+1) < len(trailing[0]) and trailing[0][last_idx][-1] != '\n' :
+            trailing[0][last_idx+1] = trailing[0][last_idx] + trailing[0][last_idx+1]
+            trailing[1][last_idx+1] = t_wx_newline(trailing[0][last_idx+1])
+            del trailing[0][last_idx]
+            del trailing[1][last_idx]
+
+    expect = NonTerminal( usage_intro(), [
+        Terminal( StrMatch(''), 0, text ),
+        *trailing[1]
+    ] )
+
+    write_scratch( nl = expect )
+
+    text += ''.join(trailing[0])
+
+    return ( text , expect )
 
 #------------------------------------------------------------------------------
 
