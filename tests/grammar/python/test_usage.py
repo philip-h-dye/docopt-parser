@@ -1,4 +1,6 @@
-parse_debug			= False
+parse_debug                     = False
+record                          = False
+analyzing                       = False
 tst_basic                       = True    # 8 tests
 tst_expression_individual       = True    # 8 tests
 tst_choice_individual           = True    # 3 tests
@@ -33,9 +35,14 @@ class Test_Usage ( unittest.TestCase ) :
 
     def setUp(self):
 
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
         # quiet, no parse trees displayed
         # self.debug = False
-
         # show parse tree for pass >= self.debug
         self.debug = 2
 
@@ -43,7 +50,8 @@ class Test_Usage ( unittest.TestCase ) :
 
         tprint._on = self.show or self.debug is not False
 
-        write_scratch( _clean=True )
+        if self.record :
+            write_scratch( _clean=True )
 
     #--------------------------------------------------------------------------
 
@@ -202,7 +210,8 @@ class Test_Usage ( unittest.TestCase ) :
 
         xchoice = _choice ( ( expr, ) )
 
-        write_scratch ( choice = xchoice )
+        if self.record :
+            write_scratch ( choice = xchoice )
 
         self.single ( choice, *xchoice  )
 
@@ -219,7 +228,8 @@ class Test_Usage ( unittest.TestCase ) :
 
         xchoice = _choice ( ( expr, expr ) )
 
-        write_scratch ( choice = xchoice )
+        if self.record :
+            write_scratch ( choice = xchoice )
 
         self.single ( choice, *xchoice )
 
@@ -241,7 +251,8 @@ class Test_Usage ( unittest.TestCase ) :
 
         xchoice = _choice ( ( expr_1, expr_2, expr_3 ) )
 
-        write_scratch ( choice = xchoice )
+        if self.record :
+            write_scratch ( choice = xchoice )
 
         self.single ( choice, *xchoice )
 
@@ -306,33 +317,43 @@ class Test_Usage ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def verify_grammar ( self, grammar, text, expect_list ):
+    def verify_grammar ( self, grammar, text, expect_list, skipws=True ):
         self.grammar = grammar()
-        expect = NonTerminal( self.grammar, [ *expect_list, t_eof ] )
-        self.parser = ParserPython ( grammar, skipws=False, reduce_tree=False,
-                                     debug = parse_debug )
-        self.parse_and_verify( text, expect )
+        self.skipws = skipws
+        self.text = text
+        self.expect = NonTerminal( self.grammar, [ *expect_list, t_eof ] )
+        self.parser = ParserPython ( grammar, ws=" \t\r", skipws=self.skipws,
+                                     debug=self.parse_debug, reduce_tree=False )
+        self.parse_and_verify( self.text, self.expect )
 
     #--------------------------------------------------------------------------
 
     def parse_and_verify ( self, text, expect ) :
-        self.verify ( text, expect, self.parse ( text, expect ) )
+        parsed = self.parse ( text, expect )
+        self.verify ( text, expect, parsed  )
 
     #--------------------------------------------------------------------------
 
     def parse ( self, text, expect ) :
 
+        if not hasattr(self, 'text') or self.text != text :
+            self.text = text
+        if not hasattr(self, 'expect') or not nodes_equal(expect, self.expect) :
+            self.expect = expect
+
         # tprint(f"\nOptions :\n{text}")
 
-        # written here and in verify since may be called independently
-        write_scratch( grammar=self.grammar, text=text,
-                       expect=expect, expect_f=flatten(expect),
-                       model=self.parser.parser_model, )
+        # written here and in verify since they may be called independently
+        if self.record :
+            write_scratch( grammar=self.grammar, text=self.text,
+                           expect=self.expect, expect_f=flatten(self.expect),
+                           model=self.parser.parser_model, )
         try :
             # print(f"\n: text = '{text}'")
-            parsed = self.parser.parse(text)
-            # tprint("[parsed]") ; pp(parsed)
-            write_scratch( parsed=parsed )
+            self.parsed = self.parser.parse(text)
+            # tprint("[parsed]") ; pp(self.parsed)
+            if self.record :
+                write_scratch( parsed=self.parsed )
         except Exception as e :
             print("\n"
                   f"[expect]\n{pp_str(expect)}\n\n"
@@ -341,53 +362,103 @@ class Test_Usage ( unittest.TestCase ) :
                   f"{str(e)}" )
             raise
 
-        return parsed
+        return self.parsed
 
     #--------------------------------------------------------------------------
 
     def verify ( self, text, expect, parsed ) :
 
-        # print("[expect]");  pp(expect) ; print("[parsed]"); pp(parsed)
+        if not hasattr(self, 'text') or self.text != text :
+            self.text = text
+        if not hasattr(self, 'expect') or not nodes_equal(expect, self.expect) :
+            self.expect = expect
+        if not hasattr(self, 'parsed') or not nodes_equal(parsed, self.parsed) :
+            self.parsed = parsed
 
-        # written here and in parse since may be called independently
-        write_scratch( grammar=self.grammar, text=text,
-                       expect=expect, expect_f=flatten(expect),
-                       model=self.parser.parser_model, )
+        if self.record :
+            write_scratch( grammar=self.grammar, text=self.text,
+                           expect=self.expect, expect_f=flatten(self.expect),
+                           model=self.parser.parser_model, )
 
-        if False :
-            nth_option_line = 0
-            expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
-            parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
-
-            print('')
-            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
-            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
-
-            for i in range(len(expect)) :
-                if not nodes_equal( parsed[i], expect[i]) :
-                    print ( f"text = '{text}' :\n"
-                            f"[expect]\n{pp_str(expect[i])}\n"
-                            f"[parsed]\n{pp_str(parsed[i])}" )
-                    assert 1 == 0
-
-            if len(expect) < len(parsed) :
-                start = len(expect) # - 1
-                print ( f"text = '{text}' :\n"
-                        f"[expect]\n{pp_str(expect[start:])}\n"
-                        f"[parsed]\n{pp_str(parsed[start:])}" )
-                assert 1 == 0
-
-        if True : # Be less noisy when debugging
-            if not nodes_equal(parsed, expect) :
-                print("\n!!!")
-                print("!!! no match")
-                print("!!!")
-                return
+        if self.analyzing :
+            self.analyze()
 
         assert nodes_equal(parsed, expect), \
             ( f"text = '{text}' :\n"
               f"[expect]\n{pp_str(expect)}\n"
               f"[parsed]\n{pp_str(parsed)}" )
+
+    #--------------------------------------------------------------------------
+
+    def analyze (self):
+
+        # lose 'self.' for legibility
+        expect = self.expect
+        parsed = self.parsed
+
+        # 'nth_option_line' specific applicable in docopt/test_line, within the
+        # outer enclosing context it would obviously be deeper and certainly
+        # not a descendent of the first outer node.  Left as an starting point
+        # when focused and detailed analysis needed.
+        nth_option_line = 0
+        expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
+        parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
+
+        print('')
+
+        expect_terminal = isinstance(expect, Terminal)
+        parsed_terminal = isinstance(parsed, Terminal)
+
+        if expect_terminal :
+            print(f"[expect] rule '{expect.rule_name}', Terminal = {pp_str(expect)}")
+        else :
+            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
+        if parsed_terminal :
+            print(f"[parsed] rule '{parsed.rule_name}', Terminal = {pp_str(parsed)}")
+        else :
+            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
+
+        if expect_terminal or parsed_terminal :
+            assert nodes_equal(parsed, expect), \
+                ( f"Detail nodes are not equal.\n"
+                  f"[text]   '{text}'\n"
+                  f"[expect] rule '{expect.rule_name}'\n{pp_str(expect)}\n"
+                  f"[parsed] rule '{parsed.rule_name}'\n{pp_str(parsed)}\n" )
+            return
+
+        print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
+        print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
+
+        assert parsed.rule_name == expect.rule_name, \
+            ( f"Detail node rule names not equal.\n"
+              f"[text]   '{text}'\n"
+              f"[expect] rule '{expect.rule_name}' with {len(expect)} children\n"
+              f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children\n"
+              f"[expect]\n{pp_str(expect)}\n"
+              f"[parsed]\n{pp_str(parsed)}" )
+
+        for i in range(min( len(expect), len(parsed) )):
+            assert nodes_equal( parsed[i], expect[i]), \
+                ( f"Detail node child {i} is not equal.\n"
+                  f"[text]   '{text}'\n"
+                  f"[expect] rule '{expect.rule_name}' with {len(expect)} children\n"
+                  f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children\n"
+                  f"[expect] [{i}]\n{pp_str(expect[i])}\n"
+                  f"[parsed] [{i}]\n{pp_str(parsed[i])}" )
+
+        assert not ( len(expect) > len(parsed) ), \
+                ( f"Expect has more children than parsed, earlier children equal.\n"
+                  f"[text]   '{text}'\n"
+                  f"[expect] rule '{expect.rule_name}' with {len(expect)} children\n"
+                  f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children\n"
+                  f"[expect] [{i}]\n{pp_str(expect[len(parsed):])}" )
+
+        assert not ( len(expect) < len(parsed) ), '\n' + \
+                ( f"Parsed has more children than expect, earlier children equal.\n"
+                  f"[text]   '{text}'\n"
+                  f"[expect] rule '{expect.rule_name}' with {len(expect)} children\n"
+                  f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children\n"
+                  f"[parsed] [{i}]\n{pp_str(parsed[len(expect):])}" )
 
 #==============================================================================
 
