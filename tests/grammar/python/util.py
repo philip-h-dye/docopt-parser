@@ -1,7 +1,9 @@
 import sys
 import os
+import re
 import unicodedata
 import string
+import inspect
 
 from glob import iglob
 from pathlib import Path
@@ -9,6 +11,18 @@ from pathlib import Path
 from prettyprinter import cpprint as pp, pprint as pp_plain
 
 from arpeggio import ParseTreeNode
+
+#------------------------------------------------------------------------------
+
+def function_name ( above = 0 ) :
+    # print('')
+    # pp(inspect.stack()[1+above])
+    # print('')
+    return inspect.stack()[ 1 + above ].function
+
+fname = function_name
+
+# calling_function_name = lambda () : function_name(1)
 
 #------------------------------------------------------------------------------
 
@@ -80,5 +94,23 @@ def write_scratch ( **kwargs ) :
 
 write_scratch.scratch = Path('scratch')
 write_scratch.color = write_scratch.scratch / 'c'
+
+#------------------------------------------------------------------------------
+
+def set_booleans ( namespace, name_regex, new_value ):
+    matcher = re.compile(name_regex)
+    for key, value in namespace.items():
+        if matcher.match(key) and isinstance(value, bool):
+            namespace[key] = new_value
+
+def tst_disable_all ( namespace = None ):
+    if namespace is None :
+        ns = inspect.stack()[1].frame.f_globals
+    set_booleans ( ns, '^tst_', False )
+
+def tst_enable_all ( namespace = None ):
+    if namespace is None :
+        ns = inspect.stack()[1].frame.f_globals
+    set_booleans ( ns, '^tst_', True )
 
 #------------------------------------------------------------------------------
