@@ -1,153 +1,180 @@
+parse_debug                     = False
+record                          = False
+analyzing                       = False
+
+tst_basic                       = True
+tst_mixed                       = True
+tst_with_arg_adj                = True
+tst_with_arg_gap                = True
+
+#------------------------------------------------------------------------------
+
 import unittest
 
 from arpeggio import ParserPython, NonTerminal, Terminal
-from arpeggio import Sequence, ZeroOrMore, OneOrMore, EOF
+from arpeggio import EOF, Sequence, OrderedChoice, ZeroOrMore, OneOrMore
 from arpeggio import RegExMatch as _
 
 from prettyprinter import cpprint as pp
-import p
 
 #------------------------------------------------------------------------------
 
 from docopt_parser.parsetreenodes import NonTerminal_eq_structural
 
-from grammar.python.common import ws
-# from grammar.python.operand import *
-# from grammar.python.generic.option import long_no_arg, short_no_arg
 from grammar.python.option import long_eq_arg, long_no_arg
 from grammar.python.option import short_adj_arg, short_stacked, short_no_arg
 from grammar.python.option import option
+from grammar.python.operand import operand, operand_angled, operand_all_caps
+
+from grammar.python.common import ws, t_eof, t_space, t_equals, p_ws
+
+from base import Test_Base
+from util import tprint, write_scratch
 
 #------------------------------------------------------------------------------
 
+def body():
+    return Sequence( OneOrMore ( OrderedChoice ( [ option, operand, ws ] ) ),
+                     EOF, rule_name='body', skipws=False )
+
 def grammar():
-    return Sequence( OneOrMore ( [ option, ws ] ),
+    return Sequence( OneOrMore ( OrderedChoice ( [ option, operand, ws ] ) ),
                      EOF, rule_name='grammar', skipws=False )
 
 #------------------------------------------------------------------------------
-    
-class Test_Import ( unittest.TestCase ) :
+
+class Test_Option ( Test_Base ) :
 
     def setUp(self):
 
-        self.parser = ParserPython(grammar, reduce_tree=True)
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
 
-        # quiet, no parse trees displayed
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
         # self.debug = False
 
         # show parse tree for pass >= self.debug
-        self.debug = 2
+        # self.debug = 2
 
-        # self.each = True
-        self.show = True
+        # Show text being parsed
+        # self.show = True
 
-        # # tprint._file =
-        # self.tty = open("/dev/tty", 'w')
+        # and again, to apply behavior per altered settings
+        super().setUp()
 
-        # self.rstdout = redirect_stdout(self.tty)
-        # self.rstdout.__enter__()
+        self.parser = ParserPython(grammar, reduce_tree=False)
 
-        tprint._on = self.show or self.debug is not False
-
-    #--------------------------------------------------------------------------
-
-    def tearDown(self):
-        # self.rstdout.__exit__(None, None, None)
-        # self.tty.close()
-        # self.tty = None
-        pass
+        write_scratch ( _clean = True )
 
     #--------------------------------------------------------------------------
 
-    def single( self, rule, value ):
-        parsed = self.parser.parse(' '+value)
-        # tprint("\n", parsed.tree_str(), "\n")
-        # print('') ; pp(parsed)
-        p_ws = Terminal(ws(), 0, ' ')
-        p_operand = Terminal(rule(), 0, value)
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_ws, p_operand, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
- 
+    def single( self, rule, text ):
+        expect = Terminal(rule(), 0, text)
+        super().single( rule, text, expect, skipws=False )
+
+    def thrice( self, rule, text ):
+        expect = Terminal(rule(), 0, text)
+        self.multiple ( rule, text, expect, n = 3 )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_short_single (self) :
         self.single(short_no_arg, "-l")
 
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_long_single (self) :
         self.single(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
 
-    def thrice( self, rule, value ):
-        n_times = 3
-        input = ' ' + ( value + ' ') * n_times
-        parsed = self.parser.parse(input)
-        # print('') ; pp(parsed)
-        p_operand = Terminal(rule(), 0, value)
-        p_ws = Terminal(ws(), 0, ' ')
-        elements = ( p_operand, p_ws ) * n_times
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
-
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_short_thrice (self) :
         self.thrice(short_no_arg, "-l")
 
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_long_thrice (self) :
         self.thrice(long_no_arg, "--long")
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_mixed, "Basic tests not enabled")
     def test_mixed (self) :
         input = ' -a -b --file --form -l --why '
         #
         input = input.strip()
-        parsed = self.parser.parse(' '+input)
         #
         inputs = input.split()
-        p_ws = Terminal(ws(), 0, ' ')
+        p_ws1 = p_ws(' ')
         elements = [ ]
         for value in inputs :
-            rule = short_no_arg if value[1] == '-' else long_no_arg
-            elements.append ( Terminal(rule(), 0, value) )
-            elements.append ( p_ws )
+            rule = long_no_arg if value[1] == '-' else short_no_arg
+            option_ = Terminal(rule(), 0, value)
+            option_ = NonTerminal( option(), [ option_ ] )
+            elements.append ( option_ )
+            elements.append ( p_ws1.expect )
         if len(elements) > 0:
             del elements[-1]
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
+        expect = NonTerminal(body(), [ *elements, t_eof ])
+        super().single(body, input, expect)
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_with_arg_adj, "With argument adjacent, tests not enabled")
     def test_long_eq_arg (self) :
-        input = ' --file=<a-file>  '
-        #
-        input = input.strip()
-        parsed = self.parser.parse(' '+input)
-        #
-        return
-        inputs = input.split()
-        p_ws = Terminal(ws(), 0, ' ')
-        elements = [ ]
-        for value in inputs :
-            rule = short_no_arg if value[1] == '-' else long_no_arg
-            elements.append ( Terminal(rule(), 0, value) )
-            elements.append ( p_ws )
-        if len(elements) > 0:
-            del elements[-1]
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_ws, *elements, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
+        value = '--file=<a-file>'
+        option_ = Terminal( long_no_arg(), 0, '--file' )
+        operand_ = Terminal( operand_angled(), 0, '<a-file>' )
+        operand_ = NonTerminal( operand(), [ operand_ ] )
+        expect = NonTerminal( long_eq_arg(), [ option_, t_equals, operand_ ] )
+        expect = NonTerminal( option(), [ expect ] )
+        expect = NonTerminal( body(), [ expect, t_eof ] )
+        super().single(body, value, expect)
 
-#------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------
 
-def tprint(*args, **kwargs):
-    if tprint._on :
-        kwargs['file'] = tprint._file
-        print(*args, **kwargs)
+    @unittest.skipUnless(tst_with_arg_adj, "With argument adjacent, tests not enabled")
+    def test_short_adj_arg (self) :
+        value = '-fFILE'
+        option_ = Terminal( long_no_arg(), 0, '-f' )
+        operand_ = Terminal( operand_all_caps(), 0, 'FILE' )
+        operand_ = NonTerminal( operand(), [ operand_ ] )
+        expect = NonTerminal( short_adj_arg(), [ option_, operand_ ] )
+        expect = NonTerminal( option(), [ expect ] )
+        expect = NonTerminal( body(), [ expect, t_eof ] )
+        super().single(body, value, expect)
 
-tprint._file = open("/dev/tty", 'w')
+    #--------------------------------------------------------------------------
 
-tprint._on = False
+    @unittest.skipUnless(tst_with_arg_gap, "With argument gap, tests not enabled")
+    def test_long_gap_arg (self) :
+        value = '--file <a-file>'
+        option_ = Terminal( long_no_arg(), 0, '--file' )
+        option_ = NonTerminal( option(), [ option_ ] )
+        p_ws1 = p_ws(' ')
+        operand_ = Terminal( operand_angled(), 0, '<a-file>' )
+        operand_ = NonTerminal( operand(), [ operand_ ] )
+        expect = NonTerminal( body(), [ option_, p_ws1.expect, operand_, t_eof ] )
+        super().single(body, value, expect)
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_with_arg_gap, "With argument gap, tests not enabled")
+    def test_short_gap_arg (self) :
+        value = '-f FILE'
+        option_ = Terminal( short_no_arg(), 0, '-f' )
+        option_ = NonTerminal( option(), [ option_ ] )
+        p_ws1 = p_ws(' ')
+        operand_ = Terminal( operand_all_caps(), 0, 'FILE' )
+        operand_ = NonTerminal( operand(), [ operand_ ] )
+        expect = NonTerminal( body(), [ option_, p_ws1.expect, operand_, t_eof ] )
+        super().single(body, value, expect)
 
 #------------------------------------------------------------------------------
 
