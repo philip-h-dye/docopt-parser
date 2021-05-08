@@ -13,12 +13,12 @@ ALL = ( # single character constants and rules are added dynamically
         #
         # rules
         ' whitespace '          # single whitespace character
-        ' ws '                  # one or more whitespace characters
-        ' wx '                  # zero or more whitespace characters
         ' newline '             # newline, optionally preceed by whitespace
         ' blank_line '          # two newlines, intervening whitespace ok
-        ' t_ws '
-        ' t_wx_newline '
+        ' ws t_ws p_ws'         # one or more whitespace characters
+        ' wx t_ws p_ws'         # zero or more whitespace characters
+        ' valid_wx t_wx_newline p_wx_newline '
+        ' valid_ws t_ws_newline p_ws_newline '
       ).split()
 
 #------------------------------------------------------------------------------
@@ -57,6 +57,14 @@ del _c
 
 #------------------------------------------------------------------------------
 
+@dataclass
+class ParseSpec (object):
+    text        : str
+    rule        : ParsingExpression
+    expect      : ParseTreeNode
+
+#------------------------------------------------------------------------------
+
 def create_character_rules_and_terminals ( c ):
     c.name_lc = c.name.lower()
     code = f"""
@@ -73,6 +81,9 @@ def create_character_rules_and_terminals ( c ):
 	t_{c.name_lc} = Terminal({c.name_lc}_m(), 0, {c.name})
 	CHARACTER_TERMINALS.append(t_{c.name_lc})
 	ALL.append(t_{c.name_lc})
+
+	p_{c.name_lc} = ParseSpec( {c.name}, {c.name_lc}_m, t_{c.name_lc} )
+	ALL.append(p_{c.name_lc})
 """
     exec(code.replace('\t',''), globals())
 
@@ -85,6 +96,8 @@ def create_character_rules_and_terminals ( c ):
 	ALL.append({c.alias_lc}_m)
 	t_{c.alias_lc} = t_{c.name_lc}
 	ALL.append(t_{c.alias_lc})
+	p_{c.alias_lc} = p_{c.name_lc}
+	ALL.append(p_{c.alias_lc})
 """
     exec(code.replace('\t',''), globals())
 
@@ -187,7 +200,57 @@ def blank_line():
 #------------------------------------------------------------------------------
 
 t_newline = Terminal(newline(), 0, '\n')
+p_newline = ParseSpec ( LINEFEED, newline, t_newline )
+
 t_eof = Terminal(EOF(), 0, '')
+p_eof = ParseSpec ( '', EOF, t_eof )
+
+#------------------------------------------------------------------------------
+
+def linefeed_eol_only ( text ) :
+
+    n_linefeeds = text.count(LINEFEED)
+    # print(f"\n: n_linefeeds = {n_linefeeds}")
+
+    if n_linefeeds <= 0 :
+        raise ValueError(f"No linefeeds in <text>, one is required  "
+                         "at the end.  Please address.")
+
+    if n_linefeeds > 1 :
+        raise ValueError(f"Found {n_linefeeds} linefeeds in <text>, only one "
+                         "allowed, at the end.  Please address.")
+
+    if text[-1] != LINEFEED :
+        if n_linefeeds <= 0 :
+            raise ValueError(f"Linefeed not at end of specified <text>. "
+                             "Please address." )
+        text = text + LINEFEED
+
+#------------------------------------------------------------------------------
+
+def valid_wx ( text ) :
+
+    for ch in text :
+        if ch not in WHITESPACE_CHARS :
+            raise ValueError(
+                f"In specified <text> '{text}', ch '{ch}' is not a configured "
+                "whitespace character ({WHITESPACE_NAMES}).  Please address." )
+
+#------------------------------------------------------------------------------
+
+def valid_ws ( text ) :
+
+    missing = ( "<text> has no whitespace characters.  'ws' requires "
+                "at least one.  Please address or use t_wx_newline." )
+
+    if text is None or text == '' or text == LINEFEED :
+        raise ValueError(missing)
+
+    for ch in WHITESPACE_CHARS :
+        if ch in text :
+            return valid_wx(text)
+
+    raise ValueError(missing)
 
 #------------------------------------------------------------------------------
 
@@ -206,31 +269,18 @@ def t_wx_newline ( text = None ):
     if text is None or text == '' or text == LINEFEED :
         return t_newline
 
+    linefeed_eol_only ( text )
 
-    n_linefeeds = text.count(LINEFEED)
-    if n_linefeeds > 1 :
-        raise ValueError(f"Found {n_linefeed} linefeeds in <text>, only one "
-                         "allowed, at the end.  Please address.")
-
-    if text[-1] != LINEFEED :
-        if n_linefeeds > 0 :
-            raise ValueError(f"Linefeed not at end of specified <text>. "
-                             "Please address." )
-        text = text + LINEFEED
-
-    whitespace_ = text[:-1]
-
-    for ch in whitespace_ :
-        if ch not in WHITESPACE_CHARS :
-            raise ValueError(
-                f"In specified <text> '{text}', ch '{ch}' is not a configured "
-                "whitespace character ({WHITESPACE_NAMES}).  Please address." )
+    valid_wx ( text[:-1] )
 
     return Terminal( newline(), 0, text )
 
+def p_wx_newline ( text ) :
+    return ParseSpec ( text, newline, t_wx_newline(text) )
+
 #------------------------------------------------------------------------------
 
-def t_ws(text):
+def t_ws_newline ( text ):
     """Return an arpeggio.Terminal for newline with the specified whitespace.
        If leading whitespace portion of <text> is not empty, create a newline
        Terminal with the leading whitespace followed by a linefeed.
@@ -241,13 +291,53 @@ def t_ws(text):
                linefeed.  May not contain more than linefeed.  If present,
                the linefeed must be last.
     """
+    linefeed_eol_only ( text )
+    valid_ws ( text[:-1] )
+    return Terminal( newline(), 0, text )
 
-    for ch in text :
-        if ch not in WHITESPACE_CHARS :
-            raise ValueError(
-                f"In specified <text> '{text}', ch '{ch}' is not a configured "
-                "whitespace character ({WHITESPACE_NAMES}).  Please address." )
+def p_ws_newline ( text ) :
+    return ParseSpec ( text, newline, t_ws_newline(text) )
+
+#------------------------------------------------------------------------------
+
+def t_wx ( text ) :
+    """Return an arpeggio.Terminal for wx with the specified whitespace.
+       If leading whitespace portion of <text> is not empty, create a newline
+       Terminal with the leading whitespace followed by a linefeed.
+
+       Simply returns t_newline if no whitespace specified.
+
+      <text> : zero or more whitespace characters, optionally followed by a
+               linefeed.  May not contain more than linefeed.  If present,
+               the linefeed must be last.
+    """
+
+    valid_wx(text)
+
+    return Terminal( wx(), 0, text )
+
+def p_wx ( text ) :
+    return ParseSpec ( text, ws, t_ws(text) )
+
+#------------------------------------------------------------------------------
+
+def t_ws ( text ) :
+    """Return an arpeggio.Terminal ws for the specified whitespace.
+       If leading whitespace portion of <text> is not empty, create a newline
+       Terminal with the leading whitespace followed by a linefeed.
+
+       Simply returns t_newline if no whitespace specified.
+
+      <text> : zero or more whitespace characters, optionally followed by a
+               linefeed.  May not contain more than linefeed.  If present,
+               the linefeed must be last.
+    """
+
+    valid_ws(text)
 
     return Terminal( ws(), 0, text )
+
+def p_ws ( text ) :
+    return ParseSpec ( text, ws, t_ws(text) )
 
 #------------------------------------------------------------------------------

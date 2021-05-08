@@ -4,6 +4,12 @@ tst_whitespace_chars				= True
 tst_class_whitespace_rule_per_characters	= True
 tst_class_rule_whitespace			= True
 tst_class_or_more				= True
+tst_blank_line   				= True
+tst_p_wx_newline 				= True
+tst_p_ws_newline 				= True
+
+# from util import tst_disable_all
+# tst_disable_all()
 
 # FIXME: - need more tests which are negative.
 #        - test positive and negative lookahead with And(), Not()
@@ -31,9 +37,12 @@ from arpeggio import EOF, StrMatch, RegExMatch, OrderedChoice, OneOrMore
 
 from grammar.python import common
 
+from grammar.python.common import p_wx_newline, p_ws_newline
+
 from p import pp_str
 
 from util import write_scratch, remove_punctuation, tprint, print_parsed
+from util import fname
 
 #------------------------------------------------------------------------------
 
@@ -407,6 +416,7 @@ class Test_Common ( unittest.TestCase ) :
     def setUp(self):
         write_scratch( _clean=True )
 
+    @unittest.skipUnless(tst_blank_line, "blank_line, tests not enabled")
     def test_3_explicit_blank_line(self):
 
         newline = common.newline
@@ -416,7 +426,7 @@ class Test_Common ( unittest.TestCase ) :
         t_newline = Terminal(newline(), 0, '\n')
 
         text = ""
-        expect = []
+        expect_list = []
 
         s_blank_line_empty = '\n'
         t_blank_line_empty = Terminal(blank_line(), 0, s_blank_line_empty)
@@ -424,10 +434,10 @@ class Test_Common ( unittest.TestCase ) :
         #--------------------------------------------------------------------------
 
         text += '\n' + s_blank_line_empty
-        expect.extend ( ( t_newline, t_blank_line_empty ) )
+        expect_list.extend ( ( t_newline, t_blank_line_empty ) )
 
         self.check_parse ( 'test_blank_line : 1', blank_line, blank_line(),
-                           words, text, expect )
+                           words, text, expect_list )
 
         #--------------------------------------------------------------------------
 
@@ -437,17 +447,96 @@ class Test_Common ( unittest.TestCase ) :
         # t_blank_line_empty = Terminal(blank_line(), 0, s_blank_line_empty)
 
         text += phrase + '\n' + s_blank_line_empty
-        expect.extend ( ( t_phrase, t_newline, t_blank_line_empty ) )
+        expect_list.extend ( ( t_phrase, t_newline, t_blank_line_empty ) )
 
         self.check_parse ( 'test_blank_line : 2', blank_line, blank_line(),
-                           words, text, expect )
+                           words, text, expect_list )
 
     #--------------------------------------------------------------------------
 
-    def check_parse ( self, fcn, rule_f, rule, words, text, expect ) :
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_lf_missing__exception (self):
+        with self.assertRaises(ValueError) :
+            p_wx_newline(' '*3)
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_lf_in_middle__exception (self):
+        with self.assertRaises(ValueError) :
+            p_wx_newline(' '+(common.LINEFEED+' '))
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_extra_linefeed__exception (self):
+        with self.assertRaises(ValueError) :
+            p_wx_newline('  '+(common.LINEFEED*2))
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_spc_0 (self):
+        self.check_parse_spec ( p_wx_newline((0*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_spc_1 (self):
+        self.check_parse_spec ( p_wx_newline((1*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_spc_3 (self):
+        self.check_parse_spec ( p_wx_newline((3*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_5_p_wx_newline_spc_5 (self):
+        self.check_parse_spec ( p_wx_newline((5*' ')+common.LINEFEED) )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_lf_missing__exception (self):
+        with self.assertRaises(ValueError) :
+            p_ws_newline(' '*3)
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_lf_in_middle__exception (self):
+        with self.assertRaises(ValueError) :
+            p_ws_newline(' '+(common.LINEFEED+' '))
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_extra_linefeed__exception (self):
+        with self.assertRaises(ValueError) :
+            p_ws_newline('  '+(common.LINEFEED*2))
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_spc_0__exception (self):
+        with self.assertRaises(ValueError) :
+            self.check_parse_spec ( p_ws_newline((0*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_spc_1 (self):
+        self.check_parse_spec ( p_ws_newline((1*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_spc_3 (self):
+        self.check_parse_spec ( p_ws_newline((3*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_6_p_ws_newline_spc_5 (self):
+        self.check_parse_spec ( p_ws_newline((5*' ')+common.LINEFEED) )
+
+    #--------------------------------------------------------------------------
+
+    def check_parse_spec ( self, p ):
+        self.check_parse ( fname(1), p.rule, p.rule(), get_words(p.text),
+                           p.text, [ p.expect ] )
+
+    #--------------------------------------------------------------------------
+
+    def check_parse ( self, fcn, rule_f, rule, words, text, expect_list ) :
 
         t_eof = Terminal(EOF(), 0, '')
-        expect = ( ( *expect ), t_eof )
+        expect = ( ( *expect_list ), t_eof )
 
         newline = common.newline()
         catchall = RegExMatch( r'.*', rule_name='catch_all' )
@@ -480,7 +569,6 @@ class Test_Common ( unittest.TestCase ) :
               f"[grammar]\n{pp_str(grammar)}\n"
               f"[expect]\n{pp_str(expect)}\n"
               f"[parsed]\n{pp_str(parsed)}" )
-
 
 #------------------------------------------------------------------------------
 
