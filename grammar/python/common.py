@@ -4,7 +4,8 @@ from keyword import iskeyword
 
 from dataclasses import dataclass
 
-from arpeggio import EOF, RegExMatch as _ , StrMatch, Terminal
+from arpeggio import ParsingExpression, EOF, RegExMatch as _ , StrMatch
+from arpeggio import ParseTreeNode, Terminal
 
 #------------------------------------------------------------------------------
 
@@ -16,22 +17,24 @@ ALL = ( # single character constants and rules are added dynamically
         ' wx '                  # zero or more whitespace characters
         ' newline '             # newline, optionally preceed by whitespace
         ' blank_line '          # two newlines, intervening whitespace ok
+        ' t_wx_newline '
       ).split()
 
 #------------------------------------------------------------------------------
 
-# https://donsnotes.com/tech/charsets/ascii.html
-
 @dataclass
 class character (object):
     name        : str           # Must be n all uppercase valid identifier
-    raw         : str           # i.e. r'\n' is two characters
+    raw         : str           # i.e. r'\n' is two characters, not one
     alias       : str           = None
     ch          : str           = None
     name_lc     : str           = None
     rule        : object        = None
     rule_m      : object        = None
 
+#------------------------------------------------------------------------------
+
+# https://donsnotes.com/tech/charsets/ascii.html
 
 _c = character
 
@@ -72,14 +75,17 @@ def create_character_rules_and_terminals ( c ):
 """
     exec(code.replace('\t',''), globals())
 
-    if c.alias and len(c.alias) > 0:
+    if c.alias is not None and len(c.alias) > 0:
         c.alias_lc = c.alias.lower()
-        exec(f"{c.alias_lc} = {c.name_lc} \n"
-             f"ALL.append({c.alias_lc}) \n"
-             f"{c.alias_lc}_m = {c.name_lc}_m \n"
-             f"ALL.append({c.alias_lc}_m) \n"
-             f"t_{c.alias_lc} = t_{c.name_lc} \n"
-             f"ALL.append(t_{c.alias_lc}) \n" )
+        code = f"""
+	{c.alias_lc} = {c.name_lc}
+	ALL.append({c.alias_lc})
+	{c.alias_lc}_m = {c.name_lc}_m
+	ALL.append({c.alias_lc}_m)
+	t_{c.alias_lc} = t_{c.name_lc}
+	ALL.append(t_{c.alias_lc})
+"""
+    exec(code.replace('\t',''), globals())
 
 #------------------------------------------------------------------------------
 
@@ -134,9 +140,6 @@ for c in CHARACTER_TABLE :
     ALL.append(c.name)
     if c.alias is not None :
         validate_name('alias', c.alias, c.raw)
-        assert c.alias == c.alias.upper(), \
-            ( f"Character alias '{name}' is not all uppercase.  As constants, "
-              f"character names and aliases must be all uppercase." )
         CHARACTER_NAME_TO_CHAR[c.alias] = c.ch
         CHARACTER_CHAR_TO_ALIAS[c.ch] = c.alias
         setattr ( module, c.alias, c.ch )
