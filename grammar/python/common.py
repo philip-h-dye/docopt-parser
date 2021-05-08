@@ -17,6 +17,7 @@ ALL = ( # single character constants and rules are added dynamically
         ' wx '                  # zero or more whitespace characters
         ' newline '             # newline, optionally preceed by whitespace
         ' blank_line '          # two newlines, intervening whitespace ok
+        ' t_ws '
         ' t_wx_newline '
       ).split()
 
@@ -226,5 +227,27 @@ def t_wx_newline ( text = None ):
                 "whitespace character ({WHITESPACE_NAMES}).  Please address." )
 
     return Terminal( newline(), 0, text )
+
+#------------------------------------------------------------------------------
+
+def t_ws(text):
+    """Return an arpeggio.Terminal for newline with the specified whitespace.
+       If leading whitespace portion of <text> is not empty, create a newline
+       Terminal with the leading whitespace followed by a linefeed.
+
+       Simply returns t_newline if no whitespace specified.
+
+      <text> : zero or more whitespace characters, optionally followed by a
+               linefeed.  May not contain more than linefeed.  If present,
+               the linefeed must be last.
+    """
+
+    for ch in text :
+        if ch not in WHITESPACE_CHARS :
+            raise ValueError(
+                f"In specified <text> '{text}', ch '{ch}' is not a configured "
+                "whitespace character ({WHITESPACE_NAMES}).  Please address." )
+
+    return Terminal( ws(), 0, text )
 
 #------------------------------------------------------------------------------
