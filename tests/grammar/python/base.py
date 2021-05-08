@@ -4,23 +4,30 @@ analyzing                       = False
 
 #------------------------------------------------------------------------------
 
+from dataclasses import dataclass
+
 import unittest
 
 from prettyprinter import cpprint as pp
 
-from arpeggio import ParserPython, flatten, EOF, NonTerminal, Sequence
+from arpeggio import ParsingExpression, EOF, Sequence, OrderedChoice, OneOrMore
+from arpeggio import ParserPython, flatten, ParseTreeNode, NonTerminal
 
 from docopt_parser.parsetreenodes import nodes_equal
 
 #------------------------------------------------------------------------------
 
-from grammar.python.common import t_eof
+from grammar.python.common import t_eof, p_linefeed, p_space
 
 from util import tprint, write_scratch
+
+from p import pp_str
 
 #------------------------------------------------------------------------------
 
 class Test_Base ( unittest.TestCase ) :
+
+    MULTIPLE_SEP_LINEFEED = p_linefeed
 
     def setUp(self):
 
@@ -69,17 +76,52 @@ class Test_Base ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def multiple ( self, rule, text, expect, n=1, sep='\n' ):
-        # both rule and text get a single space prefix to assist when
-        # the rule has a whitespace lookahead
+    def multiple ( self, rule, text, expect, n=1, sep=p_linefeed, lead=None,
+                   skipws=True ):
+        """
+        <sep>  : ParseSpec separator between each element. DEFAULT p_linefeed
+                 from grammar.python.common.p_linefeed,
+                   i.e. ParseSpec( LINEFEED, linefeed_m, t_linefeed )
+
+        <lead> : Optional leading value to prefix each text element.  This
+                 is necessary when the rule has lookbehind.  For exmample,
+                 '(?<=\s)foo', a sufficient lead would be p_space, i.e.
+                 ParseSpec( ' ', space, t_space ).  Being whitespace,
+                 skipws=False is also necessary.
+        """
+        text_list = [ text ]
+        rule_list = [ rule ]
+        expect_list = [ expect ]
+
+        if lead is not None :
+            text = lead.text + text
+            rule_list.insert( 0, lead.rule )
+            expect_list.insert( 0, load.expect )
+
+        if n > 1 :
+            text_list += [ sep.text ]
+            rule_list += [ sep.rule ]
+            expect_list += [ sep.expect ]
+
+            text_list *= n
+            # NOT with OrderedChoice # rule_list *= n
+            expect_list *= n
+
+            del text_list[-1]
+            # NOT with OrderedChoice # del rule_list[-1]
+            del expect_list[-1]
+
+            # rule not tripled since using OrderedChoice.  Losening allows
+            # invalid inputs to successfully parse but then be trapped
+            # in verify()
+
+        text = ''.join(text_list)
+
         def grammar():
             return Sequence (
-                ( OneOrMore( OrderedChoice ( [ rule, ws, newline ] ) ), EOF ),
-                rule_name='grammar', skipws=True )
-        text = sep.join( [text] * n )
-        expect_list = [expect] * n
+                ( OneOrMore( OrderedChoice( [ *rule_list ] , ) ) , EOF ) ,
+                rule_name='grammar', skipws=False )
         # print(f"\n: multiple : text = '{text}'")
-        # self.verify_grammar ( grammar, ' '+text, expect_list )
         self.verify_grammar ( grammar, text, expect_list )
 
     #--------------------------------------------------------------------------
