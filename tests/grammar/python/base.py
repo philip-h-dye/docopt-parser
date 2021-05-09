@@ -112,7 +112,7 @@ class Test_Base ( unittest.TestCase ) :
             del expect_list[-1]
 
             # rule not tripled since using OrderedChoice.  Losening allows
-            # invalid inputs to successfully parse but then be trapped
+            # invalid texts to successfully parse but then be trapped
             # in verify()
 
         text = ''.join(text_list)

@@ -81,8 +81,8 @@ class Test_Import ( unittest.TestCase ) :
 
     def thrice( self, rule, value ):
         n_times = 3
-        input = ( value + ' ') * n_times
-        parsed = self.parser.parse(input)
+        text = ( value + ' ') * n_times
+        parsed = self.parser.parse(text)
         # print('') ; pp(parsed)
         p_operand = Terminal(rule(), 0, value)
         p_ws = Terminal(ws(), 0, ' ')
@@ -100,15 +100,15 @@ class Test_Import ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def test_mixed (self) :
-        input = ' <a> <b> CC <d> EE '
+        text = ' <a> <b> CC <d> EE '
         #
-        input = input.strip()
-        parsed = self.parser.parse(input)
+        text = text.strip()
+        parsed = self.parser.parse(text)
         #
-        inputs = input.split()
+        texts = text.split()
         p_ws = Terminal(ws(), 0, ' ')
         elements = [ ]
-        for value in inputs :
+        for value in texts :
             rule = operand_angled if value[0] == '<' else operand_all_caps
             elements.append ( Terminal(rule(), 0, value) )
             elements.append ( p_ws )

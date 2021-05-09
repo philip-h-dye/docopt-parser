@@ -128,23 +128,23 @@ and do great things.
 
 class Test_Import ( unittest.TestCase ) :
 
-    def builder ( self, inputs ):
+    def builder ( self, texts ):
 
         p_newline = Terminal(newline(), 0, '\n')
 
-        input = ""
+        text = ""
 
         body_ = [ ]
-        for atom in inputs :
+        for atom in texts :
             if atom == '\n':
-                input += atom
+                text += atom
                 # print(f": atom = <newline>")
                 body_.append ( NonTerminal(element(), [ p_newline ] ) )
             else:
                 # Fiddling necessary since 'line' does not support fragments
                 # and paragraph does not support leading newlines
                 atom = atom.strip()
-                input += atom + '\n'
+                text += atom + '\n'
                 # print(f": atom = '{atom}'")
                 paragraph_ =[]
                 for text_ in atom.split('\n'):
@@ -157,25 +157,25 @@ class Test_Import ( unittest.TestCase ) :
         p_eof		= Terminal(EOF(), 0, '')
         expect		= NonTerminal(document(), [p_body, p_eof] )
 
-        return ( input, expect )
+        return ( text, expect )
 
 
     #--------------------------------------------------------------------------
 
-    def apply (self, inputs ) :
+    def apply (self, texts ) :
 
-        ( input, expect ) = self.builder (
-            inputs,
+        ( text, expect ) = self.builder (
+            texts,
         )
 
-        # print('\n: input = '{input}'")
+        # print('\n: text = '{text}'")
         # print('\n: expect') ; pp(expect)
 
         # with open("expect.raw", 'w') as f, redirect_stdout(f) :
         #     pp(expect)
 
         parser = ParserPython( document, skipws=False )
-        parsed = parser.parse(input)
+        parsed = parser.parse(text)
 
         # print('\n: parsed') ; pp(parsed)
         # with open("parsed.raw", 'w') as f, redirect_stdout(f) :
@@ -184,7 +184,7 @@ class Test_Import ( unittest.TestCase ) :
         # assert parsed == expect, \
 
         assert NonTerminal_eq_structural(parsed, expect), \
-            ( f"input = '{input}' :\n"
+            ( f"text = '{text}' :\n"
               f"[expect]\n{pp_str(expect)}\n"
               f"[parsed]\n{pp_str(parsed)}" )
 

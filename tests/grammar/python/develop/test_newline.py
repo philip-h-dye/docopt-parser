@@ -41,7 +41,7 @@ def document():
 
 #------------------------------------------------------------------------------
 
-# FIXME:  test the error handling with invalid inputs
+# FIXME:  test the error handling with invalid texts
 
 class Test_Import ( unittest.TestCase ) :
 
@@ -55,8 +55,8 @@ class Test_Import ( unittest.TestCase ) :
 
         parser = ParserPython( document, skipws=False )
 
-        input = '\n\n\n'
-        parsed = parser.parse(input)
+        text = '\n\n\n'
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         p_newline	= Terminal(newline(), 0, '\n')
@@ -66,7 +66,7 @@ class Test_Import ( unittest.TestCase ) :
         expect		= NonTerminal(document(), [p_body, p_eof] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
@@ -77,8 +77,8 @@ class Test_Import ( unittest.TestCase ) :
         # print('\n: document') ; pp(document())
         parser = ParserPython( document, skipws=False )
 
-        input = self.words1 + '\n'
-        parsed = parser.parse(input)
+        text = self.words1 + '\n'
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         p_w1_words	= Terminal(words(), 0, self.words1)
@@ -87,20 +87,20 @@ class Test_Import ( unittest.TestCase ) :
         expect		= NonTerminal(document(), [p_w1_words, p_newline, p_eof] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
 
     #builder
-    def builder ( self, inputs ):
+    def builder ( self, texts ):
 
         p_newline = Terminal(newline(), 0, '\n')
 
-        input = ''.join(flatten(inputs))
+        text = ''.join(flatten(texts))
 
         body_ = [ ]
-        for atom in inputs :
+        for atom in texts :
             if atom == '\n':
                 # print(f": atom = <newline>")
                 body_.append ( NonTerminal(element(), [ p_newline ] ) )
@@ -114,24 +114,24 @@ class Test_Import ( unittest.TestCase ) :
 
         # print('\n: expect') ; pp(expect)
 
-        return ( input, expect )
+        return ( text, expect )
 
 
     #--------------------------------------------------------------------------
 
-    def apply (self, inputs ) :
+    def apply (self, texts ) :
 
-        ( input, expect ) = self.builder (
-            inputs,
+        ( text, expect ) = self.builder (
+            texts,
         )
 
-        # print(f"\n: input :\n{input}")
+        # print(f"\n: text :\n{text}")
 
         parser = ParserPython( document, skipws=False )
-        parsed = parser.parse(input)
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------

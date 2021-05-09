@@ -41,7 +41,7 @@ def document():
 
 #------------------------------------------------------------------------------
 
-# FIXME:  test the error handling with invalid inputs
+# FIXME:  test the error handling with invalid texts
 
 class Test_Import ( unittest.TestCase ) :
 
@@ -55,8 +55,8 @@ class Test_Import ( unittest.TestCase ) :
 
         parser = ParserPython( document, skipws=False )
 
-        input = '\n\n\n'
-        parsed = parser.parse(input)
+        text = '\n\n\n'
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         t_newline     = Terminal(newline(), 0, '\n')
@@ -68,7 +68,7 @@ class Test_Import ( unittest.TestCase ) :
         expect        = NonTerminal(document(), [p_body, p_eof] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
@@ -77,9 +77,9 @@ class Test_Import ( unittest.TestCase ) :
 
         parser = ParserPython( document, skipws=False )
 
-        input = f"{self.words1}\n\n"
+        text = f"{self.words1}\n\n"
 
-        parsed = parser.parse(input)
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         t_words1	  = Terminal(words(), 0, self.words1)
@@ -93,7 +93,7 @@ class Test_Import ( unittest.TestCase ) :
         expect        = NonTerminal(document(), [p_body, p_eof] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
@@ -102,9 +102,9 @@ class Test_Import ( unittest.TestCase ) :
 
         parser = ParserPython( document, skipws=False )
 
-        input = f"{self.words1}\n\n"
+        text = f"{self.words1}\n\n"
 
-        parsed = parser.parse(input)
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         expect = NonTerminal(document(), [
@@ -123,7 +123,7 @@ class Test_Import ( unittest.TestCase ) :
         ] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
     #--------------------------------------------------------------------------
@@ -134,9 +134,9 @@ class Test_Import ( unittest.TestCase ) :
 
         paragraph = f"{self.words1}\n{self.words2}\n{self.words3}\n"
 
-        input = paragraph + '\n' + paragraph
+        text = paragraph + '\n' + paragraph
 
-        parsed = parser.parse(input)
+        parsed = parser.parse(text)
         # print('\n: parsed') ; pp(parsed)
 
         x_paragraph = [
@@ -172,7 +172,7 @@ class Test_Import ( unittest.TestCase ) :
         ] )
         # print('\n: expect') ; pp(expect)
 
-        assert parsed == expect, ( f"input = '{input}' :\n"
+        assert parsed == expect, ( f"text = '{text}' :\n"
                                    f"[expect]\n{pp_str(expect)}\n[parsed]\n{pp_str(parsed)}" )
 
 #------------------------------------------------------------------------------

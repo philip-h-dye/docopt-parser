@@ -65,10 +65,10 @@ alias pthere=pytest-here
 cbase=grammar/python
 
 cgrp=.
-# ctgt=common
+ctgt=common
 # ctgt=operand
 # ctgt=option
-ctgt=usage
+# ctgt=usage
 
 # cgrp=develop
 # ctgt=newline

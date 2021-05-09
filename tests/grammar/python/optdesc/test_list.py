@@ -72,8 +72,8 @@ class Test_Option_List ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def test_single_short_no_arg (self):
-        input = '-f'
-        parsed = self.parser.parse(input)
+        text = '-f'
+        parsed = self.parser.parse(text)
         # tprint("[parsed]") ; pp(parsed)
         expect = create_expect (
             NonTerminal( option(), [Terminal(short_no_arg(), 0, '-f')] )
@@ -87,8 +87,8 @@ class Test_Option_List ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def test_single_short_with_one_arg (self):
-        input = '-fNORM'
-        parsed = self.parser.parse(input)
+        text = '-fNORM'
+        parsed = self.parser.parse(text)
         # tprint("[parsed]") ; pp(parsed)
         expect = create_expect (
             NonTerminal( option(), [
@@ -170,32 +170,32 @@ tprint._on = True
 
 def ol_generate ( cls, optdefs, sep =', ', expect_fail=False ) :
 
-    def create_method ( actual_input, the_terms ) :
+    def create_method ( actual_text, the_terms ) :
         def the_test_method (self) :
-            input = actual_input
+            text = actual_text
             terms = the_terms
             expect = create_expect ( *terms, sep=sep )
             try :
-                parsed = self.parser.parse(input)
+                parsed = self.parser.parse(text)
             except :
                 print("\nParse FAILED\n"
                       f"[expect]\n{pp_str(expect)}\n"
-                      f"input = '{input}' :\n" )
+                      f"text = '{text}' :\n" )
                 assert 1 == 0
 
             # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
             # tprint("[parsed]") ; pp(parsed)
-            # tprint(f"\ninput = '{input}'\n")
+            # tprint(f"\ntext = '{text}'\n")
             assert nodes_equal(parsed, expect, verbose=True), \
                 ( f"[expect]\n{pp_str(expect)}\n"
                   f"[parsed]\n{pp_str(parsed)}"
-                  f"input = '{input}' :\n" )
+                  f"text = '{text}' :\n" )
         return the_test_method
 
-    ( initial_input, terms ) = create_terms( optdefs, sep = sep )
+    ( initial_text, terms ) = create_terms( optdefs, sep = sep )
 
-    name = method_name(initial_input)
-    method = create_method ( initial_input, terms )
+    name = method_name(initial_text)
+    method = create_method ( initial_text, terms )
     if expect_fail :
         method = unittest.expectedFailure(method)
     setattr ( cls, name, method )

@@ -106,7 +106,7 @@ def empty_string_raises_NoMatch(name_prefix, rule_f, ch):
 
 def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
     """Generate test methods whether <rule_f> matches <s> in these scenarios :
-         - by itself, <s> is the entire input string to be parsed.
+         - by itself, <s> is the entire text string to be parsed.
          - at start of the parsed text, followed by a phrase
          - in the middle between twp phrases
          - at the end of the parsed text, preceeded by a phrase
@@ -123,22 +123,22 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
          characters present in <s>.
 
     """
-    def create_method (name, rule_f, rule, s, grammar, input, expect):
+    def create_method (name, rule_f, rule, s, grammar, text, expect):
         def the_method(self):
-            nonlocal name, rule_f, rule, s, grammar, input, expect
+            nonlocal name, rule_f, rule, s, grammar, text, expect
             parser = ParserPython( grammar, skipws=False )
             write_scratch( call={'fcn' : 'string_test' , 's' : s ,
                                  'rule_f' : rule_f , 'rule' : rule , },
-                           name=name, grammar=grammar, input=input,
+                           name=name, grammar=grammar, text=text,
                            expect=expect, expect_f=flatten(expect),
                            model=parser.parser_model )
             try :
-                parsed = parser.parse(input)
+                parsed = parser.parse(text)
                 write_scratch ( parsed=parsed )
                 write_scratch ( parsed_f=flatten(parsed) )
             except :
                 print(f"\nParser FAILED : s = '{s}' :"
-                      f"\ninput = '{input}'"
+                      f"\ntext = '{text}'"
                       f"[grammar]\n{pp_str(grammar)}\n"
                       f"\n[expect]\n{pp_str(expect)}")
                 raise
@@ -147,7 +147,7 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
             parsed = flatten(parsed)
             expect = flatten(expect)
             assert parsed == expect, \
-                ( f"s = '{s}' : input = '{input}' :\n"
+                ( f"s = '{s}' : text = '{text}' :\n"
                   f"[grammar]\n{pp_str(grammar)}\n"
                   f"[expect]\n{pp_str(expect)}\n"
                   f"[parsed]\n{pp_str(parsed)}" )
@@ -181,10 +181,10 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
         ch_hexes = ch_hexes[0]
         ch_names = ch_names[0]
 
-    for test_name, grammar, input, expect in scenarios(rule, ch):
+    for test_name, grammar, text, expect in scenarios(rule, ch):
         method_name = f"test_{name_prefix}_rule_{rule.rule_name}__AGAINST_{ch_hexes}_{ch_names}_{test_name}"
         # print(f"Adding {method_name}")
-        method = create_method(method_name, rule_f, rule, ch, grammar, input, expect)
+        method = create_method(method_name, rule_f, rule, ch, grammar, text, expect)
         setattr ( Test_Common, method_name, method )
 
 #--------------------------------------------------------------------------
@@ -224,7 +224,7 @@ def character_lookup ( s, ch_names=None ) :
 
 #--------------------------------------------------------------------------
 
-def scenarios(rule, s): # -> grammar, input, expect
+def scenarios(rule, s): # -> grammar, text, expect
 
     assert FAKE_SPACE not in s, "INTERNAL ERROR, chosen 'fake space' in string to be tested !"
 

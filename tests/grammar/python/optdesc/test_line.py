@@ -194,17 +194,17 @@ class Test_Option_Line ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def test_single_short_no_arg (self):
-        input = '-f'
+        text = '-f'
         expect = create_expect (
             NonTerminal( option(), [ Terminal( short_no_arg(), 0, '-f' ) ] ) ,
-            eof = ( input[-1] != '\n' ) ,
+            eof = ( text[-1] != '\n' ) ,
         )
-        self.parse_and_verify( input, expect )
+        self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
 
     def test_single_short_w_arg (self):
-        input = '-fNORM'
+        text = '-fNORM'
         expect = create_expect (
             NonTerminal( option(), [ 
                 NonTerminal( short_adj_arg(), [
@@ -214,14 +214,14 @@ class Test_Option_Line ( unittest.TestCase ) :
                     ]) ,
                 ]) ,
             ]) ,
-            eof = ( input[-1] != '\n' ) ,
+            eof = ( text[-1] != '\n' ) ,
         )
-        self.parse_and_verify( input, expect )
+        self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
 
     def test_single (self):
-        input = '-f'
+        text = '-f'
         expect = NonTerminal( document(), [
             NonTerminal( body(), [
                 NonTerminal( element(), [
@@ -239,12 +239,12 @@ class Test_Option_Line ( unittest.TestCase ) :
             ]) ,
             Terminal(EOF(), 0, '') ,
         ])
-        self.parse_and_verify( input, expect )
+        self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
 
     def test_pair (self):
-        input = '-f -x'
+        text = '-f -x'
         expect = NonTerminal( document(), [
             NonTerminal( body(), [
                 NonTerminal( element(), [
@@ -274,13 +274,13 @@ class Test_Option_Line ( unittest.TestCase ) :
             ]) ,
             Terminal(EOF(), 0, '') ,
         ])
-        self.parse_and_verify( input, expect )
+        self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
 
     def test_trio (self):
 
-        input = '-f -x -l'
+        text = '-f -x -l'
 
         expect = NonTerminal( document(), [
             NonTerminal( body(), [
@@ -324,31 +324,31 @@ class Test_Option_Line ( unittest.TestCase ) :
             Terminal(EOF(), 0, '') ,
         ])
 
-        self.parse_and_verify( input, expect )
+        self.parse_and_verify( text, expect )
 
     #--------------------------------------------------------------------------
 
     def test_create_expect(self):
 
-        input = '-f -x -l'
+        text = '-f -x -l'
 
         expect = create_expect (
             NonTerminal( option(), [ Terminal( short_no_arg(), 0, '-f' ) ] ) ,
             NonTerminal( option(), [ Terminal( short_no_arg(), 0, '-x' ) ] ) ,
             NonTerminal( option(), [ Terminal( short_no_arg(), 0, '-l' ) ] ) ,
-            eof = ( input[-1] != '\n' ) ,
+            eof = ( text[-1] != '\n' ) ,
         )
 
         # print("[ expect ]")
         # pp(expect[0][0][0][0][1])
 
-        parsed = self.parse(input, expect)
+        parsed = self.parse(text, expect)
         # tprint("[parsed]") ; pp(parsed)
 
         # print("[ parsed ]")
         # pp(parsed[0][0][0][0][1])
 
-        self.verify( input, expect, parsed )
+        self.verify( text, expect, parsed )
 
     #--------------------------------------------------------------------------
 

@@ -60,32 +60,32 @@ def document():
 
 def ogenerate ( cls, optdefs, sep= ', ') :
 
-    def create_method ( actual_input, the_terms ) :
+    def create_method ( actual_text, the_terms ) :
         def the_test_method (self) :
-            input = actual_input
+            text = actual_text
             terms = the_terms
-            parsed = self.parser.parse(input)
+            parsed = self.parser.parse(text)
             # tprint("[parsed]") ; tprint("\n", parsed.tree_str(), "\n")
             # tprint("[parsed]") ; pp(parsed)
             # DEFER
-            # ? # expect ( input, parsed, *terms, sep=sep )
-            # tprint(f"\ninput = '{input}'\n")
+            # ? # expect ( text, parsed, *terms, sep=sep )
+            # tprint(f"\ntext = '{text}'\n")
         return the_test_method
 
-    ( initial_input, terms ) = create_terms( optdefs, sep = sep ) # ', '
+    ( initial_text, terms ) = create_terms( optdefs, sep = sep ) # ', '
 
-    name = method_name(initial_input)
+    name = method_name(initial_text)
 
-    setattr ( cls, name, create_method ( initial_input, terms ) )
+    setattr ( cls, name, create_method ( initial_text, terms ) )
 
     if False :
         setattr ( cls, f"{name}__newline",
-                  create_method ( initial_input + '\n', terms ) )
+                  create_method ( initial_text + '\n', terms ) )
         for n_spaces in range(1) : # range(4):
             setattr ( cls, f"{name}__trailing_{n_spaces}",
-                      create_method ( initial_input + ( ' ' * n_spaces ) ) )
+                      create_method ( initial_text + ( ' ' * n_spaces ) ) )
 
-    return ( name, initial_input )
+    return ( name, initial_text )
 
 #------------------------------------------------------------------------------
 

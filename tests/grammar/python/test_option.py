@@ -106,14 +106,14 @@ class Test_Option ( Test_Base ) :
 
     @unittest.skipUnless(tst_mixed, "Basic tests not enabled")
     def test_mixed (self) :
-        input = ' -a -b --file --form -l --why '
+        text = ' -a -b --file --form -l --why '
         #
-        input = input.strip()
+        text = text.strip()
         #
-        inputs = input.split()
+        texts = text.split()
         p_ws1 = p_ws(' ')
         elements = [ ]
-        for value in inputs :
+        for value in texts :
             rule = long_no_arg if value[1] == '-' else short_no_arg
             option_ = Terminal(rule(), 0, value)
             option_ = NonTerminal( option(), [ option_ ] )
@@ -122,7 +122,7 @@ class Test_Option ( Test_Base ) :
         if len(elements) > 0:
             del elements[-1]
         expect = NonTerminal(body(), [ *elements, t_eof ])
-        super().single(body, input, expect)
+        super().single(body, text, expect)
 
     #--------------------------------------------------------------------------
 

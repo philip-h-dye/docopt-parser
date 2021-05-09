@@ -81,7 +81,7 @@ def create_terms ( optdefs, sep = ' ' ):
     # print(f"\n: sep = '{sep}'\n")
     # print(f"\n[ optdefs ]\n") ; pp(optdefs) ; print('')
 
-    input = [ ]
+    text = [ ]
     terms = [ ]
 
     for optdef in optdefs :
@@ -92,7 +92,7 @@ def create_terms ( optdefs, sep = ' ' ):
         elif gap is None:
             gap = ''
 
-        input.append(opt + gap + operand)
+        text.append(opt + gap + operand)
 
         if re_short.fullmatch(opt):
             if operand:
@@ -124,7 +124,7 @@ def create_terms ( optdefs, sep = ' ' ):
                 f"            ( '--long', '=', '<long' ),\n"
                 f"            ( '--quit' ), )\n" )
 
-    return ( sep.join(input), terms )
+    return ( sep.join(text), terms )
 
 #------------------------------------------------------------------------------
 
@@ -331,13 +331,13 @@ eq_option_caps		= re.compile(r'=([A-Z][A-Z]+\b)')
 			# '\b' so that not accept '=FOO' of '=FOObar'
 eq_option_other		= re.compile(r'=([\S]+)')
 
-# FIXME:  floating values for invalid input tests, any non-identifier character
+# FIXME:  floating values for invalid text tests, any non-identifier character
 
-def method_name ( initial_input ):
+def method_name ( initial_text ):
 
-    # FIXME: Simplify flow here using separate function: method_name(<input>)
+    # FIXME: Simplify flow here using separate function: method_name(<text>)
 
-    name = initial_input
+    name = initial_text
     # tprint(f"[1] name      =  '{name}'")
     name = name.replace('-','dash_').replace(' ','_space_').replace('space__','space_')
     # tprint(f"[2] name      =  '{name}'")
@@ -558,7 +558,7 @@ def generate_tests_on_optlst_varying_sep ( cls, _generate, optlst ) :
     # FIXME: Too finicky, change user supplied NONE or '' to DEFAULT
     #
     # sep=None, crashs in optlist, line 121 :
-    #   return ( sep.join(input), terms )
+    #   return ( sep.join(text), terms )
     # => AttributeError: 'NoneType' object has no attribute 'join'
     #
     # sep='' :
