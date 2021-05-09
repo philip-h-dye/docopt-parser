@@ -1,17 +1,29 @@
-tst_debug_first_char				= False
-tst_individual_characters			= True
-tst_whitespace_chars				= True
-tst_class_whitespace_rule_per_characters	= True
-tst_class_rule_whitespace			= True
-tst_class_or_more				= True
-tst_blank_line   				= True
-tst_p_wx_newline 				= True
-tst_p_ws_newline 				= True
+parse_debug                                     = False
+record                                          = False
+analyzing                                       = False
 
+tst_debug_first_char                            = False
+tst_debug_first_scenario                        = False
+#
+tst_individual_characters                       = True    # 88 tests
+tst_whitespace_chars                            = True    # 24 tests
+tst_class_whitespace_rule_per_characters        = True    # 24 tests
+tst_class_rule_whitespace                       = True    # 22 tests
+tst_class_or_more                               = True    # 255 tests
+tst_blank_line                                  = True    # 1 test
+tst_p_wx_newline                                = True    # 10 tests
+tst_p_ws_newline                                = True    # 10 tests
+
+# Comment out for checkin :
+#
 # from util import tst_disable_all
 # tst_disable_all()
+# record                                          = True
+# tst_...
 
-# FIXME: - need more tests which are negative.
+#------------------------------------------------------------------------------
+
+# FIXME: - need more tests of failure conditions
 #        - test positive and negative lookahead with And(), Not()
 
 import sys
@@ -39,10 +51,12 @@ from grammar.python import common
 
 from grammar.python.common import p_wx_newline, p_ws_newline
 
-from p import pp_str
-
-from util import write_scratch, remove_punctuation, tprint, print_parsed
+from base import Test_Base
+from util import tprint, write_scratch, remove_punctuation, print_parsed
 from util import fname
+
+from p import pp_str
+import p
 
 #------------------------------------------------------------------------------
 
@@ -124,33 +138,13 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
 
     """
     def create_method (name, rule_f, rule, s, grammar, text, expect):
+        grammar_obj = grammar
         def the_method(self):
-            nonlocal name, rule_f, rule, s, grammar, text, expect
-            parser = ParserPython( grammar, skipws=False )
-            write_scratch( call={'fcn' : 'string_test' , 's' : s ,
-                                 'rule_f' : rule_f , 'rule' : rule , },
-                           name=name, grammar=grammar, text=text,
-                           expect=expect, expect_f=flatten(expect),
-                           model=parser.parser_model )
-            try :
-                parsed = parser.parse(text)
-                write_scratch ( parsed=parsed )
-                write_scratch ( parsed_f=flatten(parsed) )
-            except :
-                print(f"\nParser FAILED : s = '{s}' :"
-                      f"\ntext = '{text}'"
-                      f"[grammar]\n{pp_str(grammar)}\n"
-                      f"\n[expect]\n{pp_str(expect)}")
-                raise
-            # print("[ expect ]") ; pp(expect)
-            # print("[ parsed ]") ; pp(parsed)
-            parsed = flatten(parsed)
-            expect = flatten(expect)
-            assert parsed == expect, \
-                ( f"s = '{s}' : text = '{text}' :\n"
-                  f"[grammar]\n{pp_str(grammar)}\n"
-                  f"[expect]\n{pp_str(expect)}\n"
-                  f"[parsed]\n{pp_str(parsed)}" )
+            nonlocal name, rule_f, rule, s, grammar_obj, text, expect
+            def grammar():
+                grammar_obj.rule_name = 'grammar'
+                return grammar_obj
+            self.verify_grammar ( grammar, text, expect, skipws=False )
 
         return the_method
 
@@ -164,16 +158,18 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
               f"member of INUSE_CHARACTERS, test code must be reconfigured "
               f"in order to handle this character." )
 
-    if empty_ok:
-        empty_string_is_accepted(name_prefix, rule_f, ch)
-    else:
-        empty_string_raises_NoMatch(name_prefix, rule_f, ch)
+    if not tst_debug_first_scenario :
+        if empty_ok:
+            empty_string_is_accepted(name_prefix, rule_f, ch)
+        else:
+            empty_string_raises_NoMatch(name_prefix, rule_f, ch)
 
     rule = rule_f()
     if isinstance(rule, str) :
         # print(f"- rule '{rule_f.__name__}' : create StrMatch() rule for "
         #       f"literal '{ch}' : {ord(ch)} : {hex(ord(ch))}")
         rule = StrMatch(ch, rule_f.__name__)
+        # or eval("{rule_f.__name__}_m")
 
     ( ch_hexes, ch_names ) = character_lookup ( s, ch_names )
 
@@ -186,6 +182,8 @@ def string_test(name_prefix, rule_f, s, ch_names=None, empty_ok=False):
         # print(f"Adding {method_name}")
         method = create_method(method_name, rule_f, rule, ch, grammar, text, expect)
         setattr ( Test_Common, method_name, method )
+        if tst_debug_first_scenario :
+            break
 
 #--------------------------------------------------------------------------
 
@@ -243,7 +241,7 @@ def scenarios(rule, s): # -> grammar, text, expect
 
     def itself():
         name = f"by_itself"
-        return name, Sequence( (rule, EOF) ), s, ( t_s, t_eof )
+        return name, Sequence( (rule, EOF) ), s, ( t_s, )
 
     def at_start():
         name = 'at_start_followed_by_phrase'
@@ -251,7 +249,7 @@ def scenarios(rule, s): # -> grammar, text, expect
         assert s not in phrase
         _words = get_words(s)
         text = ''.join([ s, phrase ])
-        expect = ( ( t_s, Terminal(_words(), 0, phrase) ), t_eof )
+        expect = ( t_s, Terminal(_words(), 0, phrase) )
         return name, grammar(_words), text, expect
 
     def at_start_twice():
@@ -262,7 +260,7 @@ def scenarios(rule, s): # -> grammar, text, expect
         _words = get_words(s)
         text = ''.join([ *( (s, phrase) * 2 ) ])
         t_phrase = Terminal(_words(), 0, phrase)
-        expect = ( *( (t_s, t_phrase) * 2 ), t_eof )
+        expect = ( *( (t_s, t_phrase) * 2 ), )
         return name, grammar(_words), text, expect
 
     def at_start_two_lines():
@@ -272,9 +270,10 @@ def scenarios(rule, s): # -> grammar, text, expect
         _words = get_words(s)
         text = ''.join([ *( (s, phrase) * 2 ) ])
         t_phrase = Terminal(_words(), 0, phrase)
-        expect = ( *( (t_s, t_phrase) * 2 ), t_eof )
+        expect = ( *( (t_s, t_phrase) * 2 ), )
         return name, grammar(_words), text, expect
 
+    # !@#
     def in_the_middle():
         name = 'in_the_middle_between_two_phrases'
         left_phrase = fake_spaces_etc(s, 'for all good men')
@@ -282,10 +281,10 @@ def scenarios(rule, s): # -> grammar, text, expect
         assert s not in left_phrase
         assert s not in right_phrase
         _words = get_words(s)
+        text = ''.join([left_phrase, s, right_phrase])
         t_left = Terminal(_words(), 0, left_phrase)
         t_right = Terminal(_words(), 0, right_phrase)
-        expect = ( t_left, t_s, t_right, t_eof )
-        text = ''.join([left_phrase, s, right_phrase])
+        expect = ( t_left, t_s, t_right )
         return name, grammar(_words), text, expect
 
     def at_end():
@@ -295,7 +294,7 @@ def scenarios(rule, s): # -> grammar, text, expect
         _words = get_words(s)
         t_phrase = Terminal(_words(), 0, phrase)
         text = ''.join([s, phrase ])
-        expect = ( t_s, t_phrase, t_eof )
+        expect = ( t_s, t_phrase, )
         return name, grammar(_words), text, expect
 
     #--------------------------------------------------------------------------
@@ -328,8 +327,8 @@ and do great things.<s>
         tw = lambda p : Terminal(_words(), 0, p)
         terms = [ ( ( tw(p) if len(p) > 0 else ()), t_s ) for p in phrases ]
         terms = flatten(terms)
-        terms[-1] = t_eof # reuse instead of remove, was "del terms[-1]"
-        assert len(terms) == 2 * len(phrases) - n_empty
+        del terms[-1]
+        assert len(terms) == 2 * len(phrases) - n_empty - 1
 
         # Handle the simplest Zero/One Or Many rules on a character class
         #
@@ -351,7 +350,9 @@ and do great things.<s>
 
     #--------------------------------------------------------------------------
 
-    tests = [ at_start ,
+    # !@#
+    tests = [ itself,
+              at_start ,
               at_start_twice ,
               at_start_two_lines ,
               in_the_middle ,
@@ -411,10 +412,36 @@ def fake_spaces_etc(s, text):
 
 #------------------------------------------------------------------------------
 
-class Test_Common ( unittest.TestCase ) :
+class Test_Common ( Test_Base ) :
 
     def setUp(self):
-        write_scratch( _clean=True )
+
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
+
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
+        # self.debug = False
+
+        # show parse tree for pass >= self.debug
+        # self.debug = 2
+
+        # Show text being parsed
+        # self.show = True
+
+        # and again, to apply behavior per altered settings
+        super().setUp()
+
+        # self.parser = ParserPython(grammar, reduce_tree=False)
+
+        write_scratch ( _clean = True )
+
+    #--------------------------------------------------------------------------
 
     @unittest.skipUnless(tst_blank_line, "blank_line, tests not enabled")
     def test_3_explicit_blank_line(self):
@@ -455,75 +482,100 @@ class Test_Common ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_lf_missing__exception (self):
-        with self.assertRaises(ValueError) :
-            p_wx_newline(' '*3)
-            assert False, "ValueError not raised !"
-
-    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_lf_in_middle__exception (self):
+    def test_p_wx_newline__exception__lf_in_middle (self):
         with self.assertRaises(ValueError) :
             p_wx_newline(' '+(common.LINEFEED+' '))
             assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_extra_linefeed__exception (self):
+    def test_p_wx_newline__exception__extra_linefeed (self):
         with self.assertRaises(ValueError) :
             p_wx_newline('  '+(common.LINEFEED*2))
             assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_spc_0 (self):
+    def test_p_wx_newline_space_0 (self):
         self.check_parse_spec ( p_wx_newline((0*' ')+common.LINEFEED) )
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_spc_1 (self):
+    def test_p_wx_newline_space_1 (self):
         self.check_parse_spec ( p_wx_newline((1*' ')+common.LINEFEED) )
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_spc_3 (self):
+    def test_p_wx_newline_space_3 (self):
         self.check_parse_spec ( p_wx_newline((3*' ')+common.LINEFEED) )
 
     @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
-    def test_5_p_wx_newline_spc_5 (self):
+    def test_p_wx_newline_space_5 (self):
         self.check_parse_spec ( p_wx_newline((5*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_p_wx_newline_implicit_linefeed__None (self):
+        self.check_parse_spec ( p_wx_newline(None) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_p_wx_newline_implicit_linefeed_space_0 (self):
+        self.check_parse_spec ( p_wx_newline((0*' ')) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_p_wx_newline_implicit_linefeed_space_1 (self):
+        self.check_parse_spec ( p_wx_newline((1*' ')) )
+
+    @unittest.skipUnless(tst_p_wx_newline, "p_wx_newline, tests not enabled")
+    def test_p_wx_newline_implicit_linefeed_space_3 (self):
+        self.check_parse_spec ( p_wx_newline((3*' ')) )
 
     #--------------------------------------------------------------------------
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_lf_missing__exception (self):
+    def test_p_ws_newline__exception__None (self):
         with self.assertRaises(ValueError) :
-            p_ws_newline(' '*3)
+            p_ws_newline(None)
             assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_lf_in_middle__exception (self):
+    def test_p_ws_newline__exception__empty_string (self):
+        with self.assertRaises(ValueError) :
+            p_ws_newline('')
+            assert False, "ValueError not raised !"
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_p_ws_newline__exception__lf_in_middle (self):
         with self.assertRaises(ValueError) :
             p_ws_newline(' '+(common.LINEFEED+' '))
             assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_extra_linefeed__exception (self):
+    def test_p_ws_newline__exception__extra_linefeed (self):
         with self.assertRaises(ValueError) :
             p_ws_newline('  '+(common.LINEFEED*2))
             assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_spc_0__exception (self):
+    def test_p_ws_newline__exception__space_0_lf (self):
         with self.assertRaises(ValueError) :
-            self.check_parse_spec ( p_ws_newline((0*' ')+common.LINEFEED) )
+            p_ws_newline((0*' ')+common.LINEFEED)
+            assert False, "ValueError not raised !"
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_spc_1 (self):
+    def test_p_ws_newline_space_1_lf (self):
         self.check_parse_spec ( p_ws_newline((1*' ')+common.LINEFEED) )
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_spc_3 (self):
+    def test_p_ws_newline_space_3_lf (self):
         self.check_parse_spec ( p_ws_newline((3*' ')+common.LINEFEED) )
 
     @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
-    def test_6_p_ws_newline_spc_5 (self):
+    def test_p_ws_newline_space_5_lf (self):
         self.check_parse_spec ( p_ws_newline((5*' ')+common.LINEFEED) )
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_p_ws_newline__space_1__implicit_linefeed (self):
+        self.check_parse_spec ( p_ws_newline((1*' ')) )
+
+    @unittest.skipUnless(tst_p_ws_newline, "p_ws_newline, tests not enabled")
+    def test_p_ws_newline__space_3__implicit_linefeed (self):
+        self.check_parse_spec ( p_ws_newline((3*' ')) )
 
     #--------------------------------------------------------------------------
 
@@ -534,41 +586,14 @@ class Test_Common ( unittest.TestCase ) :
     #--------------------------------------------------------------------------
 
     def check_parse ( self, fcn, rule_f, rule, words, text, expect_list ) :
-
-        t_eof = Terminal(EOF(), 0, '')
-        expect = ( ( *expect_list ), t_eof )
-
+        # Unused: fcn, rule_f
         newline = common.newline()
         catchall = RegExMatch( r'.*', rule_name='catch_all' )
-        body = OneOrMore( OrderedChoice ( [ rule, words, catchall, newline ] ) )
-        grammar = Sequence( ( body, EOF ) )
-
-        parser = ParserPython(grammar, skipws=False)
-
-        write_scratch( call={'fcn' : '{fcn}' , 'text' : text ,
-                             'rule_f' : rule_f , 'rule' : rule , },
-                       name=fcn, grammar=grammar, text=text,
-                       expect=expect, expect_f=flatten(expect),
-                       model=parser.parser_model )
-        try :
-            parsed = parser.parse(text)
-            write_scratch ( parsed=parsed )
-            write_scratch ( parsed_f=flatten(parsed) )
-        except :
-            print(f"\nParser FAILED :"
-                  f"\ntext = '{text}'"
-                  f"[grammar]\n{pp_str(grammar)}\n"
-                  f"\n[expect]\n{pp_str(expect)}")
-            raise
-        # print("[ expect ]") ; pp(expect)
-        # print("[ parsed ]") ; pp(parsed)
-        parsed = flatten(parsed)
-        expect = flatten(expect)
-        assert parsed == expect, \
-            ( f"text = '{text}' :\n"
-              f"[grammar]\n{pp_str(grammar)}\n"
-              f"[expect]\n{pp_str(expect)}\n"
-              f"[parsed]\n{pp_str(parsed)}" )
+        elements = [ rule, words, catchall, newline ]
+        def grammar():
+            return Sequence ( ( OneOrMore( OrderedChoice ( elements ) ), EOF ),
+                              rule_name="grammar" )    
+        self.verify_grammar ( grammar, text, expect_list, skipws=False )
 
 #------------------------------------------------------------------------------
 
