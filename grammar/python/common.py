@@ -229,6 +229,9 @@ def linefeed_eol_only ( text ) :
 
 def ensure_linefeed_eol ( text ) :
 
+    if text is None or text == '' :
+        text = LINEFEED
+
     if text[-1] != LINEFEED :
         text += LINEFEED
 
@@ -277,18 +280,13 @@ def t_wx_newline ( text = None ):
                linefeed.  May not contain more than linefeed.  If present,
                the linefeed must be last.
     """
-
-    if text is None or text == '' or text == LINEFEED :
-        return t_newline
-
     text = ensure_linefeed_eol(text)
-
     valid_wx ( text[:-1] )
-
     return Terminal( newline(), 0, text )
 
 def p_wx_newline ( text ) :
-    return ParseSpec ( text, newline, t_wx_newline(text) )
+    t = t_wx_newline(text)
+    return ParseSpec ( t.value, newline, t )
 
 #------------------------------------------------------------------------------
 
@@ -305,7 +303,8 @@ def t_ws_newline ( text ):
     return Terminal( newline(), 0, text )
 
 def p_ws_newline ( text ) :
-    return ParseSpec ( text, newline, t_ws_newline(text) )
+    t = t_ws_newline(text)
+    return ParseSpec ( t.value, newline, t )
 
 #------------------------------------------------------------------------------
 
