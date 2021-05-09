@@ -1,3 +1,12 @@
+parse_debug                     = False
+record                          = False
+analyzing                       = False
+
+tst_basic                       = True
+tst_mixed                       = True
+
+#------------------------------------------------------------------------------
+
 import unittest
 
 from arpeggio import ParserPython, NonTerminal, Terminal
@@ -5,49 +14,26 @@ from arpeggio import Sequence, ZeroOrMore, OneOrMore, EOF
 from arpeggio import RegExMatch as _
 
 from prettyprinter import cpprint as pp
-import p
 
 #------------------------------------------------------------------------------
 
 from docopt_parser.parsetreenodes import NonTerminal_eq_structural
 
+from grammar.python.common import ws, t_eof, t_space, t_equals, p_ws
+
 from grammar.python.operand import *
-from grammar.python.common import ws
+
+from base import Test_Base
+
+from util import tprint, write_scratch
+
+import p
 
 #------------------------------------------------------------------------------
 
-def tprint(*args, **kwargs):
-    kwargs['file'] = tprint._tty
-    print(*args, **kwargs)
-
-tprint._tty = open("/dev/tty", 'w')
-
-#------------------------------------------------------------------------------
-#
-# reduce_tree=False
-# ----------------
-#
-#   grammar=Sequence [0-16]
-#     operand=OrderedChoice [0-16]
-#       operand_angled=RegExMatch(<[-_:\w]+>) [0-16]: <angled-operand>
-#     EOF [16-16]:
-#
-# reduce_tree=True
-# ----------------
-#
-#   grammar=Sequence [0-16]
-#     operand_angled=RegExMatch(<[-_:\w]+>) [0-16]: <angled-operand>
-#       EOF [16-16]:
-#
-#   p.NonTerminal(
-#       rule_name='grammar',
-#       contents=[
-#           p.Terminal(rule_name='operand_angled', value='<angled-operand>'),
-#           p.Terminal(rule_name='EOF', value='')
-#       ]
-#   )
-
-#------------------------------------------------------------------------------
+def body():
+    return Sequence( OneOrMore ( OrderedChoice ( [ operand, ws ] ) ),
+                     EOF, rule_name='body', skipws=False )
 
 def grammar():
     return Sequence( OneOrMore ( [ operand, ws ] ),
@@ -55,68 +41,83 @@ def grammar():
 
 #------------------------------------------------------------------------------
     
-class Test_Import ( unittest.TestCase ) :
+class Test_Operand ( Test_Base ) :
 
     def setUp(self):
-        self.parser = ParserPython(grammar, reduce_tree=True)
+
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
+
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
+        # self.debug = False
+
+        # show parse tree for pass >= self.debug
+        # self.debug = 2
+
+        # Show text being parsed
+        # self.show = True
+
+        # and again, to apply behavior per altered settings
+        super().setUp()
+
+        self.parser = ParserPython(grammar, reduce_tree=False)
+
+        write_scratch ( _clean = True )
 
     #--------------------------------------------------------------------------
 
-    def single( self, rule, value ):
-        parsed = self.parser.parse(value)
-        # tprint("\n", parsed.tree_str(), "\n")
-        # print('') ; pp(parsed)
-        p_operand = Terminal(rule(), 0, value)
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ p_operand, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
+    def single( self, rule, text ):
+        expect = Terminal(rule(), 0, text)
+        super().single( rule, text, expect, skipws=False )
 
+    def thrice( self, rule, text ):
+        expect = Terminal(rule(), 0, text)
+        self.multiple ( rule, text, expect, n = 3 )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_angled_single (self) :
         self.single(operand_angled, "<angled-operand>")
 
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_all_caps_single (self) :
         self.single(operand_all_caps, "FILE")
 
     #--------------------------------------------------------------------------
 
-    def thrice( self, rule, value ):
-        n_times = 3
-        text = ( value + ' ') * n_times
-        parsed = self.parser.parse(text)
-        # print('') ; pp(parsed)
-        p_operand = Terminal(rule(), 0, value)
-        p_ws = Terminal(ws(), 0, ' ')
-        elements = ( p_operand, p_ws ) * n_times
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ *elements, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
-
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_angled_thrice (self) :
         self.thrice(operand_angled, "<angled-operand>")
 
+    @unittest.skipUnless(tst_basic, "Basic tests not enabled")
     def test_all_caps_thrice (self) :
         self.thrice(operand_all_caps, "FILE")
 
     #--------------------------------------------------------------------------
 
+    # @unittest.skipUnless(tst_mixed, "Mixed tests not enabled")
     def test_mixed (self) :
-        text = ' <a> <b> CC <d> EE '
-        #
+        text = ' <a> <b> CC <d> EE FILE NORM '
         text = text.strip()
-        parsed = self.parser.parse(text)
-        #
         texts = text.split()
-        p_ws = Terminal(ws(), 0, ' ')
+        p_ws1 = p_ws(' ')
         elements = [ ]
         for value in texts :
             rule = operand_angled if value[0] == '<' else operand_all_caps
-            elements.append ( Terminal(rule(), 0, value) )
-            elements.append ( p_ws )
+            elements.append ( NonTerminal( operand(),
+                                           [ Terminal(rule(), 0, value) ] ) )
+            elements.append ( p_ws1.expect )
         if len(elements) > 0:
             del elements[-1]
-        p_eof = Terminal(EOF(), 0, '')
-        expect = NonTerminal(grammar(), [ *elements, p_eof ])
-        assert NonTerminal_eq_structural(parsed, expect)
+        expect = NonTerminal(body(), [ *elements, t_eof ])
+        super().single(body, text, expect)
 
 #------------------------------------------------------------------------------
 
