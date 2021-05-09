@@ -221,10 +221,20 @@ def linefeed_eol_only ( text ) :
                          "allowed, at the end.  Please address.")
 
     if text[-1] != LINEFEED :
-        if n_linefeeds <= 0 :
+        if n_linefeeds > 0 :
             raise ValueError(f"Linefeed not at end of specified <text>. "
                              "Please address." )
-        text = text + LINEFEED
+
+#------------------------------------------------------------------------------
+
+def ensure_linefeed_eol ( text ) :
+
+    if text[-1] != LINEFEED :
+        text += LINEFEED
+
+    linefeed_eol_only(text)
+
+    return text
 
 #------------------------------------------------------------------------------
 
@@ -261,6 +271,8 @@ def t_wx_newline ( text = None ):
 
        Simply returns t_newline if no whitespace specified.
 
+       If ending linefeed is missing, it will be appended.
+
       <text> : zero or more whitespace characters, optionally followed by a
                linefeed.  May not contain more than linefeed.  If present,
                the linefeed must be last.
@@ -269,7 +281,7 @@ def t_wx_newline ( text = None ):
     if text is None or text == '' or text == LINEFEED :
         return t_newline
 
-    linefeed_eol_only ( text )
+    text = ensure_linefeed_eol(text)
 
     valid_wx ( text[:-1] )
 
@@ -281,17 +293,14 @@ def p_wx_newline ( text ) :
 #------------------------------------------------------------------------------
 
 def t_ws_newline ( text ):
-    """Return an arpeggio.Terminal for newline with the specified whitespace.
-       If leading whitespace portion of <text> is not empty, create a newline
-       Terminal with the leading whitespace followed by a linefeed.
+    """Return an arpeggio.Terminal for newline with the specified whitespace
+       followed by a linefeed.  If linefeed is missing, it will be appended.
 
-       Simply returns t_newline if no whitespace specified.
-
-      <text> : zero or more whitespace characters, optionally followed by a
+      <text> : One or more whitespace characters, optionally followed by a
                linefeed.  May not contain more than linefeed.  If present,
                the linefeed must be last.
     """
-    linefeed_eol_only ( text )
+    text = ensure_linefeed_eol(text)
     valid_ws ( text[:-1] )
     return Terminal( newline(), 0, text )
 
