@@ -1,4 +1,19 @@
-parse_debug = False
+parse_debug                     = False
+record                          = False
+analyzing                       = False
+
+tst_non_object                  = True
+tst_minimal                     = True
+tst_space                       = True
+tst_some_args                   = True
+
+# # FIXME: remove before commit
+from util import tst_disable_all
+tst_disable_all()
+record                          = True
+tst_space                       = True
+
+#------------------------------------------------------------------------------
 
 import sys
 import os
@@ -45,42 +60,48 @@ from .optlist import OptionDef as opt, OptionListDef as olst
 from .optline import OptionLineDef as ol
 from .optsect import OptionDescDef as od
 
+from base import Test_Base
+from util import tprint, write_scratch
+
 #------------------------------------------------------------------------------
 
-class Test_Usage_Section ( unittest.TestCase ) :
+class Test_Usage_Section ( Test_Base ) :
 
     def setUp(self):
 
-        global grammar_elements
-        global parse_debug
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
 
-        # quiet, no parse trees displayed
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
         # self.debug = False
 
         # show parse tree for pass >= self.debug
-        self.debug = 2
+        # self.debug = 2
 
-        # from the module global
-        self.parse_debug = parse_debug
+        # Show text being parsed
+        # self.show = True
 
-        # self.each = True
-        self.show = True
+        # and again, to apply behavior per altered settings
+        super().setUp()
 
-        # # tprint._file =
-        # self.tty = open("/dev/tty", 'w')
+        self.grammar = document
 
-        # self.rstdout = redirect_stdout(self.tty)
-        # self.rstdout.__enter__()
+        self.parser = ParserPython ( language_def = self.grammar,
+                                     reduce_tree = False,
+                                     debug = self.parse_debug, )
 
-        tprint._on = self.show or self.debug is not False
-
-        # grammar_elements = [ option_list, ws ]
-        self.parser = ParserPython( language_def=document, skipws=False,
-                                    debug = parse_debug, )
-        # # NEVER # reduce_tree=True -- needed meaning is lost
+        if self.record :
+            write_scratch ( _clean = True )
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_non_object, "Non-object tests not enabled")
     def test_minimal(self):
 
         ol_line_specs = [
@@ -99,6 +120,7 @@ class Test_Usage_Section ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_minimal, "Minimal tests not enabled")
     def test_minimal_obj__step_by_step (self):
 
         olst_1   = olst ( opt( '-h', ), opt( '--help', ) )
@@ -123,6 +145,7 @@ class Test_Usage_Section ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_minimal, "Minimal tests not enabled")
     def test_minimal_obj__single_spec (self):
 
         optspecs = od (
@@ -164,6 +187,7 @@ class Test_Usage_Section ( unittest.TestCase ) :
     # Inner node focused analysis is left as an example. Smaller parse trees
     # are much easier to digest quickly.
     #
+    @unittest.skipUnless(tst_space, "Space tests not enabled")
     def test_space_arg (self):
 
         optspecs = od (
@@ -180,6 +204,8 @@ class Test_Usage_Section ( unittest.TestCase ) :
 
         ( text, opt_desc ) = section_optdesc_obj ( optspecs )
 
+        write_scratch ( optdesc = opt_desc )
+
         expect = expect_document ( [ opt_desc ] )
 
         parsed = self.parse ( text, expect )
@@ -194,10 +220,17 @@ class Test_Usage_Section ( unittest.TestCase ) :
             expect = expect[0][0][0][0][1][1][1]
             parsed = parsed[0][0][0][0][1][1][1]
 
+        # ...
+        if True :
+            expect = expect[0][0][0][1]
+            parsed = parsed[0][0][0][1]
+            write_scratch ( expect=expect, parsed=parsed )
+
         self.verify ( text, expect, parsed )
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_some_args, "Some args tests not enabled")
     def test_some_args (self): # '--query <query>', expect includes comma
 
         optspecs = od (
@@ -222,85 +255,6 @@ class Test_Usage_Section ( unittest.TestCase ) :
         expect = expect_document ( [ opt_desc ] )
 
         self.parse_and_verify(text, expect)
-
-    #--------------------------------------------------------------------------
-
-    def parse_and_verify ( self, text, expect ) :
-        self.verify ( text, expect, self.parse ( text, expect ) )
-
-    #--------------------------------------------------------------------------
-
-    def parse ( self, text, expect ) :
-
-        # tprint(f"\nOptions :\n{text}")
-
-        # with open ("scratch/expect.txt", 'w') as f :
-        #     pp_plain(expect, stream=f)
-
-        try :
-            parsed = self.parser.parse(text)
-        except :
-            print("\nParse FAILED\n"
-                  f"[expect]\n{pp_str(expect)}\n"
-                  f"text = '{text}' :\n" )
-            assert 1 == 0
-
-        # tprint("[parsed]") ; pp(parsed)
-
-        return parsed
-
-    #--------------------------------------------------------------------------
-
-    def verify ( self, text, expect, parsed ) :
-
-        with open ("scratch/expect.txt", 'w') as f :
-                pp_plain(expect, stream=f)
-        with open ("scratch/parsed.txt", 'w') as f :
-            pp_plain(parsed, stream=f)
-
-        if False :
-            nth_option_line = 0
-            expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
-            parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
-
-            with open ("scratch/expect.txt", 'w') as f :
-                    pp_plain(expect, stream=f)
-            with open ("scratch/parsed.txt", 'w') as f :
-                pp_plain(parsed, stream=f)
-
-            print('')
-            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
-            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
-
-            for i in range(len(expect)) :
-                if not nodes_equal( parsed[i], expect[i]) :
-                    print ( f"text = '{text}' :\n"
-                            f"[expect]\n{pp_str(expect[i])}\n"
-                            f"[parsed]\n{pp_str(parsed[i])}" )
-                    assert 1 == 0
-
-            if len(expect) < len(parsed) :
-                start = len(expect) # - 1
-                print ( f"text = '{text}' :\n"
-                        f"[expect]\n{pp_str(expect[start:])}\n"
-                        f"[parsed]\n{pp_str(parsed[start:])}" )
-                assert 1 == 0
-
-        # print("[expect]");  pp(expect) ; print("[parsed]"); pp(parsed)
-        # return
-
-        assert nodes_equal(parsed, expect), \
-            ( f"text = '{text}' :\n"
-              f"[expect]\n{pp_str(expect)}\n"
-              f"[parsed]\n{pp_str(parsed)}" )
-
-    #--------------------------------------------------------------------------
-
-    def tearDown (self):
-        # self.rstdout.__exit__(None, None, None)
-        # self.tty.close()
-        # self.tty = None
-        pass
 
 #------------------------------------------------------------------------------
 
