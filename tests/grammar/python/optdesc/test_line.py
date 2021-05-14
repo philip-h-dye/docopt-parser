@@ -1,4 +1,22 @@
-parse_debug = False
+parse_debug                     = False
+record                          = False
+analyzing                       = False
+
+tst_single                      = True
+tst_pair                        = True
+tst_trio                        = True
+tst_create_expect               = True
+tst_variations                  = True
+
+# Not Yet Implemented
+tst_operand_command             = False
+
+# # FIXME: comment or remove before commit
+# from util import tst_disable_all
+# tst_disable_all()
+# record                          = True
+
+#------------------------------------------------------------------------------
 
 import sys
 import os
@@ -32,167 +50,48 @@ from docopt_parser import DocOptListViewVisitor
 
 from .optline import tprint, ogenerate, document, body, element, create_expect
 
-from util import write_scratch
+from base import Test_Base
+from util import tprint, write_scratch
 
 #------------------------------------------------------------------------------
 
-class Test_Option_Line ( unittest.TestCase ) :
+class Test_Option_Line ( Test_Base ) :
 
     def setUp(self):
 
-        global grammar_elements
-        global parse_debug
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
 
-        # quiet, no parse trees displayed
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
         # self.debug = False
 
         # show parse tree for pass >= self.debug
-        self.debug = 2
+        # self.debug = 2
 
-        # from the module global
-        self.parse_debug = parse_debug
+        # Show text being parsed
+        # self.show = True
 
-        # self.each = True
-        self.show = True
+        # and again, to apply behavior per altered settings
+        super().setUp()
 
-        # # tprint._file =
-        # self.tty = open("/dev/tty", 'w')
-
-        # self.rstdout = redirect_stdout(self.tty)
-        # self.rstdout.__enter__()
-
-        tprint._on = self.show or self.debug is not False
-
-        # grammar_elements = [ option_list, ws ]
         self.grammar = document
-        self.parser = ParserPython( language_def=self.grammar, skipws=False,
-                                    debug = parse_debug, )
-        
-        # NEVER # reduce_tree=True -- needed meaning is lost
+
+        self.parser = ParserPython ( language_def = self.grammar,
+                                     reduce_tree = False,
+                                     debug = self.parse_debug, )
+
+        if self.record :
+            write_scratch ( _clean = True )
 
     #--------------------------------------------------------------------------
 
-    def single ( self, rule, text, expect ):
-        # both rule and text get a single space prefix to assist when
-        # the rule has a whitespace lookahead
-        #
-        # The model unfortunately will show 'rule' as a function
-        # rather that it's expression.  It is tempting to then instantiate
-        # it as rule().  The parse model now show it nicely.
-        #
-        # Unfortunately, the resulting parse tree drops the node for rule.
-        #
-        def grammar():
-            return Sequence( ( wx, rule, EOF ) ,
-                             rule_name='grammar', skipws=True )
-        self.verify_grammar ( grammar, ' '+text, expect )
-
-    #--------------------------------------------------------------------------
-
-    def multiple_spaced ( self, rule, text, expect ):
-        # both rule and text get a single space prefix to assist when
-        # the rule has a whitespace lookahead
-        def grammar():
-            return Sequence( ( OrderedChoice ( [ rule(), ws, newline ] ), EOF ),
-                             rule_name='grammar', skipws=True )
-        self.verify_grammar ( grammar, ' '+text, expect )
-
-    #--------------------------------------------------------------------------
-
-    def verify_grammar ( self, grammar, text, expect ):
-        self.grammar = grammar()
-        expect = NonTerminal( self.grammar, [ expect, t_eof ] )
-        self.parser = ParserPython ( grammar, skipws=False, reduce_tree=False )
-        self.parse_and_verify( text, expect )
-
-    #--------------------------------------------------------------------------
-
-    def parse_and_verify ( self, text, expect ) :
-        self.verify ( text, expect, self.parse ( text, expect ) )
-
-    #--------------------------------------------------------------------------
-
-    def parse ( self, text, expect ) :
-
-        # tprint(f"\nOptions :\n{text}")
-
-        write_scratch( call={'fcn' : 'parse' },
-                       grammar=self.grammar, text=text,
-                       expect=expect, expect_f=flatten(expect),
-                       model=self.parser.parser_model, _clean=True, )
-        try :
-            # print(f"\n: text = '{text}'")
-            parsed = self.parser.parse(text)
-            write_scratch( parsed=parsed )
-        except Exception as e :
-            print("\n"
-                  f"[expect]\n{pp_str(expect)}\n\n"
-                  f"text = '{text}' :\n\n"
-                  f"Parse FAILED :\n"
-                  f"{str(e)}" )
-            raise
-
-        # tprint("[parsed]") ; pp(parsed)
-
-        with open ("scratch/parsed.txt", 'w') as f :
-            pp_plain(expect, stream=f)
-
-        return parsed
-
-    #--------------------------------------------------------------------------
-
-    def verify ( self, text, expect, parsed ) :
-
-        with open ("scratch/expect.txt", 'w') as f :
-                pp_plain(expect, stream=f)
-        with open ("scratch/parsed.txt", 'w') as f :
-            pp_plain(parsed, stream=f)
-
-        if False :
-            nth_option_line = 0
-            expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
-            parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
-
-            with open ("scratch/expect.txt", 'w') as f :
-                    pp_plain(expect, stream=f)
-            with open ("scratch/parsed.txt", 'w') as f :
-                pp_plain(parsed, stream=f)
-
-            print('')
-            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
-            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
-
-            for i in range(len(expect)) :
-                if not nodes_equal( parsed[i], expect[i]) :
-                    print ( f"text = '{text}' :\n"
-                            f"[expect]\n{pp_str(expect[i])}\n"
-                            f"[parsed]\n{pp_str(parsed[i])}" )
-                    assert 1 == 0
-
-            if len(expect) < len(parsed) :
-                start = len(expect) # - 1
-                print ( f"text = '{text}' :\n"
-                        f"[expect]\n{pp_str(expect[start:])}\n"
-                        f"[parsed]\n{pp_str(parsed[start:])}" )
-                assert 1 == 0
-
-        # print("[expect]");  pp(expect) ; print("[parsed]"); pp(parsed)
-
-        if False :
-            # Less flashly output sometime useful when debugging
-            if not nodes_equal(parsed, expect) :
-                print("\n!!!")
-                print("!!! no match")
-                print("!!!")
-            return
-
-        assert nodes_equal(parsed, expect), \
-            ( f"text = '{text}' :\n"
-              f"[expect]\n{pp_str(expect)}\n"
-              f"[parsed]\n{pp_str(parsed)}" )
-
-    #--------------------------------------------------------------------------
-
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single_short_no_arg (self):
         text = '-f'
         expect = create_expect (
@@ -203,6 +102,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single_short_w_arg (self):
         text = '-fNORM'
         expect = create_expect (
@@ -220,6 +120,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single (self):
         text = '-f'
         expect = NonTerminal( document(), [
@@ -243,6 +144,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_pair, "Pair tests not enabled")    
     def test_pair (self):
         text = '-f -x'
         expect = NonTerminal( document(), [
@@ -278,6 +180,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_trio, "Trio tests not enabled")    
     def test_trio (self):
 
         text = '-f -x -l'
@@ -328,6 +231,7 @@ class Test_Option_Line ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_create_expect, "Create expect tests not enabled")    
     def test_create_expect(self):
 
         text = '-f -x -l'
@@ -400,18 +304,12 @@ def _generate ( optdefs, *args, **kwargs ):
 
 #------------------------------------------------------------------------------
 
-# boundry condition, the first option is handled separately from succeeding terms
-# and it is an ol_first_option, not an ol_term
-# generate( '-f' )
-_generate ( ( ( '-f', ), ) )
+if tst_variations :
 
-#------------------------------------------------------------------------------
-
-if False :
-    pass
-
-if True :
-    pass
+    # boundry condition, the first option is handled separately from succeeding terms
+    # and it is an ol_first_option, not an ol_term
+    # generate( '-f' )
+    _generate ( ( ( '-f', ), ) )
 
     # boundry condition, '-x' is first ol_term of the option_list's ZeroToMany and
     # the first possible position for a option-argument
@@ -472,14 +370,14 @@ if True :
                 ) )
 
     # generate("--file=FOObar -x")    
-    if False  :
+    if tst_operand_command  :
         # FIXME: not implemened yet -- 'command/example' option-argument
         _generate ( ( ( '--file', '=', 'FOObar', ) ,
                       ( '-x', ) ,
                     ) )
 
     # generate("--file=a|b|c -x")
-    if False  :
+    if tst_operand_command  :
         # FIXME: not implemened yet -- 'command/example' option-argument
         _generate ( ( ( '--file', '=', 'a|b|c', ) ,
                       ( '-x', ) ,
