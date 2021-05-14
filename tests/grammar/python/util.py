@@ -98,6 +98,8 @@ write_scratch.color = write_scratch.scratch / 'c'
 #------------------------------------------------------------------------------
 
 def set_booleans ( namespace, name_regex, new_value ):
+    if namespace is None :
+        namespace = inspect.stack()[1].frame.f_globals
     matcher = re.compile(name_regex)
     for key, value in namespace.items():
         if matcher.match(key) and isinstance(value, bool):
@@ -105,12 +107,12 @@ def set_booleans ( namespace, name_regex, new_value ):
 
 def tst_disable_all ( namespace = None ):
     if namespace is None :
-        ns = inspect.stack()[1].frame.f_globals
-    set_booleans ( ns, '^tst_', False )
+        namespace = inspect.stack()[1].frame.f_globals
+    set_booleans ( namespace, '^tst_', False )
 
 def tst_enable_all ( namespace = None ):
     if namespace is None :
-        ns = inspect.stack()[1].frame.f_globals
-    set_booleans ( ns, '^tst_', True )
+        namespace = inspect.stack()[1].frame.f_globals
+    set_booleans ( namespace, '^tst_', True )
 
 #------------------------------------------------------------------------------
