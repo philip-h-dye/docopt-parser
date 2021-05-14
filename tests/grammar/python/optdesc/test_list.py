@@ -1,3 +1,21 @@
+parse_debug                     = False
+record                          = False
+analyzing                       = False
+
+tst_single                      = True
+tst_variations                  = True
+tst_permutations                = True
+
+# Not Yet Implemented
+tst_operand_command             = False
+
+# # FIXME: comment or remove before commit
+# from util import tst_disable_all
+# tst_disable_all()
+# record                          = True
+
+#------------------------------------------------------------------------------
+
 import sys
 import os
 import re
@@ -32,45 +50,48 @@ from docopt_parser import DocOptListViewVisitor
 from .optlist import document, create_terms, create_expect, method_name
 from .optlist import generate_tests__all_permutations_of_optlst_and_sep
 
+from base import Test_Base
+from util import tprint, write_scratch
+
 #------------------------------------------------------------------------------
 
-class Test_Option_List ( unittest.TestCase ) :
+class Test_Option_List ( Test_Base ) :
 
     def setUp(self):
 
-        global grammar_elements
+        # first get defaults, should all be False for boolean flags
+        super().setUp()
 
-        # quiet, no parse trees displayed
+        global parse_debug, record, analyzing
+
+        self.parse_debug = parse_debug
+        self.record = record
+        self.analyzing = analyzing
+
+        # quiet, no parse trees displayeda
         # self.debug = False
 
         # show parse tree for pass >= self.debug
-        self.debug = 2
+        # self.debug = 2
 
-        # self.each = True
-        self.show = True
+        # Show text being parsed
+        # self.show = True
 
-        # # tprint._file =
-        # self.tty = open("/dev/tty", 'w')
+        # and again, to apply behavior per altered settings
+        super().setUp()
 
-        # self.rstdout = redirect_stdout(self.tty)
-        # self.rstdout.__enter__()
+        self.grammar = document
 
-        tprint._on = self.show or self.debug is not False
+        self.parser = ParserPython ( language_def = self.grammar,
+                                     reduce_tree = False,
+                                     debug = self.parse_debug, )
 
-        # grammar_elements = [ option_list, ws ]
-        self.parser = ParserPython( language_def=document, skipws=False )
-        # # NEVER # reduce_tree=True -- needed meaning is lost
-
-    #--------------------------------------------------------------------------
-
-    def tearDown (self):
-        # self.rstdout.__exit__(None, None, None)
-        # self.tty.close()
-        # self.tty = None
-        pass
+        if self.record :
+            write_scratch ( _clean = True )
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single_short_no_arg (self):
         text = '-f'
         parsed = self.parser.parse(text)
@@ -86,6 +107,7 @@ class Test_Option_List ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single_short_with_one_arg (self):
         text = '-fNORM'
         parsed = self.parser.parse(text)
@@ -103,6 +125,7 @@ class Test_Option_List ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
+    @unittest.skipUnless(tst_single, "Single tests not enabled")    
     def test_single_optdefs (self):
 
         # optdefs = ( ( '--file', '=', '<file>', ) , )
@@ -155,19 +178,6 @@ class Test_Option_List ( unittest.TestCase ) :
 
 #------------------------------------------------------------------------------
 
-def tprint(*args, **kwargs):
-    if tprint._on :
-        kwargs['file'] = tprint._file
-        print('')
-        print(*args, **kwargs)
-        tprint._file.flush()
-
-tprint._file = sys.stdout # open("/dev/tty", 'w')
-# tprint._on = False
-tprint._on = True
-
-#------------------------------------------------------------------------------
-
 def ol_generate ( cls, optdefs, sep =', ', expect_fail=False ) :
 
     def create_method ( actual_text, the_terms ) :
@@ -207,11 +217,7 @@ def tol_generate ( optdef, *args, **kwargs ):
 
 #------------------------------------------------------------------------------
 
-if False :
-    pass
-
-if True :
-    pass
+if tst_variations :
 
     # boundry condition, the first option is handled separately from succeeding terms
     # and it is an ol_first_option, not an ol_term
@@ -276,9 +282,9 @@ if True :
 
 #------------------------------------------------------------------------------
 
-if False :
+if tst_operand_command :
 
-    # *** 'command' not yet implemented -- Not Supported during generate
+    # *** 'command' operand not yet implemented -- Not Supported during generate
 
     tol_generate ( ( ( '--file', '=', 'FOObar', ) ,
                   ( '-x', ) ,
@@ -292,8 +298,9 @@ if False :
 
 #------------------------------------------------------------------------------
 
-generate_tests__all_permutations_of_optlst_and_sep \
-    ( Test_Option_List, ol_generate, words=['file'] )
+if tst_permutations :
+    generate_tests__all_permutations_of_optlst_and_sep \
+        ( Test_Option_List, ol_generate, words=['file'] )
 
 #------------------------------------------------------------------------------
 
