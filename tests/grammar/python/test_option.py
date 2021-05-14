@@ -68,7 +68,8 @@ class Test_Option ( Test_Base ) :
         # and again, to apply behavior per altered settings
         super().setUp()
 
-        self.parser = ParserPython(grammar, reduce_tree=False)
+        self.parser = ParserPython ( grammar, reduce_tree = False,
+                                     debug = self.parse_debug, )
 
         write_scratch ( _clean = True )
 
