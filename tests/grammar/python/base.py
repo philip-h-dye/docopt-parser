@@ -25,6 +25,21 @@ from p import pp_str
 
 #------------------------------------------------------------------------------
 
+# Prevent explicit prints.  If exception, simply re-raise.  Assertions and
+# exception handling otherwise unchanged.  Must not be used to to alter
+# control-flow or functionality.
+# 
+@dataclass
+class Quiet(object):
+    grammar     : bool  = False     # nothing applicable yet
+    parse       : bool  = False     # prevents print on NoMatch
+    verify      : bool  = False     # nothing applicable yet
+    analyze     : bool  = False     # prevents all explicit prints
+
+QUIET_NONE = Quiet()
+
+#------------------------------------------------------------------------------
+
 class Test_Base ( unittest.TestCase ) :
 
     MULTIPLE_SEP_LINEFEED = p_linefeed
@@ -49,7 +64,8 @@ class Test_Base ( unittest.TestCase ) :
 
     #--------------------------------------------------------------------------
 
-    def single ( self, rule, text, expect, skipws=True, lead=None ):
+    def single ( self, rule, text, expect, skipws=True, lead=None,
+                 quiet=QUIET_NONE ):
         """
         <lead> : ( text, expect ) for leading value to prefix the text
                                   and expect.  Required when rule has
@@ -72,12 +88,13 @@ class Test_Base ( unittest.TestCase ) :
         def grammar():
             return Sequence( ( *body ), rule_name='grammar', skipws=skipws )
         # print(f"\n: single : text = '{text}'")
-        self.verify_grammar ( grammar, text, [ expect ], skipws=skipws )
+        self.verify_grammar ( grammar, text, [ expect ], skipws=skipws,
+                              quiet=quiet )
 
     #--------------------------------------------------------------------------
 
     def multiple ( self, rule, text, expect, n=1, sep=p_linefeed, lead=None,
-                   skipws=True ):
+                   skipws=True, quiet=QUIET_NONE ):
         """
         <sep>  : ParseSpec separator between each element. DEFAULT p_linefeed
                  from grammar.python.common.p_linefeed,
@@ -122,28 +139,30 @@ class Test_Base ( unittest.TestCase ) :
                 ( OneOrMore( OrderedChoice( [ *rule_list ] , ) ) , EOF ) ,
                 rule_name='grammar', skipws=False )
         # print(f"\n: multiple : text = '{text}'")
-        self.verify_grammar ( grammar, text, expect_list )
+        self.verify_grammar ( grammar, text, expect_list,
+                              quiet=quiet )
 
     #--------------------------------------------------------------------------
 
-    def verify_grammar ( self, grammar, text, expect_list, skipws=True ):
+    def verify_grammar ( self, grammar, text, expect_list, skipws=True,
+                         quiet=QUIET_NONE ):
         self.grammar = grammar()
         self.skipws = skipws
         self.text = text
         self.expect = NonTerminal( self.grammar, [ *expect_list, t_eof ] )
         self.parser = ParserPython ( grammar, ws=" \t\r", skipws=self.skipws,
                                      debug=self.parse_debug, reduce_tree=False )
-        self.parse_and_verify( self.text, self.expect )
+        self.parse_and_verify( self.text, self.expect, quiet=quiet )
 
     #--------------------------------------------------------------------------
 
-    def parse_and_verify ( self, text, expect ) :
-        parsed = self.parse ( text, expect )
-        self.verify ( text, expect, parsed  )
+    def parse_and_verify ( self, text, expect, quiet=QUIET_NONE ):
+        parsed = self.parse ( text, expect, quiet=quiet )
+        self.verify ( text, expect, parsed, quiet=quiet )
 
     #--------------------------------------------------------------------------
 
-    def parse ( self, text, expect ) :
+    def parse ( self, text, expect, quiet=QUIET_NONE ):
 
         if not hasattr(self, 'text') or self.text != text :
             self.text = text
@@ -164,18 +183,19 @@ class Test_Base ( unittest.TestCase ) :
             if self.record :
                 write_scratch( parsed=self.parsed )
         except Exception as e :
-            print("\n"
-                  f"[expect]\n{pp_str(expect)}\n\n"
-                  f"text = '{text}' :\n\n"
-                  f"Parse FAILED :\n"
-                  f"{str(e)}" )
+            if not quiet.parse :
+                print("\n"
+                      f"[expect]\n{pp_str(expect)}\n\n"
+                      f"text = '{text}' :\n\n"
+                      f"Parse FAILED :\n"
+                      f"{str(e)}" )
             raise
 
         return self.parsed
 
     #--------------------------------------------------------------------------
 
-    def verify ( self, text, expect, parsed ) :
+    def verify ( self, text, expect, parsed, quiet=QUIET_NONE ):
 
         if not hasattr(self, 'text') or self.text != text :
             self.text = text
@@ -213,19 +233,18 @@ class Test_Base ( unittest.TestCase ) :
         expect = expect[0][0] # [0][ nth_option_line ] # [0] [0]
         parsed = parsed[0][0] # [0][ nth_option_line ] # [0] [0]
 
-        print('')
-
         expect_terminal = isinstance(expect, Terminal)
         parsed_terminal = isinstance(parsed, Terminal)
 
-        if expect_terminal :
-            print(f"[expect] rule '{expect.rule_name}', Terminal = {pp_str(expect)}")
-        else :
-            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
-        if parsed_terminal :
-            print(f"[parsed] rule '{parsed.rule_name}', Terminal = {pp_str(parsed)}")
-        else :
-            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
+        if not quiet.analyze :
+            if expect_terminal :
+                print(f"\n[expect] rule '{expect.rule_name}', Terminal = {pp_str(expect)}")
+            else :
+                print(f"\n[expect] rule '{expect.rule_name}' with {len(expect)} children")
+            if parsed_terminal :
+                print(f"\n[parsed] rule '{parsed.rule_name}', Terminal = {pp_str(parsed)}")
+            else :
+                print(f"\n[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
 
         if expect_terminal or parsed_terminal :
             assert nodes_equal(parsed, expect), \
@@ -235,8 +254,9 @@ class Test_Base ( unittest.TestCase ) :
                   f"[parsed] rule '{parsed.rule_name}'\n{pp_str(parsed)}\n" )
             return
 
-        print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
-        print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
+        if not quiet.analyze :
+            print(f"[expect] rule '{expect.rule_name}' with {len(expect)} children")
+            print(f"[parsed] rule '{parsed.rule_name}' with {len(parsed)} children")
 
         assert parsed.rule_name == expect.rule_name, \
             ( f"Detail node rule names not equal.\n"
