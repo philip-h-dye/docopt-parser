@@ -29,8 +29,9 @@ from .line import option_line
 #------------------------------------------------------------------------------
 
 ALL = ( ' option_description_section '
-        # ' option_description_intro '
-        # ' option_line_start '
+        ' option_description_intro '
+        ' option_line_start '
+        ' any_until_end_of_line '
        ).split()
 
 #------------------------------------------------------------------------------
@@ -39,10 +40,6 @@ def option_line_start():
     # return Sequence( ( wx, option ),
     return _( r'\s*[-]' ,
               rule_name='option_line_start', skipws=False )
-
-def any_until_end_of_line_0():
-    return Sequence ( ( _( r'.*$' ), newline ) ,
-              rule_name='any_until_end_of_line', skipws=False )
 
 def any_until_end_of_line():
     return _( r'.*$\n' ,
