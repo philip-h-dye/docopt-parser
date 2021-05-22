@@ -6,6 +6,7 @@ tst_single                      = True
 tst_pair                        = True
 tst_trio                        = True
 tst_create_expect               = True
+tst_space_gap                   = True
 tst_variations                  = True
 
 # Not Yet Implemented
@@ -301,6 +302,13 @@ if False :
 
 def _generate ( optdefs, *args, **kwargs ):
     return ogenerate ( Test_Option_Line, optdefs, *args, **kwargs )
+
+#------------------------------------------------------------------------------
+
+if tst_space_gap:
+
+    _generate ( ( ( '--query', ' ', '<query>', ) ,
+                ) )
 
 #------------------------------------------------------------------------------
 
