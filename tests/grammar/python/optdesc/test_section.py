@@ -7,11 +7,10 @@ tst_minimal                     = True
 tst_space                       = True
 tst_some_args                   = True
 
-# # FIXME: remove before commit
-from util import tst_disable_all
-tst_disable_all()
-record                          = True
-tst_space                       = True
+# # FIXME: comment or remove before commit
+# from util import tst_disable_all
+# tst_disable_all()
+# record                          = True
 
 #------------------------------------------------------------------------------
 
