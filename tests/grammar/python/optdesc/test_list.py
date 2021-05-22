@@ -91,7 +91,7 @@ class Test_Option_List ( Test_Base ) :
 
     #--------------------------------------------------------------------------
 
-    @unittest.skipUnless(tst_single, "Single tests not enabled")    
+    @unittest.skipUnless(tst_single, "Single tests not enabled")
     def test_single_short_no_arg (self):
         text = '-f'
         parsed = self.parser.parse(text)
@@ -107,7 +107,7 @@ class Test_Option_List ( Test_Base ) :
 
     #--------------------------------------------------------------------------
 
-    @unittest.skipUnless(tst_single, "Single tests not enabled")    
+    @unittest.skipUnless(tst_single, "Single tests not enabled")
     def test_single_short_with_one_arg (self):
         text = '-fNORM'
         parsed = self.parser.parse(text)
@@ -125,7 +125,7 @@ class Test_Option_List ( Test_Base ) :
 
     #--------------------------------------------------------------------------
 
-    @unittest.skipUnless(tst_single, "Single tests not enabled")    
+    @unittest.skipUnless(tst_single, "Single tests not enabled")
     def test_single_optdefs (self):
 
         # optdefs = ( ( '--file', '=', '<file>', ) , )
