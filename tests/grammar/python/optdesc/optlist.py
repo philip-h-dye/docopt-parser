@@ -471,8 +471,7 @@ def create_termx_obj ( optlst ):
                 elif o.gap == ' ':
                     terms.append ( term__short_no_arg(o.opt) )
                     terms.append ( term__operand(o.operand) )
-                    texts.append ( o.opt )
-                    texts.append ( o.operand )
+                    texts.append ( o.opt + o.gap + o.operand )
                 else :
                     raise ValueError(
                         f"Invalid short opton gap '{o.gap}' in optdef '{o}'.\n"
