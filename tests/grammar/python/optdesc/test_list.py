@@ -3,6 +3,7 @@ record                          = False
 analyzing                       = False
 
 tst_single                      = True
+tst_space_gap                   = True
 tst_variations                  = True
 tst_permutations                = True
 
@@ -34,7 +35,6 @@ from arpeggio import RegExMatch as _ , StrMatch, ParseTreeNode
 
 from prettyprinter import cpprint as pp
 from docopt_parser.parsetreenodes import nodes_equal
-from p import pp_str
 
 #------------------------------------------------------------------------------
 
@@ -50,8 +50,15 @@ from docopt_parser import DocOptListViewVisitor
 from .optlist import document, create_terms, create_expect, method_name
 from .optlist import generate_tests__all_permutations_of_optlst_and_sep
 
+# Refactoring for option specification by object instead of tuples
+from .optlist import create_terms_obj
+from .optlist import define_optlist_shortnames
+define_optlist_shortnames()
+
 from base import Test_Base
 from util import tprint, write_scratch
+
+from p import pp_str
 
 #------------------------------------------------------------------------------
 
@@ -175,6 +182,26 @@ class Test_Option_List ( Test_Base ) :
             ( f"[expect]\n{pp_str(expect)}\n"
               f"[parsed]\n{pp_str(parsed)}"
               f"text = '{text}' :\n" )
+
+    #--------------------------------------------------------------------------
+
+    @unittest.skipUnless(tst_space_gap, "Space gap tests not enabled")
+    def test_space_gap (self):
+
+        optlst = olst (
+            opt ( '--query', ' ', '<query>' ),
+            # opt ( '--file', ' ', 'NORM' ) ,
+            # opt( '--file', '=', 'NORM' ) ,
+            # ( '--file', ) ,
+        )
+
+        sep =', '
+
+        ( text, terms ) = create_terms_obj( optlst, sep = sep )
+
+        expect = create_expect ( *terms, sep=sep )
+
+        self.parse_and_verify( text, expect )
 
 #------------------------------------------------------------------------------
 
