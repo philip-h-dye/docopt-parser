@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import inspect
 
 from contextlib import redirect_stdout
 
@@ -467,11 +468,15 @@ def create_termx_obj ( optlst ):
                 if o.gap == '':
                     terms.append ( term__short_adj_arg(o.opt, o.operand) )
                     texts.append ( o.opt + o.gap + o.operand )
-                else :
+                elif o.gap == ' ':
                     terms.append ( term__short_no_arg(o.opt) )
                     terms.append ( term__operand(o.operand) )
                     texts.append ( o.opt )
                     texts.append ( o.operand )
+                else :
+                    raise ValueError(
+                        f"Invalid short opton gap '{o.gap}' in optdef '{o}'.\n"
+                        f"Short option gap may only be ' ' or ''.\n")
             else :
                     terms.append ( term__short_no_arg(o.opt) )
                     texts.append ( o.opt )
@@ -481,11 +486,14 @@ def create_termx_obj ( optlst ):
                 if o.gap == '=':
                     terms.append ( term__long_eq_arg(o.opt, o.operand) )
                     texts.append ( o.opt + o.gap + o.operand )
-                else :
+                elif o.gap == ' ':
                     terms.append ( term__long_no_arg(o.opt) )
                     terms.append ( term__operand(o.operand) )
-                    texts.append ( o.opt )
-                    texts.append ( o.operand )
+                    texts.append ( o.opt + o.gap + o.operand )
+                else :
+                    raise ValueError(
+                        f"Invalid long option gap '{o.gap}' in optdef '{o}'.\n"
+                        f"Long option gap may only be '=' or ' '.\n")
             else :
                     terms.append ( term__long_no_arg(o.opt) )
                     texts.append ( o.opt )
@@ -583,5 +591,18 @@ def generate_tests__all_permutations_of_optlst_and_sep ( cls, _generate, words, 
 
     for optlst in optlst_permutations ( *words, n_opt_max=n_opt_max ) :
         generate_tests_on_optlst_varying_sep ( cls, _generate, optlst )
+
+#------------------------------------------------------------------------------
+
+def define_optlist_shortnames(namespace=None):
+    if namespace is None :
+                namespace = inspect.stack()[1].frame.f_locals
+    exec ( """
+from tests.grammar.python.optdesc.optlist import OptionDef, OptionListDef
+opt             = OptionDef
+olst            = OptionListDef
+""", namespace )
+
+define_optlist_shortnames(globals())
 
 #------------------------------------------------------------------------------
